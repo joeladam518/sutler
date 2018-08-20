@@ -20,29 +20,67 @@
 #   white dark   = #D7D7D7   white light    = #ffffff    
 ###
 
-## Output colors :-)
-HL1='\e[1;94m' #HL = highlight normal  - light blue
-HL2='\e[0;31m' #HL = highlight warning - light red
-RST='\e[0m'    #Reset Color
+## Variables
+CWD=$(pwd)
+ULBIN="/usr/local/bin" # user\'s local bin
+mmnt_script_name="mntsshfs.sh"
+umnt_script_name="umntsshfs.sh"
+
+## Functions
+msg_c() { # Output messages in color! :-)
+    local OPTIND=1; local o; local newline="1"; local CHOSEN_COLOR; local RESET=$(tput sgr0);
+    while getopts ":ndrgbcmya" o; do
+        case "${o}" in 
+            n) newline="0" ;; # no new line
+            d) CHOSEN_COLOR=$(tput bold) ;;    # bold
+            r) CHOSEN_COLOR=$(tput setaf 1) ;; # color red
+            g) CHOSEN_COLOR=$(tput setaf 2) ;; # color green
+            b) CHOSEN_COLOR=$(tput setaf 4) ;; # color blue
+            c) CHOSEN_COLOR=$(tput setaf 6) ;; # color cyan
+            m) CHOSEN_COLOR=$(tput setaf 5) ;; # color magenta
+            y) CHOSEN_COLOR=$(tput setaf 3) ;; # color yellow
+            a) CHOSEN_COLOR=$(tput setaf 7) ;; # color gray
+            \? ) echo "msg_c() invalid option: -${OPTARG}"; return ;;
+        esac
+    done
+    shift $((OPTIND - 1))
+    if [ ! -z $CHOSEN_COLOR ] && [ $newline == "1" ]; then
+        echo -e "${CHOSEN_COLOR}${1}${RESET}"
+    elif [ ! -z $CHOSEN_COLOR ] && [ $newline == "0" ]; then  
+        echo -ne "${CHOSEN_COLOR}${1}${RESET}"
+    elif [ -z $CHOSEN_COLOR ] && [ $newline == "0" ]; then  
+        echo -n "${1}"
+    else
+        echo "${1}"
+    fi
+}
 
 
-## Install Snaps
-#snap refresh
-#snap install vlc qownnotes spotify gimp irccloud-desktop darktable inkscape
+msg_c -c "Installing snaps"
+snap refresh
+snap install vlc qownnotes spotify gimp irccloud-desktop darktable inkscape
+msg_c -c "Done!"
 
 
-## Update, Upgrade, and autoremove
+msg_c -c "Update, Upgrade, and Autoremove"
 sudo apt-get update && sudo apt-get -y upgrade && sudo apt autoremove
+msg_c -c "Done!"
 
 
-## 3rd party codecs
+msg_c -c "Install restricted extras"
 sudo apt install ubuntu-restricted-extras
+msg_c -c "Done!"
 
 
-## Install utility applications
-sudo apt-get install -y vim gnome-tweak-tool compiz compiz-gnome compiz-plugins compiz-plugins-extra compizconfig-settings-manager curl tilix htop tmux git
+msg_c -c "Install utility applications"
+sudo apt-get install -y git vim-gnome tmux curl tilix htop tree
+msg_c -c "Done!"
 
+msg_c -c "Install gnome tweak tool and compiz"
+sudo apt-get install -y gnome-tweak-tool compiz compiz-gnome compiz-plugins compiz-plugins-extra compizconfig-settings-manager
+msg_c -c "Done!"
 
+`
 ## Utility applications to consider installing using apt-get
 #gstm - gnome ssh tunneling manager - gui for ssh tunnels (doesn't scale well on high dpi screens)
 
@@ -91,11 +129,11 @@ fi
 ## Set some Git config settings
 cd "$HOME"
 git config --global core.editor "vim"
-#git config --global merge.tool vimdiff
 git config --global diff.tool vimdiff
 git config --global difftool.prompt false
-git config --global alias.df diff
-git config --global aliad.dt difftool
+#git config --global alias.df diff
+#git config --global aliad.dt difftool
+#git config --global merge.tool vimdiff
 
 
 ## Make Repos folder
@@ -154,7 +192,7 @@ if [[ ! -f "$HOME"/.bashrc.old && -f "$HOME"/.bashrc ]]; then
         echo -e "${HL2}Couldn't find .bashrc.old... Stopping what I'm doing...${RST}"
     fi
     
-    if [[ -f "$HOME"/repos/mybashrc/server/.bashrc &&  -e "$HOME"/.bashrc ]]; then
+    if [[ -f "$HOME"/repos/mybashrc/server/.bashrc && -e "$HOME"/.bashrc ]]; then
         echo -e "${HL1}Successfully installed the mybashrc repo${RST}"
     else
         echo -e "${HL2}Something went wrong with install mybashrc...${RST}"
@@ -164,29 +202,20 @@ else
 fi
 
 ## Install all your other repos
+if [ ! -d "$HOME"/repos/ArduinoRGBLighting ]; then
+    cd "$HOME"/repos && git clone "git@github.com:joeladam518/ArduinoRGBLighting.git"
+fi
 if [ ! -d "$HOME"/repos/multiple_button_presses ]; then
     cd "$HOME"/repos && git clone "git@github.com:joeladam518/multiple_button_presses.git"
 fi
 if [ ! -d "$HOME"/repos/Web_Relays ]; then
     cd "$HOME"/repos && git clone "git@github.com:joeladam518/Web_Relays.git"
 fi
-if [ ! -d "$HOME"/repos/ArduinoRGBLighting ]; then
-    cd "$HOME"/repos && git clone "git@github.com:joeladam518/ArduinoRGBLighting.git"
-fi
 if [ ! -d "$HOME"/repos/rpi_scripts ]; then
     cd "$HOME"/repos && git clone "git@github.com:joeladam518/rpi_scripts.git"
 fi
-if [ ! -d "$HOME"/repos/rpi_api ]; then
-    cd "$HOME"/repos && git clone "git@github.com:joeladam518/rpi_api.git"
-fi
 if [ ! -d "$HOME"/repos/update-all-servers ]; then
     cd "$HOME"/repos && git clone "git@github.com:joeladam518/update-all-servers.git"
-fi
-if [ ! -d "$HOME"/repos/Backup_Script ]; then
-    cd "$HOME"/repos && git clone "git@github.com:joeladam518/Backup_Script.git"
-fi
-if [ ! -d "$HOME"/repos/htt-wp-plugin ]; then
-    cd "$HOME"/repos && git clone "git@github.com:joeladam518/htt-wp-plugin.git"
 fi
 if [ ! -d "$HOME"/repos/ugly_sweater ]; then
     cd "$HOME"/repos && git clone "git@github.com:joeladam518/ugly_sweater.git"
@@ -226,3 +255,5 @@ fi
 # Vagrant
 # Dropbox
 # Slack
+# gitg
+# git cola
