@@ -2,7 +2,7 @@
 
 ###
 #   This script was created to remind me of all the things I like to
-#   install on Ubuntu desktop.
+#   install on my Ubuntu desktop.
 #
 #   It MUST be reviewed each time and updated.
 #
@@ -52,9 +52,6 @@ msg_c() { # Output messages in color! :-)
     fi
 }
 
-
-
-
 msg_c -c "Update, Upgrade, and Autoremove"
 sudo apt-get update && sudo apt-get -y upgrade && sudo apt autoremove
 msg_c -c "Done!"
@@ -80,12 +77,16 @@ sudo apt-get install -y exfat-fuse exfat-utils
 msg_c -c "Done!"
 
 ## Install Sublime Text 3
+msg_c -c "Install SublimeText 3"
 wget -qO - https://download.sublimetext.com/sublimehq-pub.gpg | sudo apt-key add -
 echo "deb https://download.sublimetext.com/apt/stable/" | sudo tee /etc/apt/sources.list.d/sublime-text.list
 sudo apt-get update && sudo apt-get install -y sublime-text
+msg_c -c "Done!"
 
 ## Install php 7.1 (php7.2 is already out as of 2017-11-30 you should update to include it)
+msg_c -c "Install PHP"
 sudo apt-get install -y php7.1 php7.1-cli php7.1-curl php7.1-common php7.1-json php7.1-mbstring php7.1-gd php7.1-intl php7.1-xml php7.1-mysql php7.1-mcrypt php7.1-zip
+msg_c -c "Done!"
 
 msg_c -c "Installing snaps"
 snap refresh
@@ -142,7 +143,7 @@ fi
 ## Install myvimrc repo
 if [ ! -f "$HOME"/repos/myvimrc/.vimrc ]; then
     echo ""
-    echo -e "${HL1}Cloning the joeladam518/myvimrc github repo${RST}"
+    msg_c -g "Cloning the joeladam518/myvimrc github repo"
     echo ""
 
     if [ ! -d "$HOME"/repos ]; then
@@ -157,25 +158,22 @@ if [ ! -f "$HOME"/repos/myvimrc/.vimrc ]; then
     cd "$HOME" && ln -sf "$HOME"/repos/myvimrc/.vimrc
 
     if [[ -f "$HOME"/repos/myvimrc/.vimrc &&  -e "$HOME"/.vimrc ]]; then
-        echo -e "${HL1}Successfully installed the myvimrc repo${RST}"
+        msg_c -g "Successfully installed the myvimrc repo"
     else
-        echo -e "${HL2}Something went wrong with installing the myvimrc repo${RST}"
-        exit
+        msg_c -r "Something went wrong with installing the myvimrc repo"
     fi
 else
-    echo -e "${HL1}.vimrc is already there${RST}"
+    msg_c -y ".vimrc is already installed"
 fi
 
 ## Install mybashrc repo
 if [[ ! -f "$HOME"/.bashrc.old && -f "$HOME"/.bashrc ]]; then
     echo ""
-    echo -e "${HL1}Cloning the joeladam518/mybashrc github repo${RST}"
-    echo ""
+    msg_c -g "Cloning the joeladam518/mybashrc github repo"
 
     cd "$HOME" && mv .bashrc .bashrc.old
 
     if [ -f "$HOME"/.bashrc.old ]; then
-
         if [ ! -d "$HOME"/repos ]; then
             cd "$HOME" && mkdir repos
         fi
@@ -185,51 +183,40 @@ if [[ ! -f "$HOME"/.bashrc.old && -f "$HOME"/.bashrc ]]; then
         fi
 
         cd "$HOME" && ln -sf "$HOME"/repos/mybashrc/desktop/.bashrc
-    else
-        echo -e "${HL2}Couldn't find .bashrc.old... Stopping what I'm doing...${RST}"
-    fi
 
-    if [[ -f "$HOME"/repos/mybashrc/server/.bashrc && -e "$HOME"/.bashrc ]]; then
-        echo -e "${HL1}Successfully installed the mybashrc repo${RST}"
+        if [[ -f "$HOME"/repos/mybashrc/server/.bashrc && -e "$HOME"/.bashrc ]]; then
+            msg_c -g "Successfully installed the mybashrc repo"
+        else
+            msg_c -r "Something went wrong with install mybashrc..."
+        fi
     else
-        echo -e "${HL2}Something went wrong with install mybashrc...${RST}"
+        msg_c -r "Couldn't find .bashrc.old... Stopping what I'm doing..."
     fi
 else
-    echo -e "${HL1}.bashrc is already swapped out${RST}"
+    msg_c -y ".bashrc is already swapped out"
 fi
 
 ## Install all your other repos
-if [ ! -d "$HOME"/repos/ArduinoRGBLighting ]; then
-    cd "$HOME"/repos && git clone "git@github.com:joeladam518/ArduinoRGBLighting.git"
-fi
-if [ ! -d "$HOME"/repos/multiple_button_presses ]; then
-    cd "$HOME"/repos && git clone "git@github.com:joeladam518/multiple_button_presses.git"
-fi
-if [ ! -d "$HOME"/repos/Web_Relays ]; then
-    cd "$HOME"/repos && git clone "git@github.com:joeladam518/Web_Relays.git"
-fi
-if [ ! -d "$HOME"/repos/rpi_scripts ]; then
-    cd "$HOME"/repos && git clone "git@github.com:joeladam518/rpi_scripts.git"
-fi
-if [ ! -d "$HOME"/repos/update-all-servers ]; then
-    cd "$HOME"/repos && git clone "git@github.com:joeladam518/update-all-servers.git"
-fi
-if [ ! -d "$HOME"/repos/ugly_sweater ]; then
-    cd "$HOME"/repos && git clone "git@github.com:joeladam518/ugly_sweater.git"
-fi
-
+echo ""
+msg_c -m "Now you can go ahead and install your other repos"
+echo ""
 
 ## Install bash-git-prompt
+msg_c -c "Install bash-git-prompt"
 cd "$HOME" && git clone "https://github.com/magicmonty/bash-git-prompt.git" .bash-git-prompt --depth=1
+msg_c -c "Done!"
 
 
 ## Install fzf
+msg_c -c "Install fzf"
 cd "$HOME" && git clone --depth 1 "https://github.com/junegunn/fzf.git" ~/.fzf
 cd "$HOME" && "$HOME"/.fzf/install
 set rtp+=~/.fzf
+msg_c -c "Done!"
 
 
 ## Install your theme and icons
+msg_c -c "Install make the Ubuntu themes and icons folders"
 if [ ! -d "$HOME"/.themes ]; then
     cd "$HOME" && mkdir .themes
 fi
@@ -237,6 +224,7 @@ fi
 if [ ! -d "$HOME"/.icons ]; then
     cd "$HOME" && mkdir .icons
 fi
+msg_c -c "Done!"
 
 
 ## Install things that you can can't install via package manager
