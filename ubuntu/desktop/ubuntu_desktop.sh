@@ -1,36 +1,33 @@
 #!/usr/bin/env bash
 
 ###
-#   This script was created to remind me of all the things I like to 
-#   install on Ubuntu desktop. 
-#   
+#   This script was created to remind me of all the things I like to
+#   install on Ubuntu desktop.
+#
 #   It MUST be reviewed each time and updated.
-# 
+#
 #   Notes:
-#   
+#
 #   Color for terminal screen (to mimic iTerm):
 #   -------------------------------------------
 #   black dark   = #000000   black light    = #686868
 #   red dark     = #c91b00   red light      = #ff6e67
 #   green dark   = #00c200   green light    = #5ffa68
 #   yellow dark  = #C7B700   yellow light   = #fffc67
-#   blue dark    = #0532e1   blue light     = #5075ff #42A5F5  
+#   blue dark    = #0532e1   blue light     = #5075ff #42A5F5
 #   magenta dark = #ca30c7   magenta light  = #ff77ff
 #   cyan dark    = #00c5c7   cyan light     = #60fdff
-#   white dark   = #D7D7D7   white light    = #ffffff    
+#   white dark   = #D7D7D7   white light    = #ffffff
 ###
 
 ## Variables
 CWD=$(pwd)
-ULBIN="/usr/local/bin" # user\'s local bin
-mmnt_script_name="mntsshfs.sh"
-umnt_script_name="umntsshfs.sh"
 
 ## Functions
 msg_c() { # Output messages in color! :-)
     local OPTIND=1; local o; local newline="1"; local CHOSEN_COLOR; local RESET=$(tput sgr0);
     while getopts ":ndrgbcmya" o; do
-        case "${o}" in 
+        case "${o}" in
             n) newline="0" ;; # no new line
             d) CHOSEN_COLOR=$(tput bold) ;;    # bold
             r) CHOSEN_COLOR=$(tput setaf 1) ;; # color red
@@ -46,9 +43,9 @@ msg_c() { # Output messages in color! :-)
     shift $((OPTIND - 1))
     if [ ! -z $CHOSEN_COLOR ] && [ $newline == "1" ]; then
         echo -e "${CHOSEN_COLOR}${1}${RESET}"
-    elif [ ! -z $CHOSEN_COLOR ] && [ $newline == "0" ]; then  
+    elif [ ! -z $CHOSEN_COLOR ] && [ $newline == "0" ]; then
         echo -ne "${CHOSEN_COLOR}${1}${RESET}"
-    elif [ -z $CHOSEN_COLOR ] && [ $newline == "0" ]; then  
+    elif [ -z $CHOSEN_COLOR ] && [ $newline == "0" ]; then
         echo -n "${1}"
     else
         echo "${1}"
@@ -56,44 +53,44 @@ msg_c() { # Output messages in color! :-)
 }
 
 
-msg_c -c "Installing snaps"
-snap refresh
-snap install vlc qownnotes spotify gimp irccloud-desktop darktable inkscape
-msg_c -c "Done!"
 
 
 msg_c -c "Update, Upgrade, and Autoremove"
 sudo apt-get update && sudo apt-get -y upgrade && sudo apt autoremove
 msg_c -c "Done!"
 
-
 msg_c -c "Install restricted extras"
 sudo apt install ubuntu-restricted-extras
 msg_c -c "Done!"
 
-
 msg_c -c "Install utility applications"
 sudo apt-get install -y git vim-gnome tmux curl tilix htop tree
+msg_c -c "Done!"
+
+msg_c -c "Install the sshfs"
+sudo apt-get install -y sshfs
 msg_c -c "Done!"
 
 msg_c -c "Install gnome tweak tool and compiz"
 sudo apt-get install -y gnome-tweak-tool compiz compiz-gnome compiz-plugins compiz-plugins-extra compizconfig-settings-manager
 msg_c -c "Done!"
 
-`
-## Utility applications to consider installing using apt-get
-#gstm - gnome ssh tunneling manager - gui for ssh tunnels (doesn't scale well on high dpi screens)
-
+msg_c -c "Install the ability to work with exfat drives"
+sudo apt-get install -y exfat-fuse exfat-utils
+msg_c -c "Done!"
 
 ## Install Sublime Text 3
 wget -qO - https://download.sublimetext.com/sublimehq-pub.gpg | sudo apt-key add -
-echo "deb https://download.sublimetext.com/ apt/stable/" | sudo tee /etc/apt/sources.list.d/sublime-text.list
+echo "deb https://download.sublimetext.com/apt/stable/" | sudo tee /etc/apt/sources.list.d/sublime-text.list
 sudo apt-get update && sudo apt-get install -y sublime-text
-
 
 ## Install php 7.1 (php7.2 is already out as of 2017-11-30 you should update to include it)
 sudo apt-get install -y php7.1 php7.1-cli php7.1-curl php7.1-common php7.1-json php7.1-mbstring php7.1-gd php7.1-intl php7.1-xml php7.1-mysql php7.1-mcrypt php7.1-zip
 
+msg_c -c "Installing snaps"
+snap refresh
+snap install vlc qownnotes spotify gimp irccloud-desktop darktable inkscape
+msg_c -c "Done!"
 
 ## Install Composer
 cd "$HOME"
@@ -147,7 +144,7 @@ if [ ! -f "$HOME"/repos/myvimrc/.vimrc ]; then
     echo ""
     echo -e "${HL1}Cloning the joeladam518/myvimrc github repo${RST}"
     echo ""
-            
+
     if [ ! -d "$HOME"/repos ]; then
         cd "$HOME" && mkdir repos
     fi
@@ -155,10 +152,10 @@ if [ ! -f "$HOME"/repos/myvimrc/.vimrc ]; then
     if [ ! -d "$HOME"/repos/myvimrc ]; then
         cd "$HOME"/repos && git clone "git@github.com:joeladam518/myvimrc.git"
     fi
-    
+
     cd "$HOME" && ln -sf "$HOME"/repos/myvimrc/.vim
     cd "$HOME" && ln -sf "$HOME"/repos/myvimrc/.vimrc
-    
+
     if [[ -f "$HOME"/repos/myvimrc/.vimrc &&  -e "$HOME"/.vimrc ]]; then
         echo -e "${HL1}Successfully installed the myvimrc repo${RST}"
     else
@@ -174,24 +171,24 @@ if [[ ! -f "$HOME"/.bashrc.old && -f "$HOME"/.bashrc ]]; then
     echo ""
     echo -e "${HL1}Cloning the joeladam518/mybashrc github repo${RST}"
     echo ""
-    
+
     cd "$HOME" && mv .bashrc .bashrc.old
-    
+
     if [ -f "$HOME"/.bashrc.old ]; then
-        
+
         if [ ! -d "$HOME"/repos ]; then
             cd "$HOME" && mkdir repos
         fi
-        
+
         if [ ! -d "$HOME"/repos/mybashrc ]; then
             cd "$HOME"/repos && git clone "git@github.com:joeladam518/mybashrc.git"
         fi
 
         cd "$HOME" && ln -sf "$HOME"/repos/mybashrc/desktop/.bashrc
-    else 
+    else
         echo -e "${HL2}Couldn't find .bashrc.old... Stopping what I'm doing...${RST}"
     fi
-    
+
     if [[ -f "$HOME"/repos/mybashrc/server/.bashrc && -e "$HOME"/.bashrc ]]; then
         echo -e "${HL1}Successfully installed the mybashrc repo${RST}"
     else
@@ -242,7 +239,7 @@ if [ ! -d "$HOME"/.icons ]; then
 fi
 
 
-## Install things that you can can't install via package manager 
+## Install things that you can can't install via package manager
 # android studio
 # arduino
 # chrome
