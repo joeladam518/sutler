@@ -20,7 +20,7 @@ exit 0
 
 ## Function
 Update () {
-    sudo apt-get update && sudo apt-get -y upgrade
+    sudo apt-get update && sudo apt-get -y upgrade && sudo apt-get autoremove
 }
 
 ## Variables
@@ -43,7 +43,7 @@ fi
 
 path_to_working_dir="/var/www/html/public"
 
-cd "$HOME" && ln -sf /var/www/html www  
+cd "$HOME" && ln -sf /var/www/html www
 
 ## Begin Configuration
 echo ""
@@ -65,7 +65,7 @@ if [ ! -f "$HOME"/repos/myvimrc/.vimrc ]; then
     echo ""
     echo -e "${HL1}-- Cloning the joeladam518/myvimrc github repo --${RST}"
     echo ""
-            
+
     if [ ! -d "$HOME"/repos ]; then
         cd "$HOME" && mkdir repos
     fi
@@ -73,10 +73,10 @@ if [ ! -f "$HOME"/repos/myvimrc/.vimrc ]; then
     if [ ! -d "$HOME"/repos/myvimrc ]; then
         cd "$HOME"/repos && git clone "https://github.com/joeladam518/myvimrc.git"
     fi
-    
+
     cd "$HOME" && ln -sf "$HOME"/repos/myvimrc/.vim
     cd "$HOME" && ln -sf "$HOME"/repos/myvimrc/.vimrc
-    
+
     if [[ -f "$HOME"/repos/myvimrc/.vimrc &&  -e "$HOME"/.vimrc ]]; then
         echo -e "${HL1}Successfully installed the myvimrc repo${RST}"
     else
@@ -92,24 +92,24 @@ if [[ ! -f "$HOME"/.bashrc.old && -f "$HOME"/.bashrc ]]; then
     echo ""
     echo -e "${HL1}-- Cloning the joeladam518/mybashrc github repo --${RST}"
     echo ""
-    
+
     cd "$HOME" && mv .bashrc .bashrc.old
-    
+
     if [ -f "$HOME"/.bashrc.old ]; then
-        
+
         if [ ! -d "$HOME"/repos ]; then
             cd "$HOME" && mkdir repos
         fi
-        
+
         if [ ! -d "$HOME"/repos/mybashrc ]; then
             cd "$HOME"/repos && git clone "https://github.com/joeladam518/mybashrc.git"
         fi
 
         cd "$HOME" && ln -sf "$HOME"/repos/mybashrc/desktop/.bashrc
-    else 
+    else
         echo -e "${HL2}Couldn't find .bashrc.old... Stopping what I'm doing...${RST}"
     fi
-    
+
     if [[ -f "$HOME"/repos/mybashrc/server/.bashrc &&  -e "$HOME"/.bashrc ]]; then
         echo -e "${HL1}Successfully installed the mybashrc repo${RST}"
     else
