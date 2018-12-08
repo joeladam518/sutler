@@ -1,40 +1,36 @@
 #!/usr/bin/env bash
 
-# Output Colors :-)
-HL1='\e[1;94m' #HL1 = highlight normal - light blue
-HL2='\e[1;35m' #HL2 = highlight warning - magenta
-RST='\e[0m'
-
-echo ""
-echo -e "${HL1}-- Update && Upgrade && AutoRemove --${RST}"
-cd "$HOME" && apt-get update && apt-get -y upgrade && apt-get -y autoremove
-
-echo ""
-echo -e "${HL1}-- Install needed packages --${RST}"
-cd "$HOME" && apt-get -y install software-properties-common
-cd "$HOME" && apt-get install -y python-software-properties python3 python3-pip vim htop curl git
-
-exit 0
-
-#!/usr/bin/env bash
-
-## Function
-Update () {
-    sudo apt-get update && sudo apt-get -y upgrade && sudo apt-get autoremove
-}
-
 ## Variables
-
-# Output Colors :-)
-HL1='\e[1;94m' #HL1 = highlight normal - light blue
-HL2='\e[1;35m' #HL2 = highlight warning - magenta
-RST='\e[0m'
+CWD=$(pwd)
+install_php=$(realpath "${CWD}/../../bin/install_php.sh")
 
 # mysql variables
 db_root_pass='secret'
 db_name='testenv_db'
 db_user='testenv_usr'
 db_pass='secret'
+
+## Global functions
+source "${CWD}/../../global/functions.sh"
+
+## Script Specific Functions
+AUU() {
+    msg_c -c "-- Update && Upgrade && AutoRemove --"
+    #-------------------------------------------------
+    cd ${HOME} && sudo apt-get update && sudo apt-get -y upgrade && sudo apt-get -y autoremove
+    #-------------------------------------------------
+    msg_c -c "done!"
+}
+
+echo ""
+msg_c -c "-- Install needed packages --"
+#-----------------------------------------------------------------------------------------------
+cd "$HOME" && apt-get -y install software-properties-common
+cd "$HOME" && apt-get install -y python-software-properties python3 python3-pip vim htop curl git
+#------------------------------------------------------------------------------------------------
+msg_c -c "done!"
+exit 0
+
 
 # Create project folder if doesn't exists
 if [ ! -d "/var/www/html/public" ]; then
@@ -56,68 +52,13 @@ echo "LC_ALL=en_US.UTF-8" >> /etc/default/locale
 locale-gen en_US.UTF-8
 
 ## Make Repos folder
-if [ ! -d "$HOME"/repos ]; then
-    cd "$HOME" && mkdir repos
-fi
+
 
 ## Install myvimrc repo
-if [ ! -f "$HOME"/repos/myvimrc/.vimrc ]; then
-    echo ""
-    echo -e "${HL1}-- Cloning the joeladam518/myvimrc github repo --${RST}"
-    echo ""
 
-    if [ ! -d "$HOME"/repos ]; then
-        cd "$HOME" && mkdir repos
-    fi
-
-    if [ ! -d "$HOME"/repos/myvimrc ]; then
-        cd "$HOME"/repos && git clone "https://github.com/joeladam518/myvimrc.git"
-    fi
-
-    cd "$HOME" && ln -sf "$HOME"/repos/myvimrc/.vim
-    cd "$HOME" && ln -sf "$HOME"/repos/myvimrc/.vimrc
-
-    if [[ -f "$HOME"/repos/myvimrc/.vimrc &&  -e "$HOME"/.vimrc ]]; then
-        echo -e "${HL1}Successfully installed the myvimrc repo${RST}"
-    else
-        echo -e "${HL2}Something went wrong with installing the myvimrc repo${RST}"
-        exit
-    fi
-else
-    echo -e "${HL1}.vimrc is already there${RST}"
-fi
 
 ## Install mybashrc repo
-if [[ ! -f "$HOME"/.bashrc.old && -f "$HOME"/.bashrc ]]; then
-    echo ""
-    echo -e "${HL1}-- Cloning the joeladam518/mybashrc github repo --${RST}"
-    echo ""
 
-    cd "$HOME" && mv .bashrc .bashrc.old
-
-    if [ -f "$HOME"/.bashrc.old ]; then
-
-        if [ ! -d "$HOME"/repos ]; then
-            cd "$HOME" && mkdir repos
-        fi
-
-        if [ ! -d "$HOME"/repos/mybashrc ]; then
-            cd "$HOME"/repos && git clone "https://github.com/joeladam518/mybashrc.git"
-        fi
-
-        cd "$HOME" && ln -sf "$HOME"/repos/mybashrc/desktop/.bashrc
-    else
-        echo -e "${HL2}Couldn't find .bashrc.old... Stopping what I'm doing...${RST}"
-    fi
-
-    if [[ -f "$HOME"/repos/mybashrc/server/.bashrc &&  -e "$HOME"/.bashrc ]]; then
-        echo -e "${HL1}Successfully installed the mybashrc repo${RST}"
-    else
-        echo -e "${HL2}Something went wrong with install mybashrc...${RST}"
-    fi
-else
-    echo -e "${HL1}.bashrc is already swapped out${RST}"
-fi
 
 if ! foobar_loc="$(type -p "unzip")" || [ -z "unzip" ]; then
     echo ""

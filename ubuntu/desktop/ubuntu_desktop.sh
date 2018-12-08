@@ -20,37 +20,17 @@
 #   white dark   = #D7D7D7   white light    = #ffffff
 ###
 
-## Variables
+# Variables
 CWD=$(pwd)
 
-## Functions
-msg_c() { # Output messages in color! :-)
-    local OPTIND=1; local o; local newline="1"; local CHOSEN_COLOR; local RESET=$(tput sgr0);
-    while getopts ":ndrgbcmya" o; do
-        case "${o}" in
-            n) newline="0" ;; # no new line
-            d) CHOSEN_COLOR=$(tput bold) ;;    # bold
-            r) CHOSEN_COLOR=$(tput setaf 1) ;; # color red
-            g) CHOSEN_COLOR=$(tput setaf 2) ;; # color green
-            b) CHOSEN_COLOR=$(tput setaf 4) ;; # color blue
-            c) CHOSEN_COLOR=$(tput setaf 6) ;; # color cyan
-            m) CHOSEN_COLOR=$(tput setaf 5) ;; # color magenta
-            y) CHOSEN_COLOR=$(tput setaf 3) ;; # color yellow
-            a) CHOSEN_COLOR=$(tput setaf 7) ;; # color gray
-            \? ) echo "msg_c() invalid option: -${OPTARG}"; return ;;
-        esac
-    done
-    shift $((OPTIND - 1))
-    if [ ! -z $CHOSEN_COLOR ] && [ $newline == "1" ]; then
-        echo -e "${CHOSEN_COLOR}${1}${RESET}"
-    elif [ ! -z $CHOSEN_COLOR ] && [ $newline == "0" ]; then
-        echo -ne "${CHOSEN_COLOR}${1}${RESET}"
-    elif [ -z $CHOSEN_COLOR ] && [ $newline == "0" ]; then
-        echo -n "${1}"
-    else
-        echo "${1}"
-    fi
-}
+# Global functions
+source "${CWD}/../../global/functions.sh"
+
+# Script Specific Functions
+
+##------------------------------------------------------------------------------------------------##
+
+## Start Script
 
 msg_c -c "Update, Upgrade, and Autoremove"
 sudo apt-get update && sudo apt-get -y upgrade && sudo apt autoremove
@@ -61,7 +41,7 @@ sudo apt install ubuntu-restricted-extras
 msg_c -c "Done!"
 
 msg_c -c "Install utility applications"
-sudo apt-get install -y git vim-gnome tmux curl tilix htop tree
+sudo apt-get install -y git vim-gnome tmux curl tilix htop tree mysqldump
 msg_c -c "Done!"
 
 msg_c -c "Install the sshfs"
@@ -69,7 +49,8 @@ sudo apt-get install -y sshfs
 msg_c -c "Done!"
 
 msg_c -c "Install gnome tweak tool and compiz"
-sudo apt-get install -y gnome-tweak-tool compiz compiz-gnome compiz-plugins compiz-plugins-extra compizconfig-settings-manager
+sudo apt-get install -y gnome-tweak-tool
+sudo apt-get install -y compiz compiz-gnome compiz-plugins compiz-plugins-extra compizconfig-settings-manager
 msg_c -c "Done!"
 
 msg_c -c "Install the ability to work with exfat drives"
@@ -85,7 +66,18 @@ msg_c -c "Done!"
 
 ## Install php 7.1 (php7.2 is already out as of 2017-11-30 you should update to include it)
 msg_c -c "Install PHP"
-sudo apt-get install -y php7.1 php7.1-cli php7.1-curl php7.1-common php7.1-json php7.1-mbstring php7.1-gd php7.1-intl php7.1-xml php7.1-mysql php7.1-mcrypt php7.1-zip
+sudo apt-get install -y php7.1 \
+php7.1-cli \
+php7.1-curl \
+php7.1-common \
+php7.1-json \
+php7.1-mbstring \
+php7.1-gd \
+php7.1-intl \
+php7.1-xml \
+php7.1-mysql \
+php7.1-mcrypt \
+php7.1-zip
 msg_c -c "Done!"
 
 msg_c -c "Installing snaps"
