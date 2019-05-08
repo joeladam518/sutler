@@ -2,7 +2,6 @@
 
 ## Variables
 CWD=$(pwd)
-default_php_version="7.2"
 
 ## Functions
 msg_c() { # Output messages in color! :-)
@@ -33,50 +32,53 @@ msg_c() { # Output messages in color! :-)
     fi
 }
 
-msg_c ""
-msg_c ""
-
-msg_c -a "Ok. I am going to try and install php..."
-msg_c -na "Please type in the most current version of php that you know of: "
-
-read -t 5 php_version
 
 msg_c ""
+msg_c -g "I will now try to uninstall php..."
+prompt=$(msg_c -mn "Warning!! This command will uninstall every single php package on your system. Is that ok? [Y/n] ")
+read -t 10 -p "${prompt}" proceed_with_uninstall
 
-if [[ -z "${php_version}" ]]; then
-    php_version="${default_php_version}"
-
+if [  "$?" -ne "0" ]; then
     msg_c ""
-    msg_c -y "You failed to specify a php version, so I will use php${php_version}"
 fi
 
-if [[ -n ${php_version//[0-9]\.[0-9]/} ]]; then
-    msg_c -r "I'm sorry you should only input the php version number. example: \"7.1\""
+if [[ "${proceed_with_uninstall}" != "y" ]]; then
+    msg_c -a "Ok then, exiting..."
     msg_c ""
+    exit
+fi
+
+installed_php_packages=$(dpkg -l | grep php | sed 's/\s\{3,\}.*$//' | sed 's/^ii  //' | tr '\n' ' ')
+
+if [ -z "${installed_php_packages}" ]; then
+    msc_c -r "Couldn't find any php packages. exiting..."
     msg_c ""
     exit 1
 fi
 
-msg_c -ng "The php version to be installed is...  "
-msg_c -ng "php${php_version}"
-msg_c -g "!!!"
-
-#php${php_version}-mcrypt // dosent exist anymore
+uninstall_command="sudo apt-get purge ${installed_php_packages}&& sudo apt-get --purge autoremove -y"
 
 msg_c ""
-msg_c -c "Creating the install command"
-install_command="sudo apt-get install -y"
-install_command="${install_command} php${php_version} php${php_version}-common php${php_version}-cli"
-install_command="${install_command} php${php_version}-fpm php${php_version}-curl php${php_version}-json"
-install_command="${install_command} php${php_version}-mbstring php${php_version}-gd php${php_version}-intl"
-install_command="${install_command} php${php_version}-pgsql php${php_version}-mysql"
-install_command="${install_command} php${php_version}-xml php${php_version}-zip "
-msg_c -c "Done!"
+msg_c -g "This is the command that will be executed: "
+msg_c "${uninstall_command}"
+msg_c ""
+
+proceed_with_uninstall=""
+prompt=$(msg_c -mn "Should I proceed? [Y/n] ")
+read -t 10 -p "${prompt}" proceed_with_uninstall
+
+if [  "$?" -ne "0" ]; then
+    msg_c ""
+fi
+
+if [[ "${proceed_with_uninstall}" != "y" ]]; then
+    msg_c -a "Ok then, exiting..."
+    msg_c ""
+    exit
+fi
 
 msg_c ""
-msg_c -c "Echoing the install command: "
-#msg_c -y "${install_command}"
-eval ${install_command}
-
-msg_c ""
+msg_c -g "Starting the uninstall..."
+#eval ${uninstall_command}
+msg_c -g "Done!"
 msg_c ""

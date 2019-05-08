@@ -41,7 +41,7 @@ sudo apt install ubuntu-restricted-extras
 msg_c -c "Done!"
 
 msg_c -c "Install utility applications"
-sudo apt-get install -y git vim-gnome tmux curl tilix htop tree mysqldump
+sudo apt-get install -y git vim-gnome tmux curl tilix htop tree mysql-client
 msg_c -c "Done!"
 
 msg_c -c "Install the sshfs"
@@ -234,3 +234,5 @@ msg_c -c "Done!"
 # Slack
 # gitg
 # git cola
+# ripit
+#
