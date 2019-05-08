@@ -2,7 +2,7 @@
 
 ## Variables
 CWD=$(pwd)
-default_php_version="7.2"
+default_php_version="7.3"
 
 ## Functions
 msg_c() { # Output messages in color! :-)
@@ -34,49 +34,74 @@ msg_c() { # Output messages in color! :-)
 }
 
 msg_c ""
-msg_c ""
+msg_c -g "Ok, I am going to try and install php..."
 
-msg_c -a "Ok. I am going to try and install php..."
-msg_c -na "Please type in the most current version of php that you know of: "
+prompt=$(msg_c -mn "Please type in the most current version of php that you know of: ")
+read -t 7 -p "${prompt}" php_version
 
-read -t 5 php_version
-
-msg_c ""
+if [  "$?" -ne "0" ]; then
+    msg_c ""
+fi
 
 if [[ -z "${php_version}" ]]; then
     php_version="${default_php_version}"
 
     msg_c ""
-    msg_c -y "You failed to specify a php version, so I will use php${php_version}"
+    prompt=$(msg_c -mn "You failed to specify a php version, so I will use")
+    prompt="${prompt} $(msg_c -yn "php${php_version}")"
+    prompt="${prompt} $(msg_c -mn "is that ok? [Y/n] ")"
+    read -t 10 -p "${prompt}" proceed_with_install
+
+    if [  "$?" -ne "0" ]; then
+        msg_c ""
+    fi
+
+    if [[ "${proceed_with_install}" != "y" ]]; then
+        msg_c -a "Exiting..."
+        msg_c ""
+        exit
+    fi
 fi
 
 if [[ -n ${php_version//[0-9]\.[0-9]/} ]]; then
     msg_c -r "I'm sorry you should only input the php version number. example: \"7.1\""
     msg_c ""
-    msg_c ""
     exit 1
 fi
 
-msg_c -ng "The php version to be installed is...  "
-msg_c -ng "php${php_version}"
-msg_c -g "!!!"
+##
+## Notes:
+## php${php_version}-mcrypt doesn't exist anymore
+##
 
-#php${php_version}-mcrypt // dosent exist anymore
-
-msg_c ""
-msg_c -c "Creating the install command"
 install_command="sudo apt-get install -y"
 install_command="${install_command} php${php_version} php${php_version}-common php${php_version}-cli"
 install_command="${install_command} php${php_version}-fpm php${php_version}-curl php${php_version}-json"
 install_command="${install_command} php${php_version}-mbstring php${php_version}-gd php${php_version}-intl"
 install_command="${install_command} php${php_version}-pgsql php${php_version}-mysql"
 install_command="${install_command} php${php_version}-xml php${php_version}-zip "
-msg_c -c "Done!"
 
 msg_c ""
-msg_c -c "Echoing the install command: "
-#msg_c -y "${install_command}"
-eval ${install_command}
+msg_c -g "This is the command that will be executed: "
+msg_c "${install_command}"
 
 msg_c ""
+proceed_with_install=""
+prompt=$(msg_c -mn "Proceed? [Y/n] ")
+read -t 10 -p "${prompt}" proceed_with_install
+
+if [  "$?" -ne "0" ]; then
+    msg_c ""
+fi
+
+if [[ "${proceed_with_install}" != "y" ]]; then
+    msg_c -a "Exiting..."
+    msg_c ""
+    exit
+fi
+
+msg_c ""
+msg_c -g "Starting the install:"
+#eval ${install_command}
+msg_c -g "Done!"
 msg_c ""

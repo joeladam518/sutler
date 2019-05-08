@@ -34,8 +34,10 @@ msg_c() { # Output messages in color! :-)
 
 
 msg_c ""
-msg_c -g "I will now try to uninstall php..."
-prompt=$(msg_c -mn "Warning!! This command will uninstall every single php package on your system. Is that ok? [Y/n] ")
+msg_c -g "Ok, I will now try to uninstall php..."
+prompt=$(msg_c -mn "Warning!!!")
+prompt="${prompt} $(msg_c -mn "This command will uninstall every single php package on your system!!!")"
+prompt="${prompt} $(msg_c -mn "Is that ok? [Y/n] ")"
 read -t 10 -p "${prompt}" proceed_with_uninstall
 
 if [  "$?" -ne "0" ]; then
@@ -43,7 +45,7 @@ if [  "$?" -ne "0" ]; then
 fi
 
 if [[ "${proceed_with_uninstall}" != "y" ]]; then
-    msg_c -a "Ok then, exiting..."
+    msg_c -a "Exiting..."
     msg_c ""
     exit
 fi
@@ -64,7 +66,7 @@ msg_c "${uninstall_command}"
 msg_c ""
 
 proceed_with_uninstall=""
-prompt=$(msg_c -mn "Should I proceed? [Y/n] ")
+prompt=$(msg_c -mn "Proceed? [Y/n] ")
 read -t 10 -p "${prompt}" proceed_with_uninstall
 
 if [  "$?" -ne "0" ]; then
@@ -72,7 +74,7 @@ if [  "$?" -ne "0" ]; then
 fi
 
 if [[ "${proceed_with_uninstall}" != "y" ]]; then
-    msg_c -a "Ok then, exiting..."
+    msg_c -a "Exiting..."
     msg_c ""
     exit
 fi
