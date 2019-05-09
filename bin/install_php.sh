@@ -102,6 +102,6 @@ fi
 
 msg_c ""
 msg_c -g "Starting the install:"
-#eval ${install_command}
+eval ${install_command}
 msg_c -g "Done!"
 msg_c ""

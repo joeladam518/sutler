@@ -81,6 +81,6 @@ fi
 
 msg_c ""
 msg_c -g "Starting the uninstall..."
-#eval ${uninstall_command}
+eval ${uninstall_command}
 msg_c -g "Done!"
 msg_c ""
