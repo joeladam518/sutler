@@ -4,6 +4,15 @@
 #   This script was created to remind me of all the things I like to
 #   install on my Ubuntu desktop.
 #
+#   Themes that I like:
+#   https://github.com/nana-4/materia-theme
+#   https://github.com/adapta-project/adapta-gtk-theme
+#
+#   Icons that I like
+#   https://github.com/PapirusDevelopmentTeam/papirus-icon-theme
+#   https://github.com/cbrnix/Newaita
+#
+#
 #   It MUST be reviewed each time and updated.
 #
 #   Notes:
