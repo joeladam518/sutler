@@ -1,0 +1,50 @@
+#!/usr/bin/env bash
+
+system=${1}
+
+if [ -z "${system}" ] || ([ ${system} != "desktop" ] && [ ${system} != "mac" ] && [ ${system} != "server" ]); then
+    cmsg -nr "Must specify a type of system. "
+    cmsg -a  "Valid types: {desktop|mac|server}"
+    exit 1
+fi
+
+repos_path="${HOME}/repos"
+
+if [ ! -d "${repos_path}" ]; then
+    mkdir "${repos_path}"
+fi
+
+cmsg ""
+cmsg -c "-- Cloning the joeladam518/dotfiles github repo --"
+cmsg ""
+
+if [ ! -d "${repos_path}/dotfiles" ]; then
+    cd "${repos_path}" && git clone "https://github.com/joeladam518/dotfiles.git"
+else
+    cd "${repos_path}/dotfiles" && git pull
+fi
+
+if [ ! -d "${repos_path}/dotfiles" ]; then
+    cmsg -r "Could not find the dotfiles repo."
+    exit 1
+fi
+
+if [ -d "${HOME}/repos/dotfiles/${}" ] && [ ! -f "${HOME}/.bashrc.old" ]; then
+    cd "${HOME}" && mv .bashrc .bashrc.old
+
+    if [ ! -f "${HOME}/.bashrc.old" ]; then
+        cmsg -r "Couldn't find the .bashrc.old file. Skipping install of dotfiles bashrc."
+    else
+        cd "${HOME}" && mv .bashrc .bashrc.old
+        cd "${HOME}" && ln -sf "${HOME}/repos/dofiles/bashrc/${system}/.bashrc"
+    fi
+else
+    cmsg -y "The dotfiles .bashrc was found"
+fi
+
+if [ -d "${HOME}/repos/dotfiles" ] && [ ! -e "${HOME}/.vimrc" ]; then
+    cd "${HOME}" && ln -sf "${HOME}/repos/dofiles/vimrc/.vim"
+    cd "${HOME}" && ln -sf "${HOME}/repos/dofiles/vimrc/.vimrc"
+else
+    cmsg -y "The dotfiles .vimrc was found"
+fi

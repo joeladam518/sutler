@@ -127,6 +127,8 @@ fi
 
 ## Set some Git config settings
 cd "$HOME"
+git config --global user.name "Joel Haker"
+git config --global user.email "joeladam@gmail.com"
 git config --global core.editor "vim"
 git config --global diff.tool vimdiff
 git config --global difftool.prompt false

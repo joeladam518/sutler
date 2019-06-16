@@ -1,0 +1,78 @@
+#!/usr/bin/env bash
+
+## Variables
+CWD=$(pwd)
+default_php_version="7.3"
+
+cmsg ""
+cmsg -g "Ok, I am going to try and install php..."
+
+prompt=$(cmsg -mn "Please type in the most current version of php that you know of: ")
+read -t 7 -p "${prompt}" php_version
+
+if [  "$?" -ne "0" ]; then
+    cmsg ""
+fi
+
+if [[ -z "${php_version}" ]]; then
+    php_version="${default_php_version}"
+
+    cmsg ""
+    prompt=$(cmsg -mn "You failed to specify a php version, so I will use")
+    prompt="${prompt} $(cmsg -yn "php${php_version}")"
+    prompt="${prompt} $(cmsg -mn "is that ok? [Y/n] ")"
+    read -t 10 -p "${prompt}" proceed_with_install
+
+    if [  "$?" -ne "0" ]; then
+        cmsg ""
+    fi
+
+    if [[ "${proceed_with_install}" != "y" ]]; then
+        cmsg -a "Exiting..."
+        cmsg ""
+        exit
+    fi
+fi
+
+if [[ -n ${php_version//[0-9]\.[0-9]/} ]]; then
+    cmsg -r "I'm sorry you should only input the php version number. example: \"7.1\""
+    cmsg ""
+    exit 1
+fi
+
+##
+## Notes:
+## php${php_version}-mcrypt doesn't exist anymore
+##
+
+install_command="sudo apt-get install -y"
+install_command="${install_command} php${php_version} php${php_version}-common php${php_version}-cli"
+install_command="${install_command} php${php_version}-fpm php${php_version}-curl php${php_version}-json"
+install_command="${install_command} php${php_version}-mbstring php${php_version}-gd php${php_version}-intl"
+install_command="${install_command} php${php_version}-pgsql php${php_version}-mysql"
+install_command="${install_command} php${php_version}-xml php${php_version}-zip "
+
+cmsg ""
+cmsg -g "This is the command that will be executed: "
+cmsg "${install_command}"
+
+cmsg ""
+proceed_with_install=""
+prompt=$(cmsg -mn "Proceed? [Y/n] ")
+read -t 10 -p "${prompt}" proceed_with_install
+
+if [  "$?" -ne "0" ]; then
+    cmsg ""
+fi
+
+if [[ "${proceed_with_install}" != "y" ]]; then
+    cmsg -a "Exiting..."
+    cmsg ""
+    exit
+fi
+
+cmsg ""
+cmsg -g "Starting the install:"
+eval ${install_command}
+cmsg -g "Done!"
+cmsg ""

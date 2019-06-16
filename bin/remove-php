@@ -1,0 +1,56 @@
+#!/usr/bin/env bash
+
+## Variables
+CWD=$(pwd)
+
+cmsg ""
+cmsg -g "Ok, I will now try to uninstall php..."
+prompt=$(cmsg -mn "Warning!!!")
+prompt="${prompt} $(cmsg -mn "This command will uninstall every single php package on your system!!!")"
+prompt="${prompt} $(cmsg -mn "Is that ok? [Y/n] ")"
+read -t 10 -p "${prompt}" proceed_with_uninstall
+
+if [  "$?" -ne "0" ]; then
+    cmsg ""
+fi
+
+if [[ "${proceed_with_uninstall}" != "y" ]]; then
+    cmsg -a "Exiting..."
+    cmsg ""
+    exit
+fi
+
+installed_php_packages=$(dpkg -l | grep php | sed 's/\s\{3,\}.*$//' | sed 's/^ii  //' | tr '\n' ' ')
+
+if [ -z "${installed_php_packages}" ]; then
+    msc_c -r "Couldn't find any php packages. exiting..."
+    cmsg ""
+    exit 1
+fi
+
+uninstall_command="sudo apt-get purge ${installed_php_packages}&& sudo apt-get --purge autoremove -y"
+
+cmsg ""
+cmsg -g "This is the command that will be executed: "
+cmsg "${uninstall_command}"
+cmsg ""
+
+proceed_with_uninstall=""
+prompt=$(cmsg -mn "Proceed? [Y/n] ")
+read -t 10 -p "${prompt}" proceed_with_uninstall
+
+if [  "$?" -ne "0" ]; then
+    cmsg ""
+fi
+
+if [[ "${proceed_with_uninstall}" != "y" ]]; then
+    cmsg -a "Exiting..."
+    cmsg ""
+    exit
+fi
+
+cmsg ""
+cmsg -g "Starting the uninstall..."
+eval ${uninstall_command}
+cmsg -g "Done!"
+cmsg ""

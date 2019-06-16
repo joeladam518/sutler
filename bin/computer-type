@@ -1,0 +1,13 @@
+#!/usr/bin/env bash
+
+machine=""
+unameOut="$(uname -s)"
+
+case "${unameOut}" in
+    Linux*)     machine="Linux"   ;;
+    Darwin*)    machine="Mac"     ;;
+    CYGWIN*)    machine="Cygwin"  ;;
+    *)          machine="UNKNOWN" ;;
+esac
+
+echo ${machine}

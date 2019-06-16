@@ -1,6 +1,6 @@
 #!/usr/bin/env bash
 
-# Output messages in color! :-)
+# messages in color
 
 OPTIND=1
 newline="1"
@@ -22,7 +22,7 @@ while getopts ":ndrgbcmya" o; do
     esac
 done
 
-shift $((OPTIND - 1))
+shift $((OPTIND-1))
 
 if [ ! -z $CHOSEN_COLOR ] && [ $newline == "1" ]; then
     echo -e "${CHOSEN_COLOR}${1}${RESET}"
@@ -33,4 +33,3 @@ elif [ -z $CHOSEN_COLOR ] && [ $newline == "0" ]; then
 else
     echo "${1}"
 fi
-
