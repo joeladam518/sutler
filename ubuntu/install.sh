@@ -19,19 +19,23 @@ Usage: ${0##*/} [-htv] [SERVER_NAME]...
 This script helps make it easier to use the sshfs program. Uses
 your ssh config file to generate the valid servers to mount.
     -h      Display this help and exit.
+    -d      Install the development version of the stack
     -t      Testing mode. Will not run the sshfs command. Just echo it
     -v      Verbose mode. Can be used multiple times for increased verbosity.
 EOF
 }
 
 ## Parse the arguments and options for this script
+development=0
 testmode=0
 verbose=0
 OPTIND=1;
-while getopts ":htv" opt; do
+while getopts ":hdtv" opt; do
     case ${opt} in
         h)  show_help
             exit 0
+            ;;
+        d)  development=1
             ;;
         t)  testmode=1
             ;;
@@ -51,19 +55,11 @@ install_type=${1}
 
 ## Start Script
 
-if [ $testmode = "1" ]; then
-    cmsg
-    cmsg -c "Provisioning an ${install_type} Ubuntu machine"
-    cmsg
-    cmsg "         CWD: ${CWD}"
-    cmsg "    testmode: ${testmode}"
-    cmsg "     verbose: ${verbose}"
-    cmsg "install_type: ${install_type}"
-    cmsg
-fi
-
 if [ $install_type = "mqtt" ]; then
-    source "${CWD}/mqtt/ubuntu_mqtt.sh"
+    . "${CWD}/mqtt/ubuntu_mqtt.sh"
 else
     cmsg -r "Invalid install type... \"${install_type}\""
+    exit 1
 fi
+
+exit 0
