@@ -94,7 +94,6 @@ cat > ${mqtt_default_config_path} << EOF
     certfile /etc/letsencrypt/live/${server_domain}/cert.pem
     cafile /etc/letsencrypt/live/${server_domain}/chain.pem
     keyfile /etc/letsencrypt/live/${server_domain}/privkey.pem
-
 EOF
 
 fi
