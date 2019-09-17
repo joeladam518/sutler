@@ -46,7 +46,7 @@ sudo apt-get update && sudo apt-get -y upgrade && sudo apt autoremove
 msg_c -c "Done!"
 
 msg_c -c "Install restricted extras"
-sudo apt install ubuntu-restricted-extras
+sudo apt install ubuntu-restricted-extras ubuntu-restricted-addons
 msg_c -c "Done!"
 
 msg_c -c "Install utility applications"
@@ -65,6 +65,9 @@ msg_c -c "Done!"
 msg_c -c "Install the ability to work with exfat drives"
 sudo apt-get install -y exfat-fuse exfat-utils
 msg_c -c "Done!"
+
+msg_c -c "install dconf editor for changing settings in gnome"
+sudo apt-get install -y dconf-editor
 
 ## Install Sublime Text 3
 msg_c -c "Install SublimeText 3"
