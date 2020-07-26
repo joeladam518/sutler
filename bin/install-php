@@ -1,8 +1,12 @@
 #!/usr/bin/env bash
 
 ## Variables
-CWD=$(pwd)
-default_php_version="7.3"
+CWD="$(pwd)"
+script_dir="$(cd "$(dirname "$0")" >/dev/null 2>&1 && pwd -P)"
+php_version="7.4"
+
+# add cmsg to path
+export PATH="${PATH}:${script_dir}/cmsg"
 
 cmsg ""
 cmsg -g "Ok, I am going to try and install php..."
@@ -15,8 +19,6 @@ if [  "$?" -ne "0" ]; then
 fi
 
 if [[ -z "${php_version}" ]]; then
-    php_version="${default_php_version}"
-
     cmsg ""
     prompt=$(cmsg -mn "You failed to specify a php version, so I will use")
     prompt="${prompt} $(cmsg -yn "php${php_version}")"
@@ -46,7 +48,7 @@ fi
 ##
 
 install_command="sudo apt-get install -y"
-install_command="${install_command} php${php_version} php${php_version}-common php${php_version}-cli"
+install_command="${install_command} php${php_version} php${php_version}-common php${php_version}-cli php${php_version}-ctype"
 install_command="${install_command} php${php_version}-fpm php${php_version}-curl php${php_version}-json"
 install_command="${install_command} php${php_version}-mbstring php${php_version}-gd php${php_version}-intl"
 install_command="${install_command} php${php_version}-pgsql php${php_version}-mysql"

@@ -1,50 +1,57 @@
 #!/usr/bin/env bash
 
-system=${1}
+CWD="$(pwd)"
+system="$1"
+script_dir="$(cd "$(dirname "$0")" >/dev/null 2>&1 && pwd -P)"
+repos_dir="${HOME}/repos"
 
-if [ -z "${system}" ] || ([ ${system} != "desktop" ] && [ ${system} != "mac" ] && [ ${system} != "server" ]); then
+# add cmsg to path
+export PATH="${PATH}:${script_dir}/cmsg"
+
+# check if the system argument was given
+if [ -z "$system" ] || ([ "$system" != "desktop" ] && [ "$system" != "mac" ] && [ "$system" != "server" ]); then
     cmsg -nr "Must specify a type of system. "
     cmsg -a  "Valid types: {desktop|mac|server}"
     exit 1
 fi
 
-repos_path="${HOME}/repos"
-
-if [ ! -d "${repos_path}" ]; then
-    mkdir "${repos_path}"
+# Create the repos dir if it doesn't exist
+if [ ! -d "$repos_dir" ]; then
+    mkdir -p "$repos_dir"
 fi
 
-cmsg ""
-cmsg -c "-- Cloning the joeladam518/dotfiles github repo --"
-cmsg ""
-
-if [ ! -d "${repos_path}/dotfiles" ]; then
-    cd "${repos_path}" && git clone "https://github.com/joeladam518/dotfiles.git"
+# Set the rcfile variable (bcause mac is different from linux)
+if [ "$system" == "mac" ]; then
+    rcfile=".bash_profile"
 else
-    cd "${repos_path}/dotfiles" && git pull
+    rcfile=".bashrc"
 fi
 
-if [ ! -d "${repos_path}/dotfiles" ]; then
-    cmsg -r "Could not find the dotfiles repo."
-    exit 1
-fi
+# Clone or update the dotefiles repo
+if [ -d "${repos_dir}/dotfiles" ]; then
+    cd "${repos_dir}/dotfiles" && git pull
+else
+    cd "$repos_dir" && git clone "https://github.com/joeladam518/dotfiles.git"
 
-if [ -d "${HOME}/repos/dotfiles/${}" ] && [ ! -f "${HOME}/.bashrc.old" ]; then
-    cd "${HOME}" && mv .bashrc .bashrc.old
-
-    if [ ! -f "${HOME}/.bashrc.old" ]; then
-        cmsg -r "Couldn't find the .bashrc.old file. Skipping install of dotfiles bashrc."
-    else
-        cd "${HOME}" && mv .bashrc .bashrc.old
-        cd "${HOME}" && ln -sf "${HOME}/repos/dofiles/bashrc/${system}/.bashrc"
+    # Confirm cloning went ok
+    if [ ! -d "${repos_dir}/dotfiles" ]; then
+        cmsg -r "Failed to clone the dotfiles repo"
+        exit 1
     fi
-else
-    cmsg -y "The dotfiles .bashrc was found"
 fi
 
-if [ -d "${HOME}/repos/dotfiles" ] && [ ! -e "${HOME}/.vimrc" ]; then
-    cd "${HOME}" && ln -sf "${HOME}/repos/dofiles/vimrc/.vim"
-    cd "${HOME}" && ln -sf "${HOME}/repos/dofiles/vimrc/.vimrc"
+# Symlink the bash rc files
+if [ -L "${HOME}/${rcfile}" ] && [ -f "${HOME}/${rcfile}.old" ]; then
+    cmsg -y "The dotfiles .bashrc symlink already exists"
+else [ -f "${HOME}/${rcfile}" ]; then
+    cd "$HOME" && mv "$rcfile" "${rcfile}.old"
+    cd "$HOME" && ln -sf "${repos_dir}/dofiles/bashrc/${system}/${rcfile}"
+fi
+
+# Symlink the vimrc files
+if [ -L "${HOME}/.vimrc" ] && ([ -L "${HOME}/.vim" ] && [ -d "${HOME}/.vim" ]); then
+    cmsg -y "The dotfiles .vimrc symlinks already exist"
 else
-    cmsg -y "The dotfiles .vimrc was found"
+    cd "$HOME" && ln -sf "${repos_dir}/dofiles/vimrc/.vim"
+    cd "$HOME" && ln -sf "${repos_dir}/dofiles/vimrc/.vimrc"
 fi
