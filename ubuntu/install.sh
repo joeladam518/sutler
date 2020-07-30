@@ -1,65 +1,91 @@
 #!/usr/bin/env bash
 
-# Global Variables
-CWD=$(pwd)
+# Variables
+CWD="$(pwd)"
+script_dir="$(cd "$(dirname "$0")" >/dev/null 2>&1 && pwd -P)"
+bin_dir="$(cd "${script_dir}/../bin" >/dev/null 2>&1 && pwd -P)"
+platform="ubuntu"
 
-## Export provision_me's bin folder to path
-export PATH="${PATH}:$(realpath "../bin")"
+# Option variables
+testmode="0"
+verbosity="0"
 
-# Check if the user is running this script as root.
-if [ $(id -u) -ne 0 ]; then
-    cmsg -y "This install script needs root privileges to do it's job." 1>&2
-    exit 1
-fi
-
-## Script functions
+# Functions
 show_help() {
 cat << EOF
-Usage: ${0##*/} [-htv] [SERVER_NAME]...
-This script helps make it easier to use the sshfs program. Uses
-your ssh config file to generate the valid servers to mount.
+Usage: ${0##*/} [-htv] [PROVISION_TYPE]...
     -h      Display this help and exit.
-    -d      Install the development version of the stack
-    -t      Testing mode. Will not run the sshfs command. Just echo it
+    -t      Testing mode. Just echo it.
     -v      Verbose mode. Can be used multiple times for increased verbosity.
 EOF
 }
 
-## Parse the arguments and options for this script
-development=0
-testmode=0
-verbose=0
-OPTIND=1;
-while getopts ":hdtv" opt; do
-    case ${opt} in
-        h)  show_help
-            exit 0
-            ;;
-        d)  development=1
-            ;;
-        t)  testmode=1
-            ;;
-        v)  verbose=1
-            ;;
-        \?) cmsg -r "${0##*/} invalid option: -${OPTARG}" 1>&2
-            exit 1
-            ;;
-    esac
-done
+invalid_option_message() {
+    cmsg -r "${0##*/} invalid option: -${1}\n" 1>&2
+    show_help
+    exit 1
+}
 
-shift $((OPTIND-1))   # Discard the options and sentinel --
+invalid_provision_type_message() {
+    cmsg -r "${0##*/} invalid provision type \"${1}\"\n" 1>&2
+    exit 1
+}
 
-## Input Variables
-install_type=${1}
+# echo "Platform:   ${platform}"
+# echo "Script Dir: ${script_dir}"
+# echo "Bin Dir:    ${bin_dir}"
 
+# Add the current bin dir to path if it's not there
+if [[ ! "$PATH" =~ (^|:)"$bin_dir"(:|$) ]]; then
+    export PATH="${PATH}:${bin_dir}"
+fi
 
-## Start Script
-
-if [ $install_type = "mqtt" ]; then
-    . "${CWD}/mqtt/ubuntu_mqtt.sh"
-else
-    cmsg -r "Invalid install type... \"${install_type}\""
+# Check if the user is running this script as root.
+if [ $(id -u) -ne "0" ]; then
+    cmsg -y "This install script needs root privileges to do it's job." 1>&2
     exit 1
 fi
 
-exit 0
+# Parse the options for this script
+while getopts ":hdtv" opt; do
+    case "${opt}" in
+        h)  show_help; exit 0              ;;
+        d)  development="1"                ;;
+        t)  testmode="1"                   ;;
+        v)  verbosity=$(($verbosity+1))    ;;
+        \?) invalid_option_message $OPTARG ;;
+    esac
+done
+shift $((OPTIND-1))
+
+# Input Variables
+provision_type=${1}
+provision_script_path=""
+
+# Parse the provision type
+case "${provision_type}" in
+    desktop) provision_script_path="${script_dir}/desktop.sh" ;;
+    lamp)    provision_script_path="${script_dir}/lamp.sh"    ;; 
+    lemp)    provision_script_path="${script_dir}/lemp.sh"    ;;
+    mqtt)    provision_script_path="${script_dir}/mqtt.sh"    ;;
+    \?)      invalid_provision_type_message $OPTARG ;;
+esac
+
+if ! ([ -n "$provision_script_path" ] && [ -f "$provision_script_path" ]); then
+    cmsg -r "Can not provision a ${provision_type} machine. No provisioning script exists." 1>&2
+    exit 1
+fi
+
+cmsg -c "I will now start provisioning your ${provision_type} Ubuntu machine."
+
+if [ $testmode = "1" ]; then
+    cmsg -a "           CWD: ${CWD}"
+    cmsg -a "    script dir: ${script_dir}"
+    cmsg -a "       bin dir: ${bin_dir}"
+    cmsg -a "      testmode: ${testmode}"
+    cmsg -a "       verbose: ${verbosity}"
+    cmsg -a "          type: ${provision_type}"
+    cmsg
+fi
+
+source "$provision_script_path"

@@ -1,5 +1,13 @@
 #!/usr/bin/env bash
 
+if ! ([ -n "$CWD" ] && [ "$platform" == "ubuntu" ] && [ "$provision_type" == "desktop" ]); then 
+    echo "You can not call this file directly." 1>&2
+    exit 1
+fi
+
+cmsg -c "Made it to the desktop.sh script."
+exit
+
 ###
 #   This script was created to remind me of all the things I like to
 #   install on my Ubuntu desktop.
@@ -29,13 +37,8 @@
 #   white dark   = #D7D7D7   white light    = #ffffff
 ###
 
-# Variables
-CWD=$(pwd)
 
-# Global functions
-source "${CWD}/../../global/functions.sh"
-
-# Script Specific Functions
+exit 0
 
 ##------------------------------------------------------------------------------------------------##
 

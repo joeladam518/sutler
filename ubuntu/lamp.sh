@@ -1,5 +1,13 @@
 #!/usr/bin/env bash
 
+if ! ([ -n "$CWD" ] && [ "$platform" == "ubuntu" ] && [ "$provision_type" == "lamp" ]); then 
+    echo "You can not call this file directly." 1>&2
+    exit 1
+fi
+
+cmsg -c "Made it to the lamp.sh script."
+exit
+
 ## Variables
 CWD=$(pwd)
 install_php=$(realpath "${CWD}/../../bin/install_php.sh")
@@ -52,14 +60,6 @@ echo "LC_ALL=en_US.UTF-8" >> /etc/default/locale
 locale-gen en_US.UTF-8
 
 ## Make Repos folder
-
-
-## Install myvimrc repo
-
-
-## Install mybashrc repo
-
-
 if ! foobar_loc="$(type -p "unzip")" || [ -z "unzip" ]; then
     echo ""
     echo -e "${HL1}-- Installing unzip -- ${RST}"

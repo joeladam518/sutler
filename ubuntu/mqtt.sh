@@ -1,26 +1,19 @@
 #!/usr/bin/env bash
 
-if [ -z ${CWD} ] || [ -z ${testmode} ] || [ -z ${verbose} ] || [ -z ${install_type} ]; then
-    echo "You can not call this file directly."
+if ! ([ -n "$CWD" ] && [ "$platform" == "ubuntu" ] && [ "$provision_type" == "mqtt" ]); then 
+    echo "You can not call this file directly." 1>&2
     exit 1
 fi
 
-## Variables
+cmsg -c "Made it to the mqtt.sh script."
+exit
+
+# Variables
 mqtt_auth_user="jhaker"
 mqtt_default_config_path="/etc/mosquitto/conf.d/default.conf"
 server_domain="mqtt.joelhaker.com"
 
-if [ $testmode = "1" ]; then
-    cmsg
-    cmsg -c "Provisioning an ${install_type} Ubuntu machine"
-    cmsg "         CWD: ${CWD}"
-    cmsg " development: ${development}"
-    cmsg "    testmode: ${testmode}"
-    cmsg "     verbose: ${verbose}"
-    cmsg "install_type: ${install_type}"
-    cmsg
-fi
-
+# Start provisioning
 apt-update-upgrade
 
 cmsg
