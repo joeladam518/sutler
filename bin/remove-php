@@ -1,29 +1,69 @@
 #!/usr/bin/env bash
 
-## Variables
-CWD=$(pwd)
+# Variables
+CWD="$(pwd)"
+script_dir="$(cd "$(dirname "$0")" >/dev/null 2>&1 && pwd -P)"
+php_version="$1"
+
+# Add the current script dir to path if it's not there
+if [[ ! "$PATH" =~ (^|:)"$script_dir"(:|$) ]]; then
+    export PATH="${PATH}:${script_dir}"
+fi
+
+# Confirm they would like to uninstall
+if [ -z "$php_version" ]; then
+    php_version="" # default
+
+    cmsg -y "Warning!!!"
+    cmsg -y "You failed to specify a php version so this command will uninstall every php package on this system."
+    prompt="$(cmsg -an "Is that ok? [y/n] ")"
+    read -t 10 -p "$prompt" proceed_with_install
+
+    if [ "$?" -ne "0" ]; then
+        cmsg ""
+    fi
+
+    if [ "$proceed_with_install" != "y" ]; then
+        cmsg -a "Exiting..."
+        cmsg ""
+        exit
+    fi
+else
+    # Validate php version
+    if [[ -n "${php_version//[0-9]\.[0-9]/}" ]]; then
+        cmsg -rn "I'm sorry,"
+        cmsg -rn " \"${php_version}\" " 
+        cmsg -r  "is not a valid php version."
+        cmsg -a  "Exiting..."
+        cmsg ""
+        exit 1
+    fi
+
+    cmsg -y "Warning!!!"
+    cmsg -y "This command will uninstall every php${php_version} package on this system."
+    prompt="$(cmsg -an "Is that ok? [y/n] ")"
+    read -t 10 -p "$prompt" proceed_with_install
+
+    if [ "$?" -ne "0" ]; then
+        cmsg ""
+    fi
+
+    if [ "$proceed_with_install" != "y" ]; then
+        cmsg -a "Exiting..."
+        cmsg ""
+        exit
+    fi
+fi
 
 cmsg ""
-cmsg -g "Ok, I will now try to uninstall php..."
-prompt=$(cmsg -mn "Warning!!!")
-prompt="${prompt} $(cmsg -mn "This command will uninstall every single php package on your system!!!")"
-prompt="${prompt} $(cmsg -mn "Is that ok? [Y/n] ")"
-read -t 10 -p "${prompt}" proceed_with_uninstall
+cmsg -c "Ok, I will now try to uninstall php${php_version}"
 
-if [  "$?" -ne "0" ]; then
+installed_php_packages="$(dpkg -l | grep "php${php_version}" | sed 's/\s\{3,\}.*$//' | sed 's/^ii  //' | tr '\n' ' ')"
+
+if [ -z "$installed_php_packages" ]; then
     cmsg ""
-fi
-
-if [[ "${proceed_with_uninstall}" != "y" ]]; then
+    cmsg -r "Couldn't find any php${php_version} packages."
     cmsg -a "Exiting..."
-    cmsg ""
-    exit
-fi
-
-installed_php_packages=$(dpkg -l | grep php | sed 's/\s\{3,\}.*$//' | sed 's/^ii  //' | tr '\n' ' ')
-
-if [ -z "${installed_php_packages}" ]; then
-    msc_c -r "Couldn't find any php packages. exiting..."
     cmsg ""
     exit 1
 fi
@@ -31,26 +71,28 @@ fi
 uninstall_command="sudo apt-get purge ${installed_php_packages}&& sudo apt-get --purge autoremove -y"
 
 cmsg ""
-cmsg -g "This is the command that will be executed: "
-cmsg "${uninstall_command}"
-cmsg ""
+cmsg -c "This is the command that will be executed: "
+cmsg "$uninstall_command"
 
+cmsg ""
 proceed_with_uninstall=""
-prompt=$(cmsg -mn "Proceed? [Y/n] ")
-read -t 10 -p "${prompt}" proceed_with_uninstall
+prompt=$(cmsg -cn "Proceed? [y/n] ")
+read -t 10 -p "$prompt" proceed_with_uninstall
 
 if [  "$?" -ne "0" ]; then
     cmsg ""
 fi
 
-if [[ "${proceed_with_uninstall}" != "y" ]]; then
+if [ "$proceed_with_uninstall" != "y" ]; then
     cmsg -a "Exiting..."
     cmsg ""
     exit
 fi
 
 cmsg ""
-cmsg -g "Starting the uninstall..."
-eval ${uninstall_command}
-cmsg -g "Done!"
+cmsg -c "Starting the uninstall..."
+eval "$uninstall_command"
+cmsg -c "Done!"
 cmsg ""
+
+exit

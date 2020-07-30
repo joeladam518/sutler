@@ -1,80 +1,96 @@
 #!/usr/bin/env bash
 
-## Variables
+# Variables
 CWD="$(pwd)"
 script_dir="$(cd "$(dirname "$0")" >/dev/null 2>&1 && pwd -P)"
-php_version="7.4"
+php_version="$1"
 
-# add cmsg to path
-export PATH="${PATH}:${script_dir}/cmsg"
-
-cmsg ""
-cmsg -g "Ok, I am going to try and install php..."
-
-prompt=$(cmsg -mn "Please type in the most current version of php that you know of: ")
-read -t 7 -p "${prompt}" php_version
-
-if [  "$?" -ne "0" ]; then
-    cmsg ""
+# Add the current script dir to path if it's not there
+if [[ ! "$PATH" =~ (^|:)"$script_dir"(:|$) ]]; then
+    export PATH="${PATH}:${script_dir}"
 fi
 
-if [[ -z "${php_version}" ]]; then
-    cmsg ""
-    prompt=$(cmsg -mn "You failed to specify a php version, so I will use")
-    prompt="${prompt} $(cmsg -yn "php${php_version}")"
-    prompt="${prompt} $(cmsg -mn "is that ok? [Y/n] ")"
-    read -t 10 -p "${prompt}" proceed_with_install
+# Confirm they would like to install the php version you picked
+if [ -z "$php_version" ]; then
+    php_version="7.4" # default
 
-    if [  "$?" -ne "0" ]; then
+    cmsg -an "You failed to specify a php version, so I will use"
+    cmsg -y  " php${php_version}"
+
+    prompt="$(cmsg -an "Is that ok? [y/n] ")"
+    read -t 10 -p "$prompt" proceed_with_install
+
+    if [ "$?" -ne "0" ]; then
         cmsg ""
     fi
 
-    if [[ "${proceed_with_install}" != "y" ]]; then
+    if [ "$proceed_with_install" != "y" ]; then
         cmsg -a "Exiting..."
         cmsg ""
         exit
     fi
 fi
 
-if [[ -n ${php_version//[0-9]\.[0-9]/} ]]; then
-    cmsg -r "I'm sorry you should only input the php version number. example: \"7.1\""
+# Validate php version
+if [[ -n "${php_version//[0-9]\.[0-9]/}" ]]; then
+    cmsg -rn "I'm sorry,"
+    cmsg -rn " \"${php_version}\" " 
+    cmsg -r  "is not a valid php version."
+    cmsg -a  "Exiting..."
     cmsg ""
     exit 1
 fi
 
+cmsg ""
+cmsg -c "Ok, I am going to try and install php${php_version}..."
+
+# Check if the php PPA repository exists otherwise install it
+if ! grep -q "^deb .*ondrej/php" /etc/apt/sources.list /etc/apt/sources.list.d/* 2>/dev/null; then
+    cmsg ""
+    cmsg -c "Installing the ondrej/php ppa repository"
+
+    sudo apt-get update
+    sudo apt -y install software-properties-common
+    sudo add-apt-repository -y ppa:ondrej/php
+    sudo apt-get update
+fi
+
 ##
 ## Notes:
-## php${php_version}-mcrypt doesn't exist anymore
+## Laravel requires the openssl php extension which requires openssl package
 ##
 
-install_command="sudo apt-get install -y"
-install_command="${install_command} php${php_version} php${php_version}-common php${php_version}-cli php${php_version}-ctype"
-install_command="${install_command} php${php_version}-fpm php${php_version}-curl php${php_version}-json"
-install_command="${install_command} php${php_version}-mbstring php${php_version}-gd php${php_version}-intl"
-install_command="${install_command} php${php_version}-pgsql php${php_version}-mysql"
-install_command="${install_command} php${php_version}-xml php${php_version}-zip "
+install_command="sudo apt-get install -y openssl"
+install_command="${install_command} php${php_version} php${php_version}-bcmath ${php_version}-common php${php_version}-cli"
+install_command="${install_command} php${php_version}-ctype php${php_version}-fpm php${php_version}-curl"
+install_command="${install_command} php${php_version}-json php${php_version}-mbstring php${php_version}-gd"
+install_command="${install_command} php${php_version}-intl php${php_version}-pgsql php${php_version}-mysql"
+install_command="${install_command} php${php_version}-xml php${php_version}-zip"
 
 cmsg ""
-cmsg -g "This is the command that will be executed: "
-cmsg "${install_command}"
+cmsg -c "This is the command that will be executed: "
+cmsg -a "$install_command"
 
 cmsg ""
 proceed_with_install=""
-prompt=$(cmsg -mn "Proceed? [Y/n] ")
-read -t 10 -p "${prompt}" proceed_with_install
+prompt=$(cmsg -cn "Proceed? [y/n] ")
+read -t 10 -p "$prompt" proceed_with_install
 
-if [  "$?" -ne "0" ]; then
+if [ "$?" -ne "0" ]; then
     cmsg ""
 fi
 
-if [[ "${proceed_with_install}" != "y" ]]; then
-    cmsg -a "Exiting..."
+if [ "$proceed_with_install" != "y" ]; then
+    cmsg -y "Exiting..."
     cmsg ""
     exit
 fi
 
 cmsg ""
-cmsg -g "Starting the install:"
-eval ${install_command}
-cmsg -g "Done!"
+cmsg -c "Starting the install: "
+sudo apt-get update
+eval "$install_command"
+cmsg -c "Done!"
 cmsg ""
+
+exit
