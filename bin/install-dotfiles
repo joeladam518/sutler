@@ -1,18 +1,21 @@
 #!/usr/bin/env bash
 
+# Variables
 CWD="$(pwd)"
-system="$1"
-script_dir="$(cd "$(dirname "$0")" >/dev/null 2>&1 && pwd -P)"
+script_dir="$(cd "$(dirname "$0")" >/dev/null 2>&1 && pwd -P)" 
 repos_dir="${HOME}/repos"
-
-# add cmsg to path
-export PATH="${PATH}:${script_dir}/cmsg"
+system="$1"
 
 # check if the system argument was given
 if [ -z "$system" ] || ([ "$system" != "desktop" ] && [ "$system" != "mac" ] && [ "$system" != "server" ]); then
     cmsg -nr "Must specify a type of system. "
     cmsg -a  "Valid types: {desktop|mac|server}"
     exit 1
+fi
+
+# Add the current script dir to path if it's not there
+if [[ ! "$PATH" =~ (^|:)"$script_dir"(:|$) ]]; then
+    export PATH="${PATH}:${script_dir}"
 fi
 
 # Create the repos dir if it doesn't exist
@@ -43,15 +46,17 @@ fi
 # Symlink the bash rc files
 if [ -L "${HOME}/${rcfile}" ] && [ -f "${HOME}/${rcfile}.old" ]; then
     cmsg -y "The dotfiles .bashrc symlink already exists"
-else [ -f "${HOME}/${rcfile}" ]; then
+elif [ -f "${HOME}/${rcfile}" ]; then
     cd "$HOME" && mv "$rcfile" "${rcfile}.old"
-    cd "$HOME" && ln -sf "${repos_dir}/dofiles/bashrc/${system}/${rcfile}"
+    cd "$HOME" && ln -s "${repos_dir}/dotfiles/bashrc/${system}/${rcfile}"
 fi
 
 # Symlink the vimrc files
 if [ -L "${HOME}/.vimrc" ] && ([ -L "${HOME}/.vim" ] && [ -d "${HOME}/.vim" ]); then
     cmsg -y "The dotfiles .vimrc symlinks already exist"
 else
-    cd "$HOME" && ln -sf "${repos_dir}/dofiles/vimrc/.vim"
-    cd "$HOME" && ln -sf "${repos_dir}/dofiles/vimrc/.vimrc"
+    cd "$HOME" && ln -s "${repos_dir}/dotfiles/vimrc/.vim"
+    cd "$HOME" && ln -s "${repos_dir}/dotfiles/vimrc/.vimrc"
 fi
+
+cd "$CWD"
