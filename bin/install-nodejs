@@ -1,0 +1,32 @@
+#!/usr/bin/env bash
+
+CWD="$(pwd -P)"
+script_dir="$(cd "$(dirname "$0")" >/dev/null 2>&1 && pwd -P)"
+node_version="${1}"
+
+if [ -z "$node_version" ]; then
+    echo "You need to specify the node version you would like to install." 1>&2
+    exit 1
+fi
+
+# TODO: validate node js version
+
+if [ -z "$platform" ]; then
+    platform="$2"
+
+    if [ -z "$platform" ]; then
+        echo "You need to specify the type of platform node will be installed on." 1>&2
+        exit 1
+    fi
+fi
+
+case "${platform}" in
+    debian|ubuntu|rpi)
+        # https://github.com/nodesource/distributions#debinstall
+        curl -sL "https://deb.nodesource.com/setup_${node_version}.x" | sudo -E bash -
+        sudo apt-get install -y nodejs
+        ;;
+    *)
+        sudo apt-get install node
+        ;;
+esac
