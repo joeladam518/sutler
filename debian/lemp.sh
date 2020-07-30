@@ -5,4 +5,4 @@ if ! ([ -n "$CWD" ] && [ -n "$platform" ] && [ "$provision_type" = "lemp" ]); th
     exit 1
 fi
 
-cmsg -c "Made it to the lemp.sh script."
+# TODO: finish

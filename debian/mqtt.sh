@@ -5,17 +5,12 @@ if ! ([ -n "$CWD" ] && [ -n "$platform" ] && [ "$provision_type" = "mqtt" ]); th
     exit 1
 fi
 
-cmsg -c "Made it to the mqtt.sh script."
-exit
-
 # Variables
 mqtt_auth_user="jhaker"
 mqtt_default_config_path="/etc/mosquitto/conf.d/default.conf"
 server_domain="mqtt.joelhaker.com"
 
 # Start provisioning
-apt-update-upgrade
-
 cmsg
 cmsg -c "installing mosiquitto mqtt server"
 apt-get install -y mosquitto mosquitto-clients
@@ -30,14 +25,14 @@ cmsg
 cmsg
 
 prompt=$(cmsg -mn "Are you ready? [y/N] ")
-read -r -t 10 -p "${prompt}" response_bob
+read -r -t 10 -p "$prompt" response
 
 if [  "$?" -ne "0" ]; then
     cmsg
 fi
 
-if [[ ! "${response_bob}" =~ ^([yY][eE][sS]|[yY])+$ ]]; then
-    cmsg -r "I'm so sorry that you have the attention span of a goldfish...."
+if [[ ! "$response" =~ ^([yY][eE][sS]|[yY])+$ ]]; then
+    cmsg -r "I'm so sorry that you have the attention span of a goldfish...." 1>&2
     exit 1
 fi
 

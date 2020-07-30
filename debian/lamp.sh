@@ -5,9 +5,6 @@ if ! ([ -n "$CWD" ] && [ -n "$platform" ] && [ "$provision_type" = "lamp" ]); th
     exit 1
 fi
 
-cmsg -c "Made it to the lamp.sh script."
-exit
-
 ## Variables
 CWD=$(pwd)
 install_php=$(realpath "${CWD}/../../bin/install_php.sh")
@@ -17,9 +14,6 @@ db_root_pass='secret'
 db_name='testenv_db'
 db_user='testenv_usr'
 db_pass='secret'
-
-## Global functions
-source "${CWD}/../../global/functions.sh"
 
 ## Script Specific Functions
 AUU() {

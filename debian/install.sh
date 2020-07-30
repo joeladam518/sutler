@@ -101,4 +101,8 @@ if [ $testmode = "1" ]; then
     cmsg
 fi
 
+apt-update-upgrade
+
 source "$provision_script_path"
+
+exit

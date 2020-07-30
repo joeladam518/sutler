@@ -5,9 +5,6 @@ if ! ([ -n "$CWD" ] && [ -n "$platform" ] && [ "$provision_type" = "desktop" ]);
     exit 1
 fi
 
-cmsg -c "Made it to the desktop.sh script."
-exit
-
 ###
 #   This script was created to remind me of all the things I like to
 #   install on my Ubuntu desktop.
@@ -36,9 +33,6 @@ exit
 #   cyan dark    = #00c5c7   cyan light     = #60fdff
 #   white dark   = #D7D7D7   white light    = #ffffff
 ###
-
-
-exit 0
 
 ##------------------------------------------------------------------------------------------------##
 
