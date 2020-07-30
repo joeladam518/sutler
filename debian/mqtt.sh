@@ -1,6 +1,6 @@
 #!/usr/bin/env bash
 
-if ! ([ -n "$CWD" ] && [ "$platform" == "ubuntu" ] && [ "$provision_type" == "mqtt" ]); then 
+if ! ([ -n "$CWD" ] && [ -n "$platform" ] && [ "$provision_type" = "mqtt" ]); then 
     echo "You can not call this file directly." 1>&2
     exit 1
 fi

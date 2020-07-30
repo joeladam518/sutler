@@ -4,7 +4,7 @@
 CWD="$(pwd)"
 script_dir="$(cd "$(dirname "$0")" >/dev/null 2>&1 && pwd -P)"
 bin_dir="$(cd "${script_dir}/../bin" >/dev/null 2>&1 && pwd -P)"
-platform="ubuntu"
+platform="debian"
 
 # Option variables
 testmode="0"
@@ -16,6 +16,7 @@ cat << EOF
 Usage: ${0##*/} [-htv] [PROVISION_TYPE]...
     -h      Display this help and exit.
     -t      Testing mode. Just echo it.
+    -p      Platoform. Defualts to "debian".
     -v      Verbose mode. Can be used multiple times for increased verbosity.
 EOF
 }
@@ -47,28 +48,39 @@ if [ $(id -u) -ne "0" ]; then
 fi
 
 # Parse the options for this script
-while getopts ":hdtv" opt; do
+while getopts ":hp:tv" opt; do
     case "${opt}" in
-        h)  show_help; exit 0              ;;
-        d)  development="1"                ;;
-        t)  testmode="1"                   ;;
-        v)  verbosity=$(($verbosity+1))    ;;
-        \?) invalid_option_message $OPTARG ;;
+        h)  show_help; exit 0                ;;
+        p)  platform="${OPTARG,,}"           ;;
+        t)  testmode="1"                     ;;
+        v)  verbosity=$(($verbosity+1))      ;;
+        \?) invalid_option_message "$OPTARG" ;;
     esac
 done
 shift $((OPTIND-1))
 
+# validate the platform chosen
+case "$platform" in
+    debian|ubuntu|rpi) 
+        # Do nothing
+        ;;
+    *)
+        cmsg -r "Invaild platform \"${platform}\"." 1>&2
+        exit 1
+        ;;
+esac
+
 # Input Variables
 provision_type=${1}
-provision_script_path=""
 
 # Parse the provision type
+provision_script_path=""
 case "${provision_type}" in
     desktop) provision_script_path="${script_dir}/desktop.sh" ;;
     lamp)    provision_script_path="${script_dir}/lamp.sh"    ;; 
     lemp)    provision_script_path="${script_dir}/lemp.sh"    ;;
     mqtt)    provision_script_path="${script_dir}/mqtt.sh"    ;;
-    \?)      invalid_provision_type_message $OPTARG ;;
+    \?)      invalid_provision_type_message "$OPTARG"         ;;
 esac
 
 if ! ([ -n "$provision_script_path" ] && [ -f "$provision_script_path" ]); then
@@ -76,12 +88,13 @@ if ! ([ -n "$provision_script_path" ] && [ -f "$provision_script_path" ]); then
     exit 1
 fi
 
-cmsg -c "I will now start provisioning your ${provision_type} Ubuntu machine."
+cmsg -c "I will now start provisioning your ${provision_type} ${platform^} machine."
 
 if [ $testmode = "1" ]; then
     cmsg -a "           CWD: ${CWD}"
     cmsg -a "    script dir: ${script_dir}"
     cmsg -a "       bin dir: ${bin_dir}"
+    cmsg -a "      platform: ${platform}"
     cmsg -a "      testmode: ${testmode}"
     cmsg -a "       verbose: ${verbosity}"
     cmsg -a "          type: ${provision_type}"
