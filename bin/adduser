@@ -1,4 +1,10 @@
 #!/usr/bin/env bash
+#
+# Add a new admin user on a Digital Ocean droplet.
+# This will create the user and create a temporary password for them.
+# Once set, the user will bw forced to reset the password given on their fist login.
+# They will need the temporary password to do that.
+#
 
 user_name="$1"
 script_dir="$(cd "$(dirname "$0")" >/dev/null 2>&1 && pwd -P)"
@@ -24,6 +30,15 @@ abort_adding_user() {
 ###########################################################################################
 cmsg -c "Start!"
 
+temp_pwd="$(cat /dev/urandom | tr -dc 'a-zA-Z0-9' | fold -w 32 | head -n 1)"
+temp_pwd_length="${#temp_pwd}"
+
+# validate temp password
+if [ -z "$temp_pwd" ] || [ "$temp_pwd_length" != "32" ]; then
+    cmsg -r "Failed to create tmp password." 1>&2
+    exit 1
+fi
+
 # Add the user
 if ! adduser --disabled-password --debug --gecos "System Admin" "${user_name}"; then
     cmsg -r "Failed to create user." 1>&2
@@ -34,7 +49,7 @@ fi
 usermod -aG sudo "$user_name"
 
 # Create ssh keys for new user
-if ! su -c "cd ${user_home_dir} && ssh-keygen -q -b 2048 -t rsa -f ~/.ssh/id_rsa -N ''" - "${user_name}"; then
+if ! su -c "cd ${user_home_dir} && ssh-keygen -q -b 2048 -t rsa -f ~/.ssh/id_rsa -N ''" - "$user_name"; then
     cmsg -r "Failed to create ssh keys." 1>&2
     abort_adding_user "$user_name"
     exit 1
@@ -54,19 +69,37 @@ chown "${user_name}:${user_name}" "/home/${user_name}/.ssh/authorized_keys"
 chmod 0600 "/home/${user_name}/.ssh/authorized_keys"
 
 # Change some values in sshd_config
-#sed -i "s/#\?\s*PermitRootLogin.*/PermitRootLogin no/" /etc/ssh/sshd_config
-#sed -i "s/#\?\s*PasswordAuthentication.*/PasswordAuthentication no/" /etc/ssh/sshd_config
-#sed -i "s/#\?\s*PubkeyAuthentication.*/PubkeyAuthentication yes/" /etc/ssh/sshd_config
-#sed -i "s/#\?\s*ChallengeResponseAuthentication.*/ChallengeResponseAuthentication no/" /etc/ssh/sshd_config
-#systemctl reload sshd
+sed -i "s/#\?\s*PermitRootLogin.*/PermitRootLogin no/" /etc/ssh/sshd_config
+sed -i "s/#\?\s*PasswordAuthentication.*/PasswordAuthentication no/" /etc/ssh/sshd_config
+sed -i "s/#\?\s*PubkeyAuthentication.*/PubkeyAuthentication yes/" /etc/ssh/sshd_config
+sed -i "s/#\?\s*ChallengeResponseAuthentication.*/ChallengeResponseAuthentication no/" /etc/ssh/sshd_config
+systemctl reload sshd
 
 # Start the firewall!
-#ufw allow OpenSSH
-#ufw enable
+ufw allow OpenSSH
+ufw enable
 
-# force the new user to change their password on first login
+# Set the new users password to the temp_pwd
+echo -e "${temp_pwd}\n${temp_pwd}" | passwd "$user_name"
+
+if [ "$?" != "0" ]; then
+    cmsg -r "Failed to set the users password."
+    abort_adding_user
+    exit 1
+fi
+
+# Force the new user to change their password on first login
 chage -d 0 "$user_name"
 
-cmsg -c "Done!"
+cmsg -c "Done creating the new user!"
+
+cmsg -y "*******************  Warning  *******************"
+cmsg -y "The new user will be forced to set a new password upon logging in for the first time."
+cmsg -y "They will need the following temp password to do that:"
+cmsg
+cmsg "$temp_pwd"
+cmsg
+cmsg -y "*************************************************"
+
 ###########################################################################################
 ## End Script
