@@ -40,7 +40,7 @@ if [ -z "$temp_pwd" ] || [ "$temp_pwd_length" != "32" ]; then
 fi
 
 # Add the user
-if ! adduser --disabled-password --debug --gecos "System Admin" "${user_name}"; then
+if ! adduser --disabled-password --debug --gecos "Server Admin" "${user_name}"; then
     cmsg -r "Failed to create user." 1>&2
     exit 1
 fi
@@ -91,8 +91,13 @@ fi
 # Force the new user to change their password on first login
 chage -d 0 "$user_name"
 
-cmsg -c "Done creating the new user!"
+# Clean up time!!
+# Truncate root's authorized keys file
+echo > "${HOME}/.ssh/authorized_keys"
+# remove the provision me repo
 
+cmsg -c "Done!"
+cmsg
 cmsg -y "*******************  Warning  *******************"
 cmsg -y "The new user will be forced to set a new password upon logging in for the first time."
 cmsg -y "They will need the following temp password to do that:"
