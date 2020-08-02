@@ -2,8 +2,8 @@
 
 # Variables
 CWD="$(pwd)"
-script_dir="$(cd "$(dirname "$0")" >/dev/null 2>&1 && pwd -P)"
 php_version="$1"
+script_dir="$(cd "$(dirname "$0")" >/dev/null 2>&1 && pwd -P)"
 
 # Add the current script dir to path if it's not there
 if [[ ! "$PATH" =~ (^|:)"$script_dir"(:|$) ]]; then
@@ -18,7 +18,7 @@ if [ -z "$php_version" ]; then
     cmsg -y  " php${php_version}"
 
     prompt="$(cmsg -an "Is that ok? [y/n] ")"
-    read -t 10 -p "$prompt" proceed_with_install
+    read -rt 10 -p "$prompt" proceed_with_install
 
     if [ "$?" -ne "0" ]; then
         cmsg ""
@@ -34,7 +34,7 @@ fi
 # Validate php version
 if [[ -n "${php_version//[0-9]\.[0-9]/}" ]]; then
     cmsg -rn "I'm sorry,"
-    cmsg -rn " \"${php_version}\" " 
+    cmsg -rn " \"${php_version}\" "
     cmsg -r  "is not a valid php version."
     cmsg -a  "Exiting..."
     cmsg ""
@@ -92,5 +92,7 @@ sudo apt-get update
 eval "$install_command"
 cmsg -c "Done!"
 cmsg ""
+
+cd "$CWD"
 
 exit

@@ -1,0 +1,72 @@
+#!/usr/bin/env bash
+
+user_name="$1"
+script_dir="$(cd "$(dirname "$0")" >/dev/null 2>&1 && pwd -P)"
+
+# Add the current script dir to path if it's not there
+if [[ ! "$PATH" =~ (^|:)"$script_dir"(:|$) ]]; then
+    export PATH="${PATH}:${script_dir}"
+fi
+
+# Validate Input
+if [ -z "$user_name" ]; then
+    cmsg -r "You must enter a user name to create" 1>&2
+    exit 1
+fi
+
+user_home_dir="/home/${user_name}"
+
+abort_adding_user() {
+    deluser --remove-home "$1" #--remove-all-files
+}
+
+## Start Script
+###########################################################################################
+cmsg -c "Start!"
+
+# Add the user
+if ! adduser --disabled-password --debug --gecos "System Admin" "${user_name}"; then
+    cmsg -r "Failed to create user." 1>&2
+    exit 1
+fi
+
+# force the new user to change their password on first login
+#chage -d 0 "$user_name"
+
+# add them to the sudo group
+usermod -aG sudo "$user_name"
+
+# Create ssh keys for new user
+if ! su -c "cd ${user_home_dir} && ssh-keygen -b 2048 -t rsa -f ~/.ssh/id_rsa -q -N ''" - "$user_name"; then
+    cmsg -r "Failed to create ssh keys." 1>&2
+    abort_adding_user "$user_name"
+    exit 1
+fi
+
+if [ ! -f "${HOME}/.ssh/authorized_keys" ]; then
+    cmsg -r "Could not find the authorized_keys file" 1>&2
+    abort_adding_user "$user_name"
+    exit 1
+fi
+
+# Copy root's authorized keys to the new user
+cat "${HOME}/.ssh/authorized_keys" > "/home/${user_name}/.ssh/authorized_keys"
+
+# Secure authorized keys
+chown "${user_name}:${user_name}" "/home/${user_name}/.ssh/authorized_keys"
+chmod 0600 "/home/${user_name}/.ssh/authorized_keys"
+
+# Change some values in sshd_config
+#sed -i "s/#\?\s*PermitRootLogin.*/PermitRootLogin no/" /etc/ssh/sshd_config
+#sed -i "s/#\?\s*PasswordAuthentication.*/PasswordAuthentication no/" /etc/ssh/sshd_config
+#sed -i "s/#\?\s*PubkeyAuthentication.*/PubkeyAuthentication yes/" /etc/ssh/sshd_config
+#sed -i "s/#\?\s*ChallengeResponseAuthentication.*/ChallengeResponseAuthentication no/" /etc/ssh/sshd_config
+#systemctl reload sshd
+
+# Start the firewall!
+#ufw allow OpenSSH
+#ufw enable
+
+cmsg -c "Done!"
+###########################################################################################
+## End Script
