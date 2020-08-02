@@ -31,7 +31,7 @@ if ! adduser --disabled-password --debug --gecos "System Admin" "${user_name}"; 
 fi
 
 # force the new user to change their password on first login
-#chage -d 0 "$user_name"
+chage -d 0 "$user_name"
 
 # add them to the sudo group
 usermod -aG sudo "$user_name"
