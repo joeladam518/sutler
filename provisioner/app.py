@@ -2,7 +2,7 @@ import click
 from provisioner.debian.installer import Installer
 
 
-@click.group()
+@click.group(invoke_without_command=True)
 def cli():
     pass
 
