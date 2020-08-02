@@ -1,10 +1,10 @@
 #!/usr/bin/env bash
 
 ## Can we use tput?
-tput_found=$(command -v tput)
+tput_found="$(command -v tput)"
 tput_status=$?
 
-if [ -n $tput_found ] && [ $tput_status -eq "0" ]; then
+if [ -n "$tput_found" ] && [ "$tput_status" == "0" ]; then
     RESET=$(tput sgr0)
     BOLD=$(tput bold)
     RED=$(tput setaf 1)
@@ -82,14 +82,14 @@ if [ "$no_newline" == "1" ]; then
 fi
 
 # add color and bold
-if   [ -n "$CHOSEN_COLOR" ] && [ "$is_bold" == "1" ]; then
+if [ -n "$CHOSEN_COLOR" ] && [ "$is_bold" == "1" ]; then
     echo_cmd="${echo_cmd} \"${BOLD}${CHOSEN_COLOR}${input}${RESET}\""
 elif [ -n "$CHOSEN_COLOR" ] && [ "$is_bold" == "0" ]; then
     echo_cmd="${echo_cmd} \"${CHOSEN_COLOR}${input}${RESET}\""
 elif [ -z "$CHOSEN_COLOR" ] && [ "$is_bold" == "1" ]; then
     echo_cmd="${echo_cmd} \"${CHOSEN_COLOR}${input}${RESET}\""
 else
-    echo_cmd="${echo_cmd} ${input}"
+    echo_cmd="${echo_cmd} \"${input}\""
 fi
 
 # Finally, print the message with color!
