@@ -10,12 +10,10 @@ if [[ "$expected_signature" != "$actual_signature" ]]; then
     exit 1
 fi
 
-php composer-setup.php
-setup_result="$?"
-rm composer-setup.php
-
-if [ "$setup_result" = "0" ]; then
-    sudo mv composer.phar /usr/local/bin/composer
+if php composer-setup.php; then
+    mv composer.phar /usr/local/bin/composer
 fi
+
+rm composer-setup.php
 
 exit

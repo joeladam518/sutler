@@ -93,6 +93,6 @@ eval "$install_command"
 cmsg -c "Done!"
 cmsg ""
 
-cd "$CWD"
+cd "$CWD" || exit
 
 exit

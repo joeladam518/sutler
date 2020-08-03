@@ -1,8 +1,6 @@
 #!/usr/bin/env bash
 
-CWD="$(pwd -P)"
-script_dir="$(cd "$(dirname "$0")" >/dev/null 2>&1 && pwd -P)"
-node_version="${1}"
+node_version="$1"
 
 if [ -z "$node_version" ]; then
     echo "You need to specify the node version you would like to install." 1>&2
@@ -27,6 +25,6 @@ case "${platform}" in
         sudo apt-get install -y nodejs
         ;;
     *)
-        sudo apt-get install node
+        sudo apt-get install -y node
         ;;
 esac
