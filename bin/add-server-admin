@@ -2,7 +2,7 @@
 
 # Add a new admin user on a Digital Ocean droplet.
 # This will create a temporary password for them.
-# Once set, the user will be forced to reset the password given on their fist login.
+# Once set, the user will be forced to reset the password on their fist login.
 # They will need the temporary password to do that.
 
 abort_adding_user() {
