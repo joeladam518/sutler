@@ -19,16 +19,11 @@ def bin_path(script=None):
     return script_path
 
 
-def exec_script(script, *args):
+def call_script(script, *args):
     script_path = bin_path(script)
     arguments = list(args)
-    arguments_format_specifiers = ""
-
-    for i in range(len(arguments)):
-        arguments[i] = str(args[i])
-        arguments_format_specifiers = f'{arguments} %s'
-
-    print(f"{script_path} {arguments_format_specifiers}" % tuple(arguments))
+    arguments.insert(0, script_path)
+    subprocess.call(arguments)
 
 
 def is_root():
