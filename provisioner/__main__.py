@@ -1,4 +1,4 @@
-from provisioner import app
+from provisioner import main
 
 if __name__ == '__main__':
-    app.cli()
+    main.cli()

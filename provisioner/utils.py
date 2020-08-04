@@ -19,10 +19,12 @@ def bin_path(script=None):
     return script_path
 
 
-def call_script(script, *args):
+def call_script(script, *args, as_root=False):
     script_path = bin_path(script)
     arguments = list(args)
     arguments.insert(0, script_path)
+    if as_root:
+        arguments.insert(0, 'sudo')
     subprocess.call(arguments)
 
 

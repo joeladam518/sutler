@@ -1,35 +1,21 @@
-import click
-from provisioner.debian import desktop, server
-from provisioner.config import os_types, machine_types
-from provisioner.utils import is_not_root
-
-# TODO: id your going to call this as root
-@click.group(invoke_without_command=True)
-def cli():
-    if is_not_root():
-        raise click.ClickException('Provisioner must be run with administrator privileges.')
+import os
+import getpass
 
 
-@click.command()
-@click.argument('machine_type')
-@click.option('-o', '--os-type', 'os_type', type=str, default='debian', show_default=True)
-def install(machine_type, os_type):
-    if os_type not in os_types:
-        raise click.ClickException('Invalid os type.')
+class App(object):
+    def __init__(self):
+        self.root_path = os.path.dirname(os.path.dirname(os.path.abspath(__file__)))
+        self.os_types = ('debian', 'ubuntu', 'raspberry pi os')
+        self.machine_types = ('desktop', 'server', 'lamp', 'lemp', 'mqtt')
+        self.user_uid = None
+        self.user_name = None
+        self.user_home = None
 
-    if machine_type not in machine_types:
-        raise click.ClickException('Invalid machine type.')
-
-    if machine_type == 'desktop':
-        return desktop.install(os_type)
-    elif machine_type == 'server':
-        return server.install(os_type)
-
-    exit()
+    def set_user(self):
+        self.user_uid = os.getuid()
+        self.user_name = getpass.getuser()
+        self.user_home = os.path.expanduser("~")
 
 
-cli.add_command(install)
-
-
-if __name__ == '__main__':
-    cli()
+if __name__ != '__main__':
+    app = App()
