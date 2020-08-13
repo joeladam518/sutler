@@ -61,7 +61,7 @@ shift $((OPTIND-1))
 
 # validate the platform chosen
 case "$platform" in
-    debian|ubuntu|rpi) 
+    debian|ubuntu|rpi)
         # Do nothing
         ;;
     *)
