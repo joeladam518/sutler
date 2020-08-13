@@ -23,13 +23,6 @@ if [ ! -d "$repos_dir" ]; then
     mkdir -p "$repos_dir"
 fi
 
-# Set the rcfile variable (because mac is different from linux)
-if [ "$system" == "mac" ]; then
-    rcfile=".bash_profile"
-else
-    rcfile=".bashrc"
-fi
-
 # Clone or update the dotfiles repo
 if [ -d "${repos_dir}/dotfiles" ]; then
     cd "${repos_dir}/dotfiles" && git pull
@@ -43,21 +36,8 @@ else
     fi
 fi
 
-# Symlink the bashrc files
-if [ -L "${HOME}/${rcfile}" ] && [ -f "${HOME}/${rcfile}.old" ]; then
-    cmsg -y "The dotfiles .bashrc symlink already exists"
-elif [ -f "${HOME}/${rcfile}" ]; then
-    cd "$HOME" && mv "$rcfile" "${rcfile}.old"
-    cd "$HOME" && ln -s "${repos_dir}/dotfiles/bashrc/${system}/${rcfile}" .
-fi
-
-# Symlink the vimrc files
-if [ -L "${HOME}/.vimrc" ] && { [ -L "${HOME}/.vim" ] && [ -d "${HOME}/.vim" ]; }; then
-    cmsg -y "The dotfiles .vimrc symlinks already exist"
-else
-    cd "$HOME" && ln -s "${repos_dir}/dotfiles/vimrc/.vim" .
-    cd "$HOME" && ln -s "${repos_dir}/dotfiles/vimrc/.vimrc" .
-fi
+# Call the install script
+"$repos_dir"/dotfiles/install.sh "$system"
 
 cd "$CWD" || exit
 exit
