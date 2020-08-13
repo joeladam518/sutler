@@ -1,6 +1,6 @@
 #!/usr/bin/env bash
 
-if ! ([ -n "$CWD" ] && [ -n "$platform" ] && [ "$provision_type" = "mqtt" ]); then 
+if ! { [ -n "$CWD" ] && [ -n "$platform" ] && [ "$provision_type" = "mqtt" ]; }; then
     echo "You can not call this file directly." 1>&2
     exit 1
 fi
@@ -82,6 +82,7 @@ cat > ${mqtt_default_config_path} << EOF
     certfile /etc/letsencrypt/live/${server_domain}/cert.pem
     cafile /etc/letsencrypt/live/${server_domain}/chain.pem
     keyfile /etc/letsencrypt/live/${server_domain}/privkey.pem
+
 EOF
 
 fi
