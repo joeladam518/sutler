@@ -1,22 +1,11 @@
 import os
 import ctypes
 import subprocess
-
-
-dir_path = os.path.dirname(os.path.dirname(os.path.abspath(__file__)))
+from provisioner.application import App
 
 
 def bin_path(script=None):
-    path = f'{dir_path}/bin'
-    if not script:
-        return path
-
-    script_path = f'{path}/{script}'
-
-    if not os.path.exists(script_path):
-        raise FileExistsError(f'"{script_path}" was not found.')
-
-    return script_path
+    return App().context.get_path('')
 
 
 def call_script(script, *args, as_root=False):

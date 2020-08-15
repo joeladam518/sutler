@@ -1,6 +1,3 @@
-import os
-
-
 class SingletonMeta(type):
     __instances = {}
 

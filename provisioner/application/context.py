@@ -1,33 +1,37 @@
+import click
 import os
 import getpass
+from .user import User
 
 
 class Context(object):
     def __init__(self):
-        self.user = {
-            'uid': os.getuid(),
-            'name': getpass.getuser(),
-            'home': os.path.expanduser("~")
-        }
         self.paths = {}
-        self.set_path('src', os.path.dirname(os.path.dirname(os.path.abspath(__file__))))
-        self.set_path('templates', f"{self.get_path('src')}/templates")
+        self.user = User(
+            os.getuid(),
+            getpass.getuser(),
+        )
 
     def get_path(self, key: str, default=None):
         return self.paths.get(key, default)
 
     def set_path(self, key: str, value):
         if not os.path.exists(value):
-            raise FileNotFoundError('Not found')
+            raise FileNotFoundError('Path not found.')
         self.paths[key] = value
 
     def del_path(self, key: str):
         del self.paths[key]
 
-    def get_user(self, key: str, default=None):
-        return self.user.get(key, default)
+    def print(self):
+        click.secho("User", bold=True)
+        for key, value in vars(self.user).items():
+            click.secho(f"{key}", nl=False, fg='cyan')
+            click.secho(f": {value}")
 
-    def set_user(self, name, home, uid):
-        self.user['name'] = name
-        self.user['home'] = home
-        self.user['uid'] = uid
+        click.echo()
+
+        click.secho("Paths", bold=True)
+        for key, value in self.paths.items():
+            click.secho(f"{key}", nl=False, fg='cyan')
+            click.secho(f": {value}")

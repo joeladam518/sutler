@@ -12,5 +12,5 @@ class Config(object):
     def set(self, key: str, value):
         self.__CONFIG[key] = value
 
-    def is_valid_type(self, type_key: str, type_value) -> bool:
-        return type_value in self.__TYPES[type_key]
+    def validate_type(self, key: str, type_: str) -> bool:
+        return type_ in self.__TYPES[key]
