@@ -1,6 +1,6 @@
-#!/usr/bin/env bash
+#!/usr/scripts/env bash
 
-if ! ([ -n "$CWD" ] && [ -n "$platform" ] && [ "$provision_type" = "desktop" ]); then 
+if ! ([ -n "$CWD" ] && [ -n "$platform" ] && [ "$provision_type" = "desktop" ]); then
     echo "You can not call this file directly." 1>&2
     exit 1
 fi

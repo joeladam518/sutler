@@ -1,4 +1,4 @@
-#!/usr/bin/env bash
+#!/usr/scripts/env bash
 
 # Variables
 CWD="$(pwd)"
@@ -36,7 +36,7 @@ invalid_provision_type_message() {
 # echo "Script Dir: ${script_dir}"
 # echo "Bin Dir:    ${bin_dir}"
 
-# Add the current bin dir to path if it's not there
+# Add the current scripts dir to path if it's not there
 if [[ ! "$PATH" =~ (^|:)"$bin_dir"(:|$) ]]; then
     export PATH="${PATH}:${bin_dir}"
 fi
@@ -77,7 +77,7 @@ provision_type=${1}
 provision_script_path=""
 case "${provision_type}" in
     desktop) provision_script_path="${script_dir}/desktop.sh" ;;
-    lamp)    provision_script_path="${script_dir}/lamp.sh"    ;; 
+    lamp)    provision_script_path="${script_dir}/lamp.sh"    ;;
     lemp)    provision_script_path="${script_dir}/lemp.sh"    ;;
     mqtt)    provision_script_path="${script_dir}/mqtt.sh"    ;;
     \?)      invalid_provision_type_message "$OPTARG"         ;;

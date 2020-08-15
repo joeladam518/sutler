@@ -1,4 +1,4 @@
-#!/usr/bin/env bash
+#!/usr/scripts/env bash
 
 apt-get update
 DEBIAN_FRONTEND=noninteractive apt-get -yq upgrade
