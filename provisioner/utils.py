@@ -17,7 +17,24 @@ def call_script(script, *args, as_root=False):
     subprocess.call(arguments)
 
 
-def is_root():
+def drop_privileges():
+    if os.getuid() != 0:
+        # We're not root so, like, whatever dude
+        return
+
+    app = App()
+
+    # Remove group privileges
+    os.setgroups([])
+
+    # Try setting the new uid/gid
+    os.setgid(app.context.user.gid)
+    os.setuid(app.context.user.uid)
+
+    # Ensure a very conservative umask
+    # 0o022 == 0755 for directories and 0644 for files
+    # 0o027 == 0750 for directories and 0640 for files
+    os.umask(0o027)
     try:
         is_admin = os.getuid() == 0
     except AttributeError:
