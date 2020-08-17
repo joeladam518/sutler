@@ -1,9 +1,9 @@
-#!/usr/scripts/env bash
+#!/usr/bin/env bash
 
 # Variables
 CWD="$(pwd)"
 script_dir="$(cd "$(dirname "$0")" >/dev/null 2>&1 && pwd -P)"
-bin_dir="$(cd "${script_dir}/../bin" >/dev/null 2>&1 && pwd -P)"
+bin_dir="$(cd "$(dirname "$script_dir")" >/dev/null 2>&1 && pwd -P)"
 platform="debian"
 
 # Option variables
@@ -42,7 +42,7 @@ if [[ ! "$PATH" =~ (^|:)"$bin_dir"(:|$) ]]; then
 fi
 
 # Check if the user is running this script as root.
-if [ $(id -u) -ne "0" ]; then
+if [ "$(id -u)" -ne "0" ]; then
     cmsg -y "This install script needs root privileges to do it's job." 1>&2
     exit 1
 fi
