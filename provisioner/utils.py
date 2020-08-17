@@ -35,6 +35,9 @@ def drop_privileges():
     # 0o022 == 0755 for directories and 0644 for files
     # 0o027 == 0750 for directories and 0640 for files
     os.umask(0o027)
+
+
+def is_root() -> bool:
     try:
         is_admin = os.getuid() == 0
     except AttributeError:
@@ -43,5 +46,5 @@ def drop_privileges():
     return is_admin
 
 
-def is_not_root():
+def is_not_root() -> bool:
     return not is_root()
