@@ -8,13 +8,16 @@ def bin_path(script=None):
     return App().context.get_path('')
 
 
-def call_script(script, *args, as_root=False):
-    script_path = bin_path(script)
+def run_script(script, *args, as_root: bool = False):
     arguments = list(args)
-    arguments.insert(0, script_path)
+    arguments.insert(0, script)
     if as_root:
         arguments.insert(0, 'sudo')
-    subprocess.call(arguments)
+    return_code = subprocess.call(arguments)
+    drop_privileges()
+    if return_code:
+        raise subprocess.CalledProcessError(return_code, script)
+    return return_code
 
 
 def drop_privileges():
