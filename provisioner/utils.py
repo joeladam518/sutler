@@ -4,8 +4,8 @@ import subprocess
 from provisioner.application import App
 
 
-def bin_path(script=None):
-    return App().context.get_path('')
+def run_cmd():
+    pass
 
 
 def run_script(script, *args, as_root: bool = False):

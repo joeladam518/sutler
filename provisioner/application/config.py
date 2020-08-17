@@ -1,9 +1,9 @@
 class Config(object):
     __CONFIG = {}
     __TYPES = {
-        'machine': ('desktop', 'server', 'apache', 'lemp', 'mqtt'),
-        'program': ('php', 'nodejs'),
-        'os': ('debian', 'ubuntu', 'raspberry pi')
+        'machine': ('desktop', 'server', 'lemp', 'mqtt'),
+        'program': ('mariadb', 'nodejs', 'php', 'redis'),
+        'os': ('ubuntu', 'raspberry pi')
     }
 
     def get(self, key: str, default=None):
