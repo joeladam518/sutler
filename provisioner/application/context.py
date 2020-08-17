@@ -9,6 +9,7 @@ class Context(object):
         self.paths = {}
         self.user = User(
             os.getuid(),
+            os.getgid(),
             getpass.getuser(),
         )
 
