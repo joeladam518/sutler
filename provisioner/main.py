@@ -2,7 +2,7 @@ import click
 import os
 from .application import App, Context
 from .debian import desktop, server
-from .utils import is_root
+from .utils import is_root, run_script
 
 
 @click.group(invoke_without_command=True)
@@ -20,32 +20,35 @@ def cli():
 @click.argument('program')
 @click.argument('program_arguments', nargs=-1, required=False)
 def install(program, program_arguments):
-    pass
-    # app = App()
-    # if app.is_valid_type('program', program):
-    #     raise click.ClickException('Invalid program to install')
-    #
-    # app.print_user()
-    #
-    # call_script(f'install-{program}', *program_arguments)
+    app = App()
+
+    if app.validate('program', program):
+        raise click.ClickException('Invalid program to install')
+
+    app.context.action = 'install'
+    app.context.program = program
+
+    # run_script(f'install-{program}', *program_arguments)
+    app.context.print()
 
 
 @click.command()
 @click.argument('machine_type')
 @click.option('-o', '--os-type', 'os_type', required=False, type=str, default='debian', show_default=True)
 def setup(machine_type, os_type):
-    pass
-    # app = App()
-    # if app.is_valid_type('machine', machine_type):
-    #     raise click.ClickException('Invalid machine type.')
-    #
-    # if app.is_valid_type('os', os_type):
-    #     raise click.ClickException('Invalid os type.')
-    #
+    app = App()
+    if app.validate('machine', machine_type):
+        raise click.ClickException('Invalid machine type.')
+    app.context.machine = machine_type
+    if app.validate('os', os_type):
+        raise click.ClickException('Invalid os type.')
+    app.context.os = os_type
+
     # if machine_type == 'server':
     #     return server.install(os_type)
     # elif machine_type == 'desktop':
     #     return desktop.install(os_type)
+    app.context.print()
 
 
 @click.command()
