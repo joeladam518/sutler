@@ -8,6 +8,8 @@ from provisioner.utils import call_script
 
 @click.group(invoke_without_command=True)
 def cli():
+    if is_root():
+        raise click.ClickException("You're not allowed to run provisioner as root.")
     context = Context()
     context.set_path('cwd', os.getcwd())
     context.set_path('src', os.path.dirname(os.path.abspath(__file__)))

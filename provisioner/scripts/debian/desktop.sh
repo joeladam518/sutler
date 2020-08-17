@@ -59,7 +59,7 @@ msg_c -c "Done!"
 
 msg_c -c "Installing utility applications"
 #----------------------------------------------------------------------------------------------------
-sudo apt install -y gnome-tweak-tool git vim-gtk3 tmux curl tilix htop tree mysql-client mosquitto-clients sshfs
+sudo apt install -y gnome-tweak-tool git vim-gtk3 tmux curl tilix htop tree mysql-client mosquitto-clients sshfs xsel
 #----------------------------------------------------------------------------------------------------
 msg_c -c "Done!"
 
