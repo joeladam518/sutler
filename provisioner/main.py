@@ -1,9 +1,8 @@
 import click
-import getpass
 import os
-from provisioner.application import App, Context
-from provisioner.debian import desktop, server
-from provisioner.utils import call_script
+from .application import App, Context
+from .debian import desktop, server
+from .utils import is_root
 
 
 @click.group(invoke_without_command=True)
