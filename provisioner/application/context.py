@@ -34,16 +34,16 @@ class Context(object):
 
     def print(self):
         click.secho("Action", bold=True)
-        click.secho(f": {self.action}")
+        click.secho(f"  {self.action}")
         click.echo()
         click.secho("Machine", bold=True)
-        click.secho(f": {self.machine}")
+        click.secho(f"  {self.machine}")
         click.echo()
         click.secho("Operating System", bold=True)
-        click.secho(f": {self.os}")
+        click.secho(f"  {self.os}")
         click.echo()
         click.secho("Program", bold=True)
-        click.secho(f": {self.program}")
+        click.secho(f"  {self.program}")
         click.echo()
         click.secho("User", bold=True)
         for key, value in vars(self.user).items():

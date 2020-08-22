@@ -23,7 +23,7 @@ def cli():
 def install(program, program_arguments):
     app = App()
 
-    if app.validate('program', program):
+    if not app.validate('program', program):
         raise click.ClickException('Invalid program to install')
 
     app.context.action = 'install'
@@ -35,21 +35,22 @@ def install(program, program_arguments):
 
 @click.command()
 @click.argument('machine_type')
-@click.option('-o', '--os-type', 'os_type', required=False, type=str, default='debian', show_default=True)
+@click.option('-o', '--os-type', 'os_type', required=False, type=str, default='ubuntu', show_default=True)
 def setup(machine_type, os_type):
     app = App()
+    app.context.action = 'setup'
     if not app.validate('machine', machine_type):
         raise click.ClickException('Invalid machine type.')
     app.context.machine = machine_type
-    if app.validate('os', os_type):
+    if not app.validate('os', os_type):
         raise click.ClickException('Invalid os type.')
     app.context.os = os_type
 
-    # if machine_type == 'server':
-    #     return server.install(os_type)
-    # elif machine_type == 'desktop':
-    #     return desktop.install(os_type)
-    app.context.print()
+    # app.context.print()
+    if machine_type == 'server':
+        return server.install()
+    elif machine_type == 'desktop':
+        return desktop.install()
 
 
 @click.command()

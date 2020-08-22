@@ -2,7 +2,7 @@ import os
 import click
 import ctypes
 import subprocess
-from provisioner.application import App
+from .application import App
 
 
 def run_cmd():
