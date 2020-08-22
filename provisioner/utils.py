@@ -9,9 +9,9 @@ def run_cmd():
     click.secho('Run Command!')
 
 
-def run_script(script, *args, as_root: bool = False):
+def run_script(script, *args, as_root: bool = False) -> int:
     arguments = list(args)
-    arguments.insert(0, script)
+    arguments.insert(0, f"{App().context.get_path('scripts')}/{script}")
     if as_root:
         arguments.insert(0, 'sudo')
     return_code = subprocess.call(arguments)

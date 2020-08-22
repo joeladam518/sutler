@@ -13,6 +13,7 @@ def cli():
     context.set_path('cwd', os.getcwd())
     context.set_path('src', os.path.dirname(os.path.abspath(__file__)))
     context.set_path('templates', f"{context.get_path('src')}/templates")
+    context.set_path('scripts', f"{context.get_path('src')}/scripts")
     App(context=context)
 
 
@@ -37,7 +38,7 @@ def install(program, program_arguments):
 @click.option('-o', '--os-type', 'os_type', required=False, type=str, default='debian', show_default=True)
 def setup(machine_type, os_type):
     app = App()
-    if app.validate('machine', machine_type):
+    if not app.validate('machine', machine_type):
         raise click.ClickException('Invalid machine type.')
     app.context.machine = machine_type
     if app.validate('os', os_type):
