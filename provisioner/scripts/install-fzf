@@ -1,4 +1,4 @@
-#!/usr/scripts/env bash
+#!/bin/bash
 
 cd "$HOME" && git clone --depth 1 "https://github.com/junegunn/fzf.git" ~/.fzf
 cd "$HOME" && ~/.fzf/install

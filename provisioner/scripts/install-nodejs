@@ -1,4 +1,4 @@
-#!/usr/scripts/env bash
+#!/bin/bash
 
 node_version="$1"
 

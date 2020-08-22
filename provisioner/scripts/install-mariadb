@@ -1,4 +1,4 @@
-#!/usr/scripts/env bash
+#!/bin/bash
 
 # TODO: finish this script
 echo "This script isn't finished. Exiting..." 1>&2
