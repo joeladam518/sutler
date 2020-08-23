@@ -1,7 +1,7 @@
 from setuptools import setup, find_packages
 
 setup(
-    name='provision_me',
+    name='sutler',
     version='0.1',
     packages=find_packages(),
     include_package_data=True,
@@ -11,6 +11,6 @@ setup(
     ],
     entry_points='''
         [console_scripts]
-        provisioner=provisioner.main:cli
+        sutler=sutler.main:cli
     ''',
 )
