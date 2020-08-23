@@ -1,5 +1,6 @@
 import click
 import os
+from subprocess import CalledProcessError
 from .application import App, Context
 from .debian import desktop, server
 from .utils import is_root, run_script
@@ -27,10 +28,12 @@ def install(program, program_arguments):
         raise click.ClickException('Invalid program to install')
 
     app.context.action = 'install'
-    app.context.program = program
+    app.context.program = f"install-{program}"
 
-    # run_script(f'install-{program}', *program_arguments)
-    app.context.print()
+    try:
+        run_script(app.context.program, * program_arguments)
+    except CalledProcessError as ex:
+        raise click.ClickException(f'failed to run {ex.cmd}. return code {ex.returncode}')
 
 
 @click.command()
