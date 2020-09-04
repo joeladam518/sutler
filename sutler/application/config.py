@@ -3,7 +3,7 @@ class Config(object):
     __TYPES = {
         'machine': ('desktop', 'server', 'lemp', 'mqtt'),
         'program': ('mariadb', 'nodejs', 'php', 'redis'),
-        'os': ('ubuntu', 'raspberry pi')
+        'os': ('ubuntu', 'raspbian')
     }
 
     def get(self, key: str, default=None):

@@ -1,20 +1,27 @@
 import click
+import getpass
 import os
 from subprocess import CalledProcessError
-from .application import App, Context
-from .debian import desktop, server
-from .utils import is_root, run_script
+from .application import App, Context, User
+from .factories import SetupFactory
+from .utils import is_root, get_os, run_script
 
 
 @click.group(invoke_without_command=True)
 def cli():
     if is_root():
-        raise click.ClickException("You're not allowed to run sutler as root.")
+        raise click.ClickException("You're not allowed to run sutler.sh as root.")
     context = Context()
+    context.os = get_os()
     context.set_path('cwd', os.getcwd())
     context.set_path('src', os.path.dirname(os.path.abspath(__file__)))
     context.set_path('templates', f"{context.get_path('src')}/templates")
     context.set_path('scripts', f"{context.get_path('src')}/scripts")
+    context.user = User(
+        os.getuid(),
+        os.getgid(),
+        getpass.getuser(),
+    )
     App(context=context)
 
 
@@ -28,32 +35,29 @@ def install(program, program_arguments):
         raise click.ClickException('Invalid program to install')
 
     app.context.action = 'install'
-    app.context.program = f"install-{program}"
+    app.context.program = program
 
     try:
-        run_script(app.context.program, * program_arguments)
+        run_script(f"install-{program}", *program_arguments)
     except CalledProcessError as ex:
-        raise click.ClickException(f'failed to run {ex.cmd}. return code {ex.returncode}')
+        raise click.ClickException(f'{ex.cmd} failed. Return code: {ex.returncode}')
 
 
 @click.command()
 @click.argument('machine_type')
-@click.option('-o', '--os-type', 'os_type', required=False, type=str, default='ubuntu', show_default=True)
-def setup(machine_type, os_type):
+def setup(machine_type):
     app = App()
     app.context.action = 'setup'
-    if not app.validate('machine', machine_type):
-        raise click.ClickException('Invalid machine type.')
     app.context.machine = machine_type
-    if not app.validate('os', os_type):
-        raise click.ClickException('Invalid os type.')
-    app.context.os = os_type
 
-    # app.context.print()
-    if machine_type == 'server':
-        return server.install()
-    elif machine_type == 'desktop':
-        return desktop.install()
+    if not app.validate('os', app.context.os):
+        raise click.ClickException('Invalid os type.')
+    if not app.validate('machine', app.context.machine):
+        raise click.ClickException('Invalid machine type.')
+
+    factory = SetupFactory(app.context.machine)
+    provisioner = factory.get_provisioner()
+    provisioner.run()
 
 
 @click.command()
@@ -62,7 +66,7 @@ def user():
     app.context.print()
 
 
-cli.add_command(install)
+# cli.add_command(install)
 cli.add_command(setup)
 cli.add_command(user)
 

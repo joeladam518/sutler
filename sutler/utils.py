@@ -1,24 +1,11 @@
 import os
 import click
+import csv
 import ctypes
+import platform
 import subprocess
+import sys
 from .application import App
-
-
-def run_cmd():
-    click.secho('Run Command!')
-
-
-def run_script(script, *args, as_root: bool = False) -> int:
-    arguments = list(args)
-    arguments.insert(0, f"{App().context.get_path('scripts')}/{script}")
-    if as_root:
-        arguments.insert(0, 'sudo')
-    return_code = subprocess.call(arguments)
-    drop_privileges()
-    if return_code:
-        raise subprocess.CalledProcessError(return_code, script)
-    return return_code
 
 
 def drop_privileges():
@@ -41,6 +28,40 @@ def drop_privileges():
     os.umask(0o027)
 
 
+def get_linux_distro() -> str:
+    return get_linux_release_data()["ID"]
+
+
+def get_linux_release_data() -> dict:
+    release_data = {}
+
+    with open("/etc/os-release") as f:
+        reader = csv.reader(f, delimiter="=")
+        for row in reader:
+            if row:
+                release_data[row[0]] = row[1]
+
+    return release_data
+
+
+def get_os() -> str:
+    if sys.platform == 'darwin':
+        return 'mac'
+
+    if sys.platform == 'linux':
+        return get_linux_distro()
+
+    if sys.platform in ['win32', 'win64', 'cygwin']:
+        return 'windows'
+
+    system = platform.system().lower()
+
+    if system == 'darwin':
+        return 'mac'
+
+    return system
+
+
 def is_root() -> bool:
     try:
         is_admin = os.getuid() == 0
@@ -49,5 +70,17 @@ def is_root() -> bool:
     return is_admin
 
 
-def is_not_root() -> bool:
-    return not is_root()
+def run_cmd():
+    click.secho('Run Command!')
+
+
+def run_script(script, *args, as_root: bool = False) -> int:
+    arguments = list(args)
+    arguments.insert(0, f"{App().context.get_path('scripts')}/{script}")
+    if as_root:
+        arguments.insert(0, 'sudo')
+    return_code = subprocess.call(arguments)
+    drop_privileges()
+    if return_code:
+        raise subprocess.CalledProcessError(return_code, script)
+    return return_code

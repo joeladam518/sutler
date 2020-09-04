@@ -1,7 +1,5 @@
 import click
 import os
-import getpass
-from .user import User
 
 
 class Context(object):
@@ -11,11 +9,7 @@ class Context(object):
         self.os = None
         self.paths = {}
         self.program = None
-        self.user = User(
-            os.getuid(),
-            os.getgid(),
-            getpass.getuser(),
-        )
+        self.user = None
 
     # Path Functions
 
