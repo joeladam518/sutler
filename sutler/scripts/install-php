@@ -158,3 +158,5 @@ if not confirm('Proceed with the install?'):
 
 subprocess.call(["sudo apt update"], shell=True)
 subprocess.call([f"sudo apt install -y {' '.join(packages)}"], shell=True)
+
+sys.exit(0)
