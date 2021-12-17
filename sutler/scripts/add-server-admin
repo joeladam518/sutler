@@ -1,4 +1,4 @@
-#!/bin/bash
+#!/usr/bin/env bash
 
 # Add a new admin user on a Digital Ocean droplet.
 # This will create a temporary password for them.

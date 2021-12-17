@@ -1,4 +1,4 @@
-#!/bin/bash
+#!/usr/bin/env bash
 
 ## Can we use tput?
 tput_found="$(command -v tput)"
