@@ -1,3 +1,4 @@
+import click
 import os
 
 
@@ -7,3 +8,8 @@ class User(object):
         self.gid = gid
         self.name = name
         self.home = os.path.expanduser(f"~{name}")
+
+    def print(self):
+        for key, value in vars(self).items():
+            click.secho(f"{key}", nl=False, fg='bright_black')
+            click.secho(f": {value}")

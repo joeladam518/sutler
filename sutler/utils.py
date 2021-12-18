@@ -3,29 +3,30 @@ import click
 import csv
 import ctypes
 import platform
-import subprocess
 import sys
-from .application import App
 
 
-def drop_privileges():
-    if os.getuid() != 0:
-        # We're not root so, like, whatever dude
-        return
+def confirm(question: str, default: bool = False, fg: str = None) -> bool:
+    tries = 2
+    valid = {"yes": True, "y": True, "ye": True, "no": False, "n": False}
+    prompt = " [y/N] "
 
-    app = App()
+    while tries > 0:
+        if fg:
+            click.secho(question + prompt, nl=False, fg=fg)
+            choice = input().lower()
+        else:
+            choice = input(question + prompt).lower()
 
-    # Remove group privileges
-    os.setgroups([])
+        if choice in valid:
+            return valid[choice]
 
-    # Try setting the new uid/gid
-    os.setuid(app.context.user.uid)
-    os.setgid(app.context.user.gid)
+        tries = tries - 1
 
-    # Ensure a very conservative umask
-    # 0o022 == 0755 for directories and 0644 for files
-    # 0o027 == 0750 for directories and 0640 for files
-    os.umask(0o027)
+        if tries > 0:
+            click.secho("Please enter 'yes' or 'no'", fg='yellow')
+
+    return default
 
 
 def get_linux_distro() -> str:
@@ -68,19 +69,3 @@ def is_root() -> bool:
     except AttributeError:
         is_admin = ctypes.windll.shell32.IsUserAnAdmin() != 0
     return is_admin
-
-
-def run_cmd():
-    click.secho('Run Command!')
-
-
-def run_script(script, *args, as_root: bool = False) -> int:
-    arguments = list(args)
-    arguments.insert(0, f"{App().context.get_path('scripts')}/{script}")
-    if as_root:
-        arguments.insert(0, 'sudo')
-    return_code = subprocess.call(arguments)
-    drop_privileges()
-    if return_code:
-        raise subprocess.CalledProcessError(return_code, script)
-    return return_code

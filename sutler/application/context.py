@@ -1,25 +1,25 @@
 import click
 import os
+from .user import User
 
 
 class Context(object):
-    def __init__(self):
-        self.action = None
+    def __init__(self, os_: str = None, user_: User = None):
         self.machine = None
-        self.os = None
+        self.os = os_
+        self.shell = os.environ['COMSPEC'] if os_ == 'windows' else os.environ['SHELL']
         self.paths = {}
-        self.program = None
-        self.user = None
+        self.user = user_
 
-    # Path Functions
+    # Path Methods
 
     def get_path(self, key: str, default=None):
         return self.paths.get(key, default)
 
-    def set_path(self, key: str, value):
-        if not os.path.exists(value):
+    def set_path(self, key: str, path: str):
+        if not os.path.exists(path):
             raise FileNotFoundError('Path not found.')
-        self.paths[key] = value
+        self.paths[key] = path
 
     def del_path(self, key: str):
         del self.paths[key]
@@ -27,24 +27,24 @@ class Context(object):
     # Debug functions
 
     def print(self):
-        click.secho("Action", bold=True)
-        click.secho(f"  {self.action}")
         click.echo()
-        click.secho("Machine", bold=True)
-        click.secho(f"  {self.machine}")
+        click.secho("Operating System: ", fg='cyan')
+        click.secho(f"{self.os}")
         click.echo()
-        click.secho("Operating System", bold=True)
-        click.secho(f"  {self.os}")
+        click.secho("User", fg='cyan')
+        if self.user is not None:
+            self.user.print()
+        else:
+            click.secho(f"{self.user}")
         click.echo()
-        click.secho("Program", bold=True)
-        click.secho(f"  {self.program}")
+        click.secho("Default shell", fg='cyan')
+        click.secho(f"{self.shell}")
         click.echo()
-        click.secho("User", bold=True)
-        for key, value in vars(self.user).items():
-            click.secho(f"{key}", nl=False, fg='cyan')
-            click.secho(f": {value}")
+        click.secho("Machine (The type of machine we're provisioning)", fg='cyan')
+        click.secho(f"{self.machine}")
         click.echo()
-        click.secho("Paths", bold=True)
+        click.secho("Paths", fg='cyan')
         for key, value in self.paths.items():
-            click.secho(f"{key}", nl=False, fg='cyan')
+            click.secho(f"{key}", nl=False, fg='bright_black')
             click.secho(f": {value}")
+        click.echo()

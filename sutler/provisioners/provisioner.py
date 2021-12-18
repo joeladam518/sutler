@@ -1,7 +1,5 @@
-from abc import ABC, abstractmethod
+from abc import ABC
 
 
 class Provisioner(ABC):
-    @abstractmethod
-    def run(self):
-        pass
+    pass

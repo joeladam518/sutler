@@ -7,7 +7,7 @@ setup(
     include_package_data=True,
     install_requires=[
         'Click',
-        'jinja2'
+        'jinja2',
         'packaging'
     ],
     entry_points='''
