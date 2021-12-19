@@ -1,6 +1,4 @@
 import click
-import subprocess
-import sys
 from ..support import List, Run
 from ..utils import confirm
 
@@ -74,7 +72,7 @@ class PhpInstaller(object):
     @staticmethod
     def install(version: str, env: str = 'desktop', additional: tuple = (), exclude: tuple = ()):
         if version not in php_versions:
-            return click.ClickException('Invalid php version')
+            raise click.ClickException('Invalid php version')
 
         if env not in php_extensions:
             raise click.ClickException('Environment not supported')
@@ -95,29 +93,27 @@ class PhpInstaller(object):
         print(*packages, sep='\n')
 
         click.echo()
-        if not confirm('Proceed with the install?', fg='cyan'):
-            click.echo()
-            sys.exit(0)
+        if confirm('Proceed with the install?', fg='cyan'):
+            Run.command("apt update", root=True)
+            Run.command("apt install -y", *packages, root=True)
 
-        Run.command("apt update", root=True)
-        Run.command("apt install -y", *packages, root=True)
+        click.echo()
 
     @staticmethod
     def uninstall(version: str):
         packages = get_installed_packages(version)
 
         if len(packages) == 0:
-            print(f"No packages found for php{version}")
-            sys.exit(0)
+            click.echo(f"No packages found for php{version}")
+            return
 
         click.echo()
         click.secho('Packages to be uninstalled:', fg='cyan')
         print(*packages, sep='\n')
 
         click.echo()
-        if not confirm('Proceed with the uninstall?', fg='cyan'):
-            click.echo()
-            sys.exit(0)
+        if confirm('Proceed with the uninstall?', fg='cyan'):
+            Run.command("apt-get purge -y", *packages, root=True)
+            Run.command("apt-get --purge autoremove -y", root=True)
 
-        Run.command("apt-get purge -y", *packages, root=True)
-        Run.command("apt-get --purge autoremove -y", root=True)
+        click.echo()

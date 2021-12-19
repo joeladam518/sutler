@@ -1,5 +1,5 @@
 import click
-from ..installers import PhpInstaller
+from ..installers import PhpInstaller, NodeInstaller
 
 
 @click.group()
@@ -23,8 +23,9 @@ def mariadb():
 
 
 @install.command()
-def nodejs():
-    click.echo("Installing nodejs!")
+@click.argument('version', type=str, required=True)
+def nodejs(version):
+    NodeInstaller.install(version)
 
 
 @install.command()
