@@ -10,3 +10,8 @@ class RedisInstaller:
 
         if output == 'PONG':
             click.echo("Redis was installed successfully")
+
+    @staticmethod
+    def uninstall():
+        Run.command("apt-get purge -y redis-server", root=True)
+        Run.command("apt-get --purge autoremove -y", root=True)

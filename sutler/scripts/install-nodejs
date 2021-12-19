@@ -1,27 +1,12 @@
 #!/usr/bin/env bash
 
-node_version="$1"
+VERSION="${1:-16}"
+PLATFORM="${2:-"ubuntu"}"
 
-if [ -z "$node_version" ]; then
-    echo "You need to specify the node version you would like to install." 1>&2
-    exit 1
-fi
-
-# TODO: validate node js version
-
-if [ -z "$platform" ]; then
-    platform="$2"
-
-    if [ -z "$platform" ]; then
-        echo "You need to specify the type of platform node will be installed on." 1>&2
-        exit 1
-    fi
-fi
-
-case "${platform}" in
+case "$PLATFORM" in
     debian|ubuntu|rpi)
         # https://github.com/nodesource/distributions#debinstall
-        curl -sL "https://deb.nodesource.com/setup_${node_version}.x" | sudo -E bash -
+        curl -sL "https://deb.nodesource.com/setup_${VERSION}.x" | sudo -E bash -
         sudo apt-get install -y nodejs
         ;;
     *)

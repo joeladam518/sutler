@@ -1,5 +1,6 @@
 # -*- coding: utf-8 -*-
-from .PhpInstaller import PhpInstaller
-from .NodeInstaller import NodeInstaller
+from .node import NodeInstaller
+from .php import PhpInstaller
+from .redis import RedisInstaller
 
-__all__ = ['PhpInstaller', 'NodeInstaller']
+__all__ = ['NodeInstaller', 'PhpInstaller', 'RedisInstaller']

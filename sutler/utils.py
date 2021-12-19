@@ -69,3 +69,8 @@ def is_root() -> bool:
     except AttributeError:
         is_admin = ctypes.windll.shell32.IsUserAnAdmin() != 0
     return is_admin
+
+
+def tuple_version(version: str) -> tuple:
+    version_parts = version.split('.')
+    return tuple(map(lambda part: int(part), version_parts))
