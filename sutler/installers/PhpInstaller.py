@@ -68,7 +68,7 @@ def get_installed_packages(version) -> list:
     return list(filter(lambda package: bool(package), php_packages))
 
 
-class PhpInstaller(object):
+class PhpInstaller:
     @staticmethod
     def install(version: str, env: str = 'desktop', additional: tuple = (), exclude: tuple = ()):
         if version not in php_versions:

@@ -10,7 +10,7 @@ node_versions = (
 )
 
 
-class NodeInstaller(object):
+class NodeInstaller:
     @staticmethod
     def install(version: str):
         app = App()
