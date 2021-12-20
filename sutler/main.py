@@ -1,7 +1,7 @@
 import click
 from .application import App
 from .commands import install, setup, uninstall
-from .support import Run
+from .support import Version
 from .utils import is_root
 
 
@@ -9,7 +9,8 @@ from .utils import is_root
 def cli():
     if is_root():
         raise click.ClickException("You're not allowed to run sutler as root.")
-    App()
+    else:
+        App()
 
 
 @click.command()
@@ -20,7 +21,8 @@ def context():
 
 @click.command()
 def test():
-    Run.command('apt update', root=True)
+    print(str(Version((8, 1)) == Version('8.1.0')))
+    # print(Version('7.4'))
 
 
 # noinspection PyTypeChecker
@@ -33,7 +35,6 @@ cli.add_command(setup)
 cli.add_command(test)
 # noinspection PyTypeChecker
 cli.add_command(uninstall)
-
 
 if __name__ == '__main__':
     cli()

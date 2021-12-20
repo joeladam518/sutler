@@ -1,7 +1,7 @@
 import click
 from typing import Optional, Union
-from ..support import List, Run
-from ..utils import confirm, tuple_version
+from ..support import List, Run, Version
+from ..utils import confirm
 
 php_extensions = {
     'common': (
@@ -86,7 +86,7 @@ class PhpInstaller:
         # combine the extensions to be installed
         extensions = [*php_extensions['common'], *php_extensions[env], *append]
 
-        if tuple_version(version) < (8, 0):
+        if Version(version) < Version('8.0'):
             extensions.append('json')
 
         # filter out extensions
