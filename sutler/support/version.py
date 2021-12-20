@@ -107,6 +107,3 @@ class Version:
 
     def __str__(self):
         return f"{self.a[0]}.{self.a[1]}.{self.a[2]}"
-
-    def __repr__(self):
-        return f"Version({self.a[0]}, {self.a[1]}, {self.a[2]})"
