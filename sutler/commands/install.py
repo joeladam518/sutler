@@ -1,5 +1,6 @@
 import click
-from ..installers import PhpInstaller, NodeInstaller
+from ..installers import PhpInstaller, NodeInstaller, RedisInstaller
+from ..support import Run
 
 
 @click.group()
@@ -14,7 +15,7 @@ def dotfiles():
 
 @install.command()
 def fzf():
-    click.echo("Installing fzf!")
+    Run.script('install-fzf')
 
 
 @install.command()
@@ -42,12 +43,12 @@ def php(version, environment, additional, exclude):
 
 @install.command()
 def php_composer():
-    click.echo("Installing composer!")
+    Run.script('install-php-composer')
 
 
 @install.command()
 def redis():
-    click.echo("Installing redis!")
+    RedisInstaller.install()
 
 
 install.add_command(dotfiles)

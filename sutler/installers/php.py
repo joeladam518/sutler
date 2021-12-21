@@ -189,4 +189,6 @@ class PhpInstaller:
         else:
             click.secho('Exiting...')
 
+        # TODO: uninstall the apt-sources list
+
         click.echo()

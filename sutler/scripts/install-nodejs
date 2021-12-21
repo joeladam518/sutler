@@ -4,12 +4,12 @@ VERSION="${1:-16}"
 PLATFORM="${2:-"ubuntu"}"
 
 case "$PLATFORM" in
-    debian|ubuntu|rpi)
+    debian|ubuntu|raspian)
         # https://github.com/nodesource/distributions#debinstall
         curl -sL "https://deb.nodesource.com/setup_${VERSION}.x" | sudo -E bash -
         sudo apt-get install -y nodejs
         ;;
     *)
-        sudo apt-get install -y node
+        echo "Your platform is not currently supported.."
         ;;
 esac
