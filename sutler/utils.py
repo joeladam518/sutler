@@ -30,12 +30,11 @@ def confirm(question: str, default: bool = False, fg: str = None) -> bool:
 
 
 def get_linux_distro() -> str:
-    return get_linux_release_data()["ID"]
+    return get_linux_release_data().get('ID')
 
 
 def get_linux_release_data() -> dict:
     release_data = {}
-
     with open("/etc/os-release") as f:
         reader = csv.reader(f, delimiter="=")
         for row in reader:
