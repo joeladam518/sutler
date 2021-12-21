@@ -1,3 +1,4 @@
+.vagrant/
 # Text editor ignores
 .phpintel
 .idea
