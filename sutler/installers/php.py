@@ -1,7 +1,10 @@
 import click
+from os.path import exists
+from subprocess import CalledProcessError
 from typing import Optional, Union
+from ..application import App
 from ..support import List, Run, Version
-from ..utils import confirm
+from ..utils import confirm, get_linux_release_data
 
 php_extensions = {
     'common': (
@@ -60,6 +63,57 @@ def get_installed_packages(version) -> list:
     return list(filter(lambda package: bool(package), php_packages))
 
 
+def install_php_sources(os: str) -> None:
+    if os == 'debian' or os == 'raspian':
+        Run.command('apt update', root=True)
+        Run.command(
+            'apt-get install -y',
+            'lsb-release',
+            'apt-transport-https',
+            'ca-certificates',
+            'software-properties-common',
+            'gnupg2',
+            root=True
+        )
+        Run.command('wget -qO - https://packages.sury.org/php/apt.gpg | sudo apt-key add -')
+    elif os == 'ubuntu':
+        Run.command('apt update', root=True)
+        Run.command('apt install -y software-properties-common', root=True)
+        Run.command('add-apt-repository ppa:ondrej/php -y', root=True)
+
+
+def php_sources_are_installed(os: str) -> bool:
+    if os == 'debian' or os == 'raspbian':
+        if exists('/etc/apt/sources.list.d/sury-php.list'):
+            return True
+
+        try:
+            proc = Run.command(
+                "find /etc/apt/ -name *.list | xargs cat | grep  ^[[:space:]]*deb | grep 'surry' | grep 'php'"
+            )
+            return_code = proc.returncode
+        except CalledProcessError as ex:
+            return_code = ex.returncode
+
+        return return_code == 0
+    elif os == 'ubuntu':
+        version_codename = get_linux_release_data().get('VERSION_CODENAME', '')
+        if exists(f'/etc/apt/sources.list.d/ondrej-ubuntu-php-{version_codename}.list'):
+            return True
+
+        try:
+            proc = Run.command(
+                "find /etc/apt/ -name *.list | xargs cat | grep  ^[[:space:]]*deb | grep 'ondrej' | grep 'php'"
+            )
+            return_code = proc.returncode
+        except CalledProcessError as ex:
+            return_code = ex.returncode
+
+        return return_code == 0
+    else:
+        return False
+
+
 class PhpInstaller:
     @staticmethod
     def extensions(key: Optional[str] = None) -> Union[dict, tuple, None]:
@@ -83,6 +137,8 @@ class PhpInstaller:
         if env not in php_extensions:
             raise click.ClickException('Environment not supported')
 
+        app = App()
+
         # combine the extensions to be installed
         extensions = [*php_extensions['common'], *php_extensions[env], *append]
 
@@ -102,6 +158,8 @@ class PhpInstaller:
 
         click.echo()
         if confirm('Proceed?', fg='cyan'):
+            if not php_sources_are_installed(app.context.os):
+                install_php_sources(app.context.os)
             Run.command("apt update", root=True)
             Run.command("apt install -y", *packages, root=True)
         else:
