@@ -7,8 +7,9 @@ setup(
     include_package_data=True,
     install_requires=[
         'Click',
+        'GitPython',
         'jinja2',
-        'packaging'
+        'packaging',
     ],
     entry_points='''
         [console_scripts]
