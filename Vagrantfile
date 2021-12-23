@@ -13,7 +13,7 @@ Vagrant.configure("2") do |config|
     config.vm.box = "bento/ubuntu-20.04"
     config.vm.hostname = 'sutlerbox'
     config.vm.network "private_network", ip: "192.168.200.200"
-    config.vm.synced_folder ".", "/home/vagrant/repos/sutler"
+    config.vm.synced_folder ".", "/code"
 
     # Provider-specific configuration so you can fine-tune various
     # backing providers for Vagrant. These expose provider-specific options.
@@ -28,15 +28,21 @@ Vagrant.configure("2") do |config|
     # Provision the machine
     config.vm.provision "shell", inline: <<-SHELL
         apt-get update
-        apt-get upgrade
+        apt-get upgrade -y
         apt-get install -y apt-transport-https ca-certificates software-properties-common python3-pip
+
+        # Create the bin directory
         mkdir -p /home/vagrant/bin
-        cat > /home/vagrant/bin/sutler << EOF
-#!/usr/bin/env bash
-python3 /home/vagrant/repos/sutler/sutler "\$@"
-EOF
+        chown vagrant:vagrant /home/vagrant/bin
+        chmod 0755 /home/vagrant/bin
+
+        # Install a simple script to call sutler
+        touch /home/vagrant/bin/sutler
+        echo '#!/usr/bin/env bash' >> /home/vagrant/bin/sutler
+        echo 'python3 /code/sutler "$@"' >> /home/vagrant/bin/sutler
+        echo '' >> /home/vagrant/bin/sutler
         chown vagrant:vagrant /home/vagrant/bin/sutler
         chmod 0755 /home/vagrant/bin/sutler
-        pip3 install --editable /home/vagrant/repos/sutler
+        pip3 install --editable /code
     SHELL
 end
