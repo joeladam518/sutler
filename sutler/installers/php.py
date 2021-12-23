@@ -1,10 +1,9 @@
 import click
 from os.path import exists
-from subprocess import CalledProcessError
 from typing import Optional, Union
 from ..application import App
 from ..support import List, Run, Version
-from ..utils import confirm, get_linux_release_data
+from ..utils import confirm, get_os_release_value
 
 php_extensions = {
     'common': (
@@ -52,64 +51,39 @@ def extensionize(extension: str, version: str) -> str:
     return f"php{version}-{extension}"
 
 
-def get_installed_packages(version) -> list:
-    php_packages = Run.command(
-        "dpkg -l | grep php%s | sed 's/\s\{3,\}.*$//' | sed 's/^ii  //' | tr '\n' ' '" % version,
+def get_installed_packages(version: str) -> list:
+    packages = Run.command(
+        "dpkg -l | grep php%s | sed 's/^ii  //' | sed 's/ \{3,\}.*$//' | tr '\n' ' '" % version,
         capture_output=True
     )
-    php_packages = php_packages.strip()
-    php_packages = php_packages.split(' ')
-
-    return list(filter(lambda package: bool(package), php_packages))
+    packages = packages.strip().split(' ')
+    return list(filter(lambda package: bool(package), packages))
 
 
-def install_php_sources(os: str) -> None:
-    if os == 'debian' or os == 'raspian':
-        Run.command('apt update', root=True)
-        Run.command(
-            'apt-get install -y',
-            'lsb-release',
-            'apt-transport-https',
-            'ca-certificates',
-            'software-properties-common',
-            'gnupg2',
-            root=True
-        )
+def install_php_sources() -> None:
+    app = App()
+    if app.context.os in ['debian', 'raspbian']:
+        Run.install('lsb-release', 'apt-transport-https', 'ca-certificates', 'software-properties-common', 'gnupg2')
         Run.command('wget -qO - https://packages.sury.org/php/apt.gpg | sudo apt-key add -')
-    elif os == 'ubuntu':
-        Run.command('apt update', root=True)
-        Run.command('apt install -y software-properties-common', root=True)
+    elif app.context.os == 'ubuntu':
+        Run.install('software-properties-common')
         Run.command('add-apt-repository ppa:ondrej/php -y', root=True)
 
 
-def php_sources_are_installed(os: str) -> bool:
-    if os == 'debian' or os == 'raspbian':
+def php_sources_are_installed() -> bool:
+    app = App()
+    # NOTE: deb_cmd will only work for debian based machines
+    deb_cmd = "find /etc/apt/ -name *.list | xargs cat | grep ^[[:space:]]*deb | grep '%s' | grep 'php'"
+    if app.context.os in ['debian', 'raspbian']:
         if exists('/etc/apt/sources.list.d/sury-php.list'):
             return True
-
-        try:
-            proc = Run.command(
-                "find /etc/apt/ -name *.list | xargs cat | grep  ^[[:space:]]*deb | grep 'surry' | grep 'php'"
-            )
-            return_code = proc.returncode
-        except CalledProcessError as ex:
-            return_code = ex.returncode
-
-        return return_code == 0
-    elif os == 'ubuntu':
-        version_codename = get_linux_release_data().get('VERSION_CODENAME', '')
-        if exists(f'/etc/apt/sources.list.d/ondrej-ubuntu-php-{version_codename}.list'):
+        proc = Run.command(deb_cmd % 'sury', check=False, supress_output=True)
+        return proc.returncode == 0
+    elif app.context.os == 'ubuntu':
+        if exists(f"/etc/apt/sources.list.d/ondrej-ubuntu-php-{get_os_release_value('VERSION_CODENAME')}.list"):
             return True
-
-        try:
-            proc = Run.command(
-                "find /etc/apt/ -name *.list | xargs cat | grep  ^[[:space:]]*deb | grep 'ondrej' | grep 'php'"
-            )
-            return_code = proc.returncode
-        except CalledProcessError as ex:
-            return_code = ex.returncode
-
-        return return_code == 0
+        proc = Run.command(deb_cmd % 'ondrej', check=False, supress_output=True)
+        return proc.returncode == 0
     else:
         return False
 
@@ -137,8 +111,6 @@ class PhpInstaller:
         if env not in php_extensions:
             raise click.ClickException('Environment not supported')
 
-        app = App()
-
         # combine the extensions to be installed
         extensions = [*php_extensions['common'], *php_extensions[env], *append]
 
@@ -158,10 +130,9 @@ class PhpInstaller:
 
         click.echo()
         if confirm('Proceed?', fg='cyan'):
-            if not php_sources_are_installed(app.context.os):
-                install_php_sources(app.context.os)
-            Run.command("apt update", root=True)
-            Run.command("apt install -y", *packages, root=True)
+            if not php_sources_are_installed():
+                install_php_sources()
+            Run.install(*packages)
         else:
             click.secho('Exiting...')
 
@@ -184,8 +155,7 @@ class PhpInstaller:
 
         click.echo()
         if confirm('Proceed?', fg='cyan'):
-            Run.command("apt-get purge -y", *packages, root=True)
-            Run.command("apt-get --purge autoremove -y", root=True)
+            Run.uninstall(*packages)
         else:
             click.secho('Exiting...')
 
