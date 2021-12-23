@@ -1,4 +1,5 @@
 import click
+from click.core import Context as ClickContext
 from ..installers import FzfInstaller, NodeInstaller, PhpInstaller, RedisInstaller
 
 
@@ -8,26 +9,28 @@ def install():
 
 
 @click.command()
-def dotfiles():
+@click.pass_context
+def dotfiles(ctx: ClickContext):
     click.echo("Installing dotfiles!")
 
 
 @click.command()
 @click.pass_context
-def fzf(ctx):
+def fzf(ctx: ClickContext):
     installer = FzfInstaller(ctx)
     installer.install()
 
 
 @click.command()
-def mariadb():
+@click.pass_context
+def mariadb(ctx: ClickContext):
     click.echo("Installing mariadb!")
 
 
 @click.command()
 @click.pass_context
 @click.argument('version', type=str, required=True)
-def nodejs(ctx, version):
+def nodejs(ctx: ClickContext, version: str):
     installer = NodeInstaller(ctx)
     installer.install(version)
 
@@ -41,21 +44,21 @@ def nodejs(ctx, version):
               help="Any additional extension you might want to install")
 @click.option('-x', '--exclude', 'exclude', type=str, multiple=True, default=(),
               help="Extension you want to exclude from installing")
-def php(ctx, version, environment, additional, exclude):
+def php(ctx: ClickContext, version: str, environment: str, additional: tuple, exclude: tuple):
     installer = PhpInstaller(ctx)
     installer.install(version, environment, additional, exclude)
 
 
 @click.command()
 @click.pass_context
-def php_composer(ctx):
+def php_composer(ctx: ClickContext):
     installer = PhpInstaller(ctx)
     installer.install_composer()
 
 
 @click.command()
 @click.pass_context
-def redis(ctx):
+def redis(ctx: ClickContext):
     installer = RedisInstaller(ctx)
     installer.install()
 
