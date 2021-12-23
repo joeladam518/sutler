@@ -1,10 +1,17 @@
 import click
-from ..installers import NodeInstaller, PhpInstaller, RedisInstaller
+from ..installers import FzfInstaller, NodeInstaller, PhpInstaller, RedisInstaller
 
 
 @click.group()
 def uninstall():
     pass
+
+
+@click.command()
+@click.pass_context
+def fzf(ctx):
+    installer = FzfInstaller(ctx)
+    installer.uninstall()
 
 
 @click.command()
@@ -29,6 +36,7 @@ def redis(ctx):
     installer.uninstall()
 
 
+uninstall.add_command(fzf)
 uninstall.add_command(nodejs)
 uninstall.add_command(php)
 uninstall.add_command(redis)

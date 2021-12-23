@@ -1,7 +1,5 @@
 import click
-from ..application import App
-from ..installers import PhpInstaller, NodeInstaller, RedisInstaller
-from ..support import Run
+from ..installers import FzfInstaller, NodeInstaller, PhpInstaller, RedisInstaller
 
 
 @click.group()
@@ -17,8 +15,8 @@ def dotfiles():
 @click.command()
 @click.pass_context
 def fzf(ctx):
-    app = ctx.find_root().obj.get('app', App())
-    Run.script(f"{app.context.get_path('scripts')}/install-fzf")
+    installer = FzfInstaller(ctx)
+    installer.install()
 
 
 @click.command()

@@ -1,5 +1,6 @@
 from click.core import Context
 from abc import ABC
+from ..application import App
 
 
 class Installer(ABC):
