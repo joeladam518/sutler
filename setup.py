@@ -9,7 +9,6 @@ setup(
         'Click',
         'GitPython',
         'jinja2',
-        'packaging',
     ],
     entry_points='''
         [console_scripts]

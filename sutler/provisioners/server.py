@@ -2,7 +2,7 @@ import click
 import os
 from git import Repo
 from ..application import App
-from ..support
+from ..support import run
 from .provisioner import Provisioner
 
 
@@ -10,8 +10,7 @@ class ServerProvisioner(Provisioner):
     def run(self):
         click.echo('Setting up your generic server')
 
-        app = App()
-        os.chdir(app.context.user.home)
+        os.chdir(self.app.context.user.home)
 
         if not os.path.isdir('./repos'):
             os.mkdir('repos')
