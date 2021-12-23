@@ -59,12 +59,12 @@ class Run(object):
                 return completed_process.stdout.decode(sys.getdefaultencoding())
 
     @staticmethod
-    def script(name: str, *args, **kwargs):
+    def script(path: str, *args, **kwargs):
         app = App()
         supress_output = kwargs.get('supress_output', False)
         stdout = subprocess.DEVNULL if supress_output else None
         capture_output = False if supress_output else kwargs.get('capture_output', False)
-        arguments = [f"{app.context.get_path('scripts')}/{name}", *args]
+        arguments = [path, *args]
 
         if bool(kwargs.get('root', False)):
             arguments.insert(0, 'sudo')

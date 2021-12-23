@@ -1,4 +1,5 @@
 import click
+from ..application import App
 from ..installers import PhpInstaller, NodeInstaller, RedisInstaller
 from ..support import Run
 
@@ -8,28 +9,33 @@ def install():
     pass
 
 
-@install.command()
+@click.command()
 def dotfiles():
     click.echo("Installing dotfiles!")
 
 
-@install.command()
-def fzf():
-    Run.script('install-fzf')
+@click.command()
+@click.pass_context
+def fzf(ctx):
+    app = ctx.find_root().obj.get('app', App())
+    Run.script(f"{app.context.get_path('scripts')}/install-fzf")
 
 
-@install.command()
+@click.command()
 def mariadb():
     click.echo("Installing mariadb!")
 
 
-@install.command()
+@click.command()
+@click.pass_context
 @click.argument('version', type=str, required=True)
-def nodejs(version):
-    NodeInstaller.install(version)
+def nodejs(ctx, version):
+    installer = NodeInstaller(ctx)
+    installer.install(version)
 
 
-@install.command()
+@click.command()
+@click.pass_context
 @click.argument('version', type=str, required=True)
 @click.option('-e', '--env', 'environment', type=str, default='desktop',
               help='The environment on witch to install php on.')
@@ -37,18 +43,23 @@ def nodejs(version):
               help="Any additional extension you might want to install")
 @click.option('-x', '--exclude', 'exclude', type=str, multiple=True, default=(),
               help="Extension you want to exclude from installing")
-def php(version, environment, additional, exclude):
-    PhpInstaller.install(version, environment, additional, exclude)
+def php(ctx, version, environment, additional, exclude):
+    installer = PhpInstaller(ctx)
+    installer.install(version, environment, additional, exclude)
 
 
-@install.command()
-def php_composer():
-    Run.script('install-php-composer')
+@click.command()
+@click.pass_context
+def php_composer(ctx):
+    installer = PhpInstaller(ctx)
+    installer.install_composer()
 
 
-@install.command()
-def redis():
-    RedisInstaller.install()
+@click.command()
+@click.pass_context
+def redis(ctx):
+    installer = RedisInstaller(ctx)
+    installer.install()
 
 
 install.add_command(dotfiles)

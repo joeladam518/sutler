@@ -1,11 +1,10 @@
 from ..support import Run
+from .installer import Installer
 
 
-class RedisInstaller:
-    @staticmethod
-    def install():
+class RedisInstaller(Installer):
+    def install(self):
         Run.install('redis-server')
 
-    @staticmethod
-    def uninstall():
+    def uninstall(self):
         Run.uninstall('redis-server')
