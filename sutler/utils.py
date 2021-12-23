@@ -29,30 +29,56 @@ def confirm(question: str, default: bool = False, fg: str = None) -> bool:
     return default
 
 
-def get_linux_distro() -> str:
-    return get_linux_release_data().get('ID')
+def get_distro() -> str:
+    return get_os_release_value('ID')
 
 
-def get_linux_release_data() -> dict:
-    release_data = {}
-    with open("/etc/os-release") as f:
-        reader = csv.reader(f, delimiter="=")
-        for row in reader:
-            if row:
-                release_data[row[0]] = row[1]
-
-    return release_data
+def get_distro_like() -> str:
+    return get_os_release_value('ID_LIKE')
 
 
 def get_os() -> str:
+    system = get_platform()
+
+    if system == 'linux':
+        return get_distro()
+
+    return system
+
+
+def get_os_like() -> str:
+    system = get_platform()
+
+    if system == 'linux':
+        return get_distro_like()
+
+    return system
+
+
+def get_os_release() -> dict:
+    if not os.path.exists('/etc/os-release'):
+        return {}
+
+    with open('/etc/os-release') as f:
+        reader = csv.reader(f, delimiter="=")
+        data = {key: value for key, value in reader}
+
+    return data
+
+
+def get_os_release_value(key: str) -> str:
+    return get_os_release().get(key, '')
+
+
+def get_platform() -> str:
+    if sys.platform in ['win32', 'win64', 'cygwin']:
+        return 'windows'
+
     if sys.platform == 'darwin':
         return 'mac'
 
     if sys.platform == 'linux':
-        return get_linux_distro()
-
-    if sys.platform in ['win32', 'win64', 'cygwin']:
-        return 'windows'
+        return 'linux'
 
     system = platform.system().lower()
 
