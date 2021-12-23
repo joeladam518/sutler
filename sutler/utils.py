@@ -4,6 +4,7 @@ import csv
 import ctypes
 import platform
 import sys
+import shutil
 
 
 def confirm(question: str, default: bool = False, fg: str = None) -> bool:
@@ -95,3 +96,11 @@ def is_root() -> bool:
         is_admin = ctypes.windll.shell32.IsUserAnAdmin() != 0
 
     return is_admin
+
+
+def remove(path: str) -> None:
+    if os.path.exists(path):
+        if os.path.isfile(path) or os.path.islink(path):
+            os.unlink(path)
+        else:
+            shutil.rmtree(path)
