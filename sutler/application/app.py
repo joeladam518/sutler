@@ -4,15 +4,15 @@ from .context import Context
 from jinja2 import Environment, FileSystemLoader
 from .singleton import SingletonMeta
 from ..support import OS
-from typing import Optional
 from .user import User
+
 
 class App(metaclass=SingletonMeta):
     """
     TODO: do I really need this singleton?
     """
     def __init__(self):
-        self.base_path: str = os.path.dirname(os.path.dirname(os.path.abspath(__file__))).rstrip('/')
+        self.base_path = os.path.dirname(os.path.dirname(os.path.abspath(__file__))).rstrip(os.sep)
         self.context = Context(OS.type(), OS.type_like(), OS.shell(), User(getpass.getuser(), os.getuid(), os.getgid()))
         self.jinja = Environment(loader=FileSystemLoader(self.templates_path()))
 
