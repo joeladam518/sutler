@@ -1,4 +1,5 @@
 import click
+from click.core import Context as ClickContext
 from .application import App
 from .commands import install, setup, uninstall
 from .commands import context, test
@@ -6,12 +7,10 @@ from .commands import context, test
 
 @click.group(context_settings={"help_option_names": ['-h', '--help']})
 @click.pass_context
-def cli(ctx):
-    app = App()
-    if app.user_is_root():
-        raise click.ClickException("You're not allowed to run sutler as root.")
-    ctx.ensure_object(dict)
-    ctx.obj['app'] = app
+def cli(ctx: ClickContext):
+    app = ctx.ensure_object(App)
+    if app.is_root():
+        raise ctx.fail("You're not allowed to run sutler as root.")
 
 
 # noinspection PyTypeChecker

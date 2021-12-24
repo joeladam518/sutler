@@ -10,6 +10,9 @@ from .user import User
 
 
 class App(metaclass=SingletonMeta):
+    """
+    TODO: do I really need this singleton?
+    """
     def __init__(self):
         self.context = Context(OS.type(), OS.type_like(), OS.shell(), User(getpass.getuser(), os.getuid(), os.getgid()))
         self.set_path('root', os.path.dirname(os.path.dirname(os.path.abspath(__file__))))
@@ -40,6 +43,9 @@ class App(metaclass=SingletonMeta):
     def get_path(self, key: str) -> Optional[str]:
         return self.context.paths.get(key, None)
 
+    def is_root(self) -> bool:
+        return OS.is_root()
+
     def os_type(self) -> str:
         if self.context.os in ['debian', 'raspbian', 'ubuntu']:
             return 'debian'
@@ -50,6 +56,3 @@ class App(metaclass=SingletonMeta):
         if not os.path.exists(path):
             raise FileNotFoundError('Path not found.')
         self.context.paths[key] = path
-
-    def user_is_root(self) -> bool:
-        return OS.is_root()
