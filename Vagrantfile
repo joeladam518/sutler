@@ -32,18 +32,13 @@ Vagrant.configure("2") do |config|
         apt-get upgrade -y
         apt-get install -y apt-transport-https ca-certificates software-properties-common python3-pip
 
-        # Create the bin directory
+        # Create the home bin directory
         mkdir -p /home/vagrant/bin
         chown vagrant:vagrant /home/vagrant/bin
         chmod 0755 /home/vagrant/bin
 
-        # Install a simple script to call sutler
-        touch /home/vagrant/bin/sutler
-        echo '#!/usr/bin/env bash' >> /home/vagrant/bin/sutler
-        echo 'python3 /code/sutler "$@"' >> /home/vagrant/bin/sutler
-        echo '' >> /home/vagrant/bin/sutler
-        chown vagrant:vagrant /home/vagrant/bin/sutler
-        chmod 0755 /home/vagrant/bin/sutler
-        pip3 install --editable /code
+        # Link to the proxy script so you develop
+        cd /home/vagrant/bin && ln -s /code/scripts/sutler
+        cd /code pip3 install --editable .
     SHELL
 end
