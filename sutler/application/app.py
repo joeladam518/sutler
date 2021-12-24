@@ -1,4 +1,3 @@
-import click
 import os
 import getpass
 from .context import Context
