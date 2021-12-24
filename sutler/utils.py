@@ -38,21 +38,21 @@ def get_distro_like() -> str:
 
 
 def get_os() -> str:
-    system = get_platform()
+    sys_platform = get_platform()
 
-    if system == 'linux':
+    if sys_platform == 'linux':
         return get_distro()
 
-    return system
+    return sys_platform
 
 
 def get_os_like() -> str:
-    system = get_platform()
+    sys_platform = get_platform()
 
-    if system == 'linux':
+    if sys_platform == 'linux':
         return get_distro_like()
 
-    return system
+    return sys_platform
 
 
 def get_os_release() -> dict:
