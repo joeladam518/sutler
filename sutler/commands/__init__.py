@@ -9,5 +9,5 @@ __all__ = [
     'install',
     'setup',
     'test',
-    'uninstall',
+    'uninstall'
 ]

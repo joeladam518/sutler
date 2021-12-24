@@ -1,7 +1,7 @@
 import os
 import getpass
-from jinja2 import Environment, FileSystemLoader
 from .context import Context
+from jinja2 import Environment, FileSystemLoader
 from .singleton import SingletonMeta
 from .user import User
 from ..utils import get_os, is_root

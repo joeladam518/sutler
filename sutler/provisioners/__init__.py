@@ -3,4 +3,8 @@ from .desktop import DesktopProvisioner
 from .lemp import LempProvisioner
 from .server import ServerProvisioner
 
-__all__ = ['DesktopProvisioner', 'LempProvisioner', 'ServerProvisioner']
+__all__ = [
+    'DesktopProvisioner',
+    'LempProvisioner',
+    'ServerProvisioner'
+]
