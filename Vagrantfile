@@ -10,7 +10,8 @@ Vagrant.configure("2") do |config|
     # For a complete reference, please see the online documentation at
     # https://docs.vagrantup.com.
 
-    config.vm.box = "bento/ubuntu-20.04"
+    #config.vm.box = "bento/ubuntu-20.04"
+    config.vm.box = "bento/debian-11"
     config.vm.hostname = 'sutlerbox'
     config.vm.network "private_network", ip: "192.168.200.200"
     config.vm.synced_folder ".", "/code"
