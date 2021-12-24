@@ -1,10 +1,9 @@
 import click
-from os.path import exists
-from typing import Optional, Union
-from ..application import App
-from ..support import List, Run, Version
-from ..utils import confirm, get_os_release_value
+from ..application import Run
+from ..helpers import confirm
 from .installer import Installer
+from os.path import exists
+from ..support import List, OS, Version
 
 php_extensions = {
     'common': (
@@ -53,11 +52,10 @@ def extensionize(extension: str, version: str) -> str:
 
 
 def get_installed_packages(version: str) -> list:
-    packages = Run.command(
-        "dpkg -l | grep php%s | sed 's/^ii  //' | sed 's/ \{3,\}.*$//' | tr '\n' ' '" % version,
-        capture_output=True
-    )
+    cmd = "dpkg -l | grep php%s | sed 's/^ii\s*//' | sed 's/\s\{3,\}.*$//' | tr '\n' ' '"
+    packages = Run.command(cmd % version, capture_output=True)
     packages = packages.strip().split(' ')
+
     return list(filter(lambda package: bool(package), packages))
 
 
@@ -136,16 +134,17 @@ class PhpInstaller(Installer):
 
     def _php_sources_are_installed(self) -> bool:
         # NOTE: deb_cmd will only work for debian based machines
-        deb_cmd = "find /etc/apt/ -name *.list | xargs cat | grep ^[[:space:]]*deb | grep '%s' | grep 'php'"
+        cmd = "find /etc/apt/ -name *.list | xargs cat | grep ^[[:space:]]*deb | grep '%s' | grep 'php'"
         if self.app.context.os in ['debian', 'raspbian']:
             if exists('/etc/apt/sources.list.d/sury-php.list'):
                 return True
-            proc = Run.command(deb_cmd % 'sury', check=False, supress_output=True)
+            proc = Run.command(cmd % 'sury', check=False, supress_output=True)
             return proc.returncode == 0
-        elif self.app.context.os == 'ubuntu':
-            if exists(f"/etc/apt/sources.list.d/ondrej-ubuntu-php-{get_os_release_value('VERSION_CODENAME')}.list"):
+
+        if self.app.context.os == 'ubuntu':
+            if exists(f"/etc/apt/sources.list.d/ondrej-ubuntu-php-{OS.get_release_value('VERSION_CODENAME')}.list"):
                 return True
-            proc = Run.command(deb_cmd % 'ondrej', check=False, supress_output=True)
+            proc = Run.command(cmd % 'ondrej', check=False, supress_output=True)
             return proc.returncode == 0
-        else:
-            return False
+
+        return False

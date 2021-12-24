@@ -1,6 +1,6 @@
 import click
 from ..application import App
-from ..support import Version
+from ..support import OS
 
 
 @click.command()
@@ -11,8 +11,5 @@ def context():
 
 @click.command()
 def test():
-    version_a = (8, 1)
-    version_b = '8.1.1'
-    print(f"Version({str(version_a)}) == Version({str(version_b)})")
-    print(str(Version((8, 1)) == Version('8.1.0')))
-    # print(Version('7.4'))
+    print(f"os type:      {OS.type()}")
+    print(f"os type like: {OS.type_like()}")

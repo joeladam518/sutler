@@ -1,8 +1,8 @@
 import os
 from git import Repo
-from ..support import Run
+from ..application import Run
+from ..support import OS
 from .installer import Installer
-from ..utils import remove
 
 
 class FzfInstaller(Installer):
@@ -24,4 +24,4 @@ class FzfInstaller(Installer):
             return
 
         Run.script(f"{home_dir}/.fzf/uninstall")
-        remove(f'{home_dir}/.fzf')
+        OS.rm(f'{home_dir}/.fzf')

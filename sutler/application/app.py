@@ -1,22 +1,27 @@
+import click
 import os
 import getpass
 from .context import Context
 from jinja2 import Environment, FileSystemLoader
 from .singleton import SingletonMeta
+from ..support import OS
+from typing import Optional
 from .user import User
-from ..utils import get_os, is_root
 
 
 class App(metaclass=SingletonMeta):
     def __init__(self):
-        self.context = Context(get_os(), User(os.getuid(), os.getgid(), getpass.getuser()))
-        self.context.set_path('root', os.path.dirname(os.path.dirname(os.path.abspath(__file__))))
-        self.context.set_path('templates', f"{self.context.get_path('root')}/templates")
-        self.context.set_path('scripts', f"{self.context.get_path('root')}/scripts")
-        self.jinja = Environment(loader=FileSystemLoader(self.context.get_path('templates')))
+        self.context = Context(OS.type(), OS.type_like(), OS.shell(), User(getpass.getuser(), os.getuid(), os.getgid()))
+        self.set_path('root', os.path.dirname(os.path.dirname(os.path.abspath(__file__))))
+        self.set_path('scripts', f"{self.get_path('root')}/scripts")
+        self.set_path('templates', f"{self.get_path('root')}/templates")
+        self.jinja = Environment(loader=FileSystemLoader(self.get_path('templates')))
 
-    def drop_privileges(self):
-        if not is_root():
+    def del_path(self, key: str) -> None:
+        del self.context.paths[key]
+
+    def drop_privileges(self) -> None:
+        if not OS.is_root():
             # We're not root so, like, whatever dude
             return
 
@@ -32,8 +37,19 @@ class App(metaclass=SingletonMeta):
         # 0o027 == 0750 for directories and 0640 for files
         os.umask(0o027)
 
-    def os_type(self):
+    def get_path(self, key: str) -> Optional[str]:
+        return self.context.paths.get(key, None)
+
+    def os_type(self) -> str:
         if self.context.os in ['debian', 'raspbian', 'ubuntu']:
             return 'debian'
         else:
             return self.context.os
+
+    def set_path(self, key: str, path: str) -> None:
+        if not os.path.exists(path):
+            raise FileNotFoundError('Path not found.')
+        self.context.paths[key] = path
+
+    def user_is_root(self) -> bool:
+        return OS.is_root()
