@@ -39,6 +39,6 @@ Vagrant.configure("2") do |config|
 
         # Link to the proxy script so you develop
         cd /home/vagrant/bin && ln -s /code/scripts/sutler
-        cd /code pip3 install --editable .
+        cd /code && pip3 install --editable .
     SHELL
 end
