@@ -11,5 +11,5 @@ class User(object):
 
     def print(self):
         for key, value in vars(self).items():
-            click.secho(f"{key}", nl=False, fg='bright_black')
-            click.secho(f": {value}")
+            click.secho(f"{key}", nl=False, fg='white')
+            click.secho(f": {value}", fg='bright_white')
