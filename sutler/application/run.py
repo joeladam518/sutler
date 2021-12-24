@@ -12,7 +12,7 @@ class Run(object):
         stdout = subprocess.DEVNULL if supress_output else None
         arguments = [cmd, *args]
 
-        if bool(kwargs.get('root', False)):
+        if kwargs.get('root', False):
             arguments.insert(0, 'sudo')
 
         try:
@@ -53,7 +53,7 @@ class Run(object):
         capture_output = False if supress_output else kwargs.get('capture_output', False)
         arguments = [path, *args]
 
-        if bool(kwargs.get('root', False)):
+        if kwargs.get('root', False):
             arguments.insert(0, 'sudo')
 
         try:

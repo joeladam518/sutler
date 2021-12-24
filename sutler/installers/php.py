@@ -126,14 +126,17 @@ class PhpInstaller(Installer):
 
     def _install_php_sources(self) -> None:
         if self.app.context.os in ['debian', 'raspbian']:
-            Run.install('lsb-release', 'apt-transport-https', 'ca-certificates', 'software-properties-common', 'gnupg2')
-            Run.command('wget -qO - https://packages.sury.org/php/apt.gpg | sudo apt-key add -')
+            Run.install('apt-transport-https', 'ca-certificates', 'software-properties-common', 'lsb-release', 'gnupg2')
+            Run.command('wget -O /etc/apt/trusted.gpg.d/php.gpg https://packages.sury.org/php/apt.gpg', root=True)
+            source = 'deb https://packages.sury.org/php/ $(lsb_release -sc) main'
+            file_path = '/etc/apt/sources.list.d/sury-php.list'
+            Run.command(f'echo "{source}" | sudo tee {file_path}')
         elif self.app.context.os == 'ubuntu':
             Run.install('software-properties-common')
             Run.command('add-apt-repository ppa:ondrej/php -y', root=True)
 
     def _php_sources_are_installed(self) -> bool:
-        # NOTE: deb_cmd will only work for debian based machines
+        # NOTE: 'cmd' will only work for debian based machines
         cmd = "find /etc/apt/ -name *.list | xargs cat | grep ^[[:space:]]*deb | grep '%s' | grep 'php'"
         if self.app.context.os in ['debian', 'raspbian']:
             if exists('/etc/apt/sources.list.d/sury-php.list'):
