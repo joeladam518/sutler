@@ -96,9 +96,6 @@ class PhpInstaller(Installer):
 
         click.echo()
 
-    def install_composer(self):
-        Run.script(f"{self.app.context.get_path('scripts')}/install-php-composer")
-
     def uninstall(self, version: str) -> None:
         if version not in php_versions['uninstall']:
             self.ctx.fail('Invalid php version')
