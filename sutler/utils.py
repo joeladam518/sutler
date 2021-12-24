@@ -7,17 +7,16 @@ import sys
 import shutil
 
 
-def confirm(question: str, default: bool = False, fg: str = None) -> bool:
-    tries = 2
-    valid = {"yes": True, "y": True, "ye": True, "no": False, "n": False}
-    prompt = " [y/N] "
+def confirm(question: str, tries: int = 2, fg: str = None) -> bool:
+    question = f"{question} [y/N] "
+    valid = {"yes": True, "ye": True, "y": True, "no": False, "n": False}
 
     while tries > 0:
         if fg:
-            click.secho(question + prompt, nl=False, fg=fg)
+            click.secho(question, nl=False, fg=fg)
             choice = input().lower()
         else:
-            choice = input(question + prompt).lower()
+            choice = input(question).lower()
 
         if choice in valid:
             return valid[choice]
@@ -27,7 +26,7 @@ def confirm(question: str, default: bool = False, fg: str = None) -> bool:
         if tries > 0:
             click.secho("Please enter 'yes' or 'no'", fg='yellow')
 
-    return default
+    return False
 
 
 def get_distro() -> str:
