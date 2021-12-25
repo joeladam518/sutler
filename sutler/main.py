@@ -10,7 +10,7 @@ from .commands import context, test
 def cli(ctx: ClickContext):
     app = ctx.ensure_object(App)
     if app.is_root():
-        raise ctx.fail("You're not allowed to run sutler as root.")
+        ctx.fail("You're not allowed to run sutler as root.")
 
 
 # noinspection PyTypeChecker

@@ -117,8 +117,6 @@ class PhpInstaller(Installer):
         else:
             click.secho('Exiting...')
 
-        # TODO: uninstall the apt-sources list
-
         click.echo()
 
     def _install_php_sources(self) -> None:
