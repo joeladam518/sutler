@@ -51,7 +51,6 @@ class Run(object):
     def install(cls, *args) -> None:
         app = App()
         if app.os_type() == 'debian':
-            cls.command('apt update', root=True)
             cls.command('apt install -y', *args, root=True)
         else:
             raise TypeError('Unsupported os type.')
