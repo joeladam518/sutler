@@ -37,7 +37,8 @@ class Run(object):
                 shell=True,
                 executable=app.context.shell,
                 stdout=stdout,
-                capture_output=capture_output
+                capture_output=capture_output,
+                env=kwargs.get('env', None)
             )
         except Exception as ex:
             app.drop_privileges()
@@ -74,7 +75,8 @@ class Run(object):
                 arguments,
                 check=kwargs.get('check', True),
                 stdout=stdout,
-                capture_output=capture_output
+                capture_output=capture_output,
+                env=kwargs.get('env', None)
             )
         except Exception as ex:
             app.drop_privileges()
@@ -92,5 +94,16 @@ class Run(object):
             # cls.command("apt-get --purge autoremove -y", root=True)
             cls.command('apt purge -y', *args, root=True)
             cls.command('apt autoremove -y', root=True)
+        else:
+            raise TypeError('Unsupported os type.')
+
+    @classmethod
+    def update_and_upgrade(cls):
+        app = App()
+        if app.os_type() == 'debian':
+            env = os.environ.copy()
+            env['DEBIAN_FRONTEND'] = 'noninteractive'
+            cls.command('apt update', root=True)
+            cls.command('apt upgrade -y', root=True, env=env)
         else:
             raise TypeError('Unsupported os type.')
