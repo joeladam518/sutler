@@ -33,10 +33,11 @@ class ComposerInstaller(Installer):
         try:
             Run.command(f'php {composer_setup_path}')
             Run.command(f'mv {composer_path} /usr/local/bin/composer', root=True)
-        except CalledProcessError:
-            pass
-
-        Run.command(f'rm {composer_setup_path}')
+        except CalledProcessError as ex:
+            Run.command(f'rm {composer_setup_path}')
+            raise ex
+        else:
+            Run.command(f'rm {composer_setup_path}')
 
     def uninstall(self):
         Run.command('rm /usr/local/bin/composer', root=True)
