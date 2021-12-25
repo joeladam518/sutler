@@ -97,6 +97,14 @@ class Run(object):
             raise TypeError('Unsupported os type.')
 
     @classmethod
+    def update(cls):
+        app = App()
+        if app.os_type() == 'debian':
+            cls.command('apt update', root=True)
+        else:
+            raise TypeError('Unsupported os type.')
+
+    @classmethod
     def update_and_upgrade(cls):
         app = App()
         if app.os_type() == 'debian':
