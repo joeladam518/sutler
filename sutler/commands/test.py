@@ -21,4 +21,5 @@ def context(ctx: ClickContext):
 @click.command()
 @click.pass_context
 def test(ctx: ClickContext):
-    app: App = ctx.find_root().obj
+    # app: App = ctx.find_root().obj
+    pass

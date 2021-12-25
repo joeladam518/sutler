@@ -21,7 +21,6 @@ class FzfInstaller(Installer):
 
         if not os.path.exists(f'{home_dir}/.fzf/uninstall'):
             self.ctx.fail('Could not find fzf\'s uninstall script.')
-            return
 
         Run.script(f"{home_dir}/.fzf/uninstall")
         OS.rm(f'{home_dir}/.fzf')

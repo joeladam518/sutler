@@ -63,11 +63,9 @@ class PhpInstaller(Installer):
     def install(self, version: str, env: str = 'desktop', append: tuple = (), exclude: tuple = ()) -> None:
         if version not in php_versions['install']:
             self.ctx.fail('Invalid php version')
-            return
 
         if env not in php_extensions:
             self.ctx.fail('Environment not supported')
-            return
 
         # combine the extensions to be installed
         extensions = [*php_extensions['common'], *php_extensions[env], *append]
@@ -100,7 +98,6 @@ class PhpInstaller(Installer):
     def uninstall(self, version: str) -> None:
         if version not in php_versions['uninstall']:
             self.ctx.fail('Invalid php version')
-            return
 
         packages = get_installed_packages(version)
 
