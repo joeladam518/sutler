@@ -105,5 +105,6 @@ class Run(object):
             env['DEBIAN_FRONTEND'] = 'noninteractive'
             cls.command('apt update', root=True)
             cls.command('apt upgrade -y', root=True, env=env)
+            cls.command('apt autoremove -y', root=True)
         else:
             raise TypeError('Unsupported os type.')
