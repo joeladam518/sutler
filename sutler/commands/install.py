@@ -11,13 +11,6 @@ def install():
 
 @click.command()
 @click.pass_context
-def composer(ctx: ClickContext):
-    installer = ComposerInstaller(ctx)
-    installer.install()
-
-
-@click.command()
-@click.pass_context
 def dotfiles(ctx: ClickContext):
     installer = DotfilesInstaller(ctx)
     installer.install()
@@ -62,8 +55,8 @@ def php(ctx: ClickContext, version: str, environment: str, additional: tuple, ex
 @click.command()
 @click.pass_context
 def php_composer(ctx: ClickContext):
-    installer = PhpInstaller(ctx)
-    installer.install_composer()
+    installer = ComposerInstaller(ctx)
+    installer.install()
 
 
 @click.command()
