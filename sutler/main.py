@@ -10,7 +10,9 @@ from .commands import context, test
 def cli(ctx: ClickContext):
     app = ctx.ensure_object(App)
     if app.is_root():
-        ctx.fail("You're not allowed to run sutler as root.")
+        ctx.fail("You're not allowed to run sutler as root")
+    if app.os_type() != 'debian':
+        ctx.fail("Sorry, sutler currently only supports Debian based systems")
 
 
 # noinspection PyTypeChecker
