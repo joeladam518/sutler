@@ -1,22 +1,37 @@
+import os
 import subprocess
 import sys
+from typing import Union
 from sutler.application import App
+
+# Types
+CompletedProcess = subprocess.CompletedProcess
+RunOutput = Union[CompletedProcess, str]
+
+
+def handle_completed_process(process: CompletedProcess, capture_output: bool) -> RunOutput:
+    if not capture_output:
+        return process
+    elif process.returncode > 0:
+        return process.stderr.decode(sys.getdefaultencoding())
+    else:
+        return process.stdout.decode(sys.getdefaultencoding())
 
 
 class Run(object):
     @staticmethod
-    def command(cmd: str, *args, **kwargs):
+    def command(cmd: str, *args, **kwargs) -> RunOutput:
         app = App()
+        arguments = [cmd, *args]
         supress_output = kwargs.get('supress_output', False)
         capture_output = False if supress_output else kwargs.get('capture_output', False)
         stdout = subprocess.DEVNULL if supress_output else None
-        arguments = [cmd, *args]
 
         if kwargs.get('root', False):
             arguments.insert(0, 'sudo')
 
         try:
-            completed_process = subprocess.run(
+            proc = subprocess.run(
                 ' '.join(arguments),
                 check=kwargs.get('check', True),
                 shell=True,
@@ -29,15 +44,10 @@ class Run(object):
             raise ex
         else:
             app.drop_privileges()
-            if not capture_output:
-                return completed_process
-            elif completed_process.returncode > 0:
-                return completed_process.stderr.decode(sys.getdefaultencoding())
-            else:
-                return completed_process.stdout.decode(sys.getdefaultencoding())
+            return handle_completed_process(proc, capture_output)
 
     @classmethod
-    def install(cls, *args):
+    def install(cls, *args) -> None:
         app = App()
         if app.os_type() == 'debian':
             cls.command('apt update', root=True)
@@ -46,18 +56,21 @@ class Run(object):
             raise TypeError('Unsupported os type.')
 
     @staticmethod
-    def script(path: str, *args, **kwargs):
+    def script(path: str, *args, **kwargs) -> RunOutput:
+        if not os.path.exists(path):
+            raise FileNotFoundError(f"'{path}' was not found.")
+
         app = App()
-        supress_output = kwargs.get('supress_output', False)
-        stdout = subprocess.DEVNULL if supress_output else None
-        capture_output = False if supress_output else kwargs.get('capture_output', False)
         arguments = [path, *args]
+        supress_output = kwargs.get('supress_output', False)
+        capture_output = False if supress_output else kwargs.get('capture_output', False)
+        stdout = subprocess.DEVNULL if supress_output else None
 
         if kwargs.get('root', False):
             arguments.insert(0, 'sudo')
 
         try:
-            completed_process = subprocess.run(
+            proc = subprocess.run(
                 arguments,
                 check=kwargs.get('check', True),
                 stdout=stdout,
@@ -68,15 +81,10 @@ class Run(object):
             raise ex
         else:
             app.drop_privileges()
-            if not capture_output:
-                return completed_process
-            elif completed_process.returncode > 0:
-                return completed_process.stderr.decode(sys.getdefaultencoding())
-            else:
-                return completed_process.stdout.decode(sys.getdefaultencoding())
+            return handle_completed_process(proc, capture_output)
 
     @classmethod
-    def uninstall(cls, *args):
+    def uninstall(cls, *args) -> None:
         app = App()
         if app.os_type() == 'debian':
             # TODO: Which is the better way?
