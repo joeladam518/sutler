@@ -46,9 +46,9 @@ class App(metaclass=SingletonMeta):
     def scripts_path(self, *paths: str) -> str:
         scripts_path = os.path.join(self.base_path, 'scripts')
         paths = list(map(lambda path: path.strip().rstrip(os.sep), paths))
-        return scripts_path if len(paths) == 0 else os.path.join(self.base_path, *paths)
+        return scripts_path if len(paths) == 0 else os.path.join(scripts_path, *paths)
 
     def templates_path(self, *paths: str):
         templates_path = os.path.join(self.base_path, 'templates')
         paths = list(map(lambda path: path.strip().rstrip(os.sep), paths))
-        return templates_path if len(paths) == 0 else os.path.join(self.base_path, *paths)
+        return templates_path if len(paths) == 0 else os.path.join(templates_path, *paths)
