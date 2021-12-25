@@ -88,6 +88,7 @@ class PhpInstaller(Installer):
 
         click.echo()
         if confirm('Proceed?', fg='cyan'):
+            Run.update()
             if not self._php_sources_are_installed():
                 self._install_php_sources()
             Run.install(*packages)
