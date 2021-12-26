@@ -11,9 +11,10 @@ def install():
 
 @click.command()
 @click.pass_context
-def dotfiles(ctx: ClickContext):
+@click.argument('system', type=click.Choice(('desktop', 'mac', 'server')), required=True)
+def dotfiles(ctx: ClickContext, system: str):
     installer = DotfilesInstaller(ctx)
-    installer.install()
+    installer.install(system)
 
 
 @click.command()

@@ -5,10 +5,10 @@ import os
 class User(object):
     def __init__(self, name: str, uid: int, gid: int, gids: tuple = ()):
         self.name = name
-        self.home = os.path.expanduser(f"~{name}")
         self.uid = uid
         self.gid = gid
         self.gids = gids
+        self.home = os.path.expanduser(f"~{name}")
 
     def print(self):
         for key, value in vars(self).items():

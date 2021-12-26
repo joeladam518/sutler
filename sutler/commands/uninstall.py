@@ -1,11 +1,19 @@
 import click
 from click.core import Context as ClickContext
-from ..installers import FzfInstaller, NodeInstaller, PhpInstaller, RedisInstaller
+from ..installers import DotfilesInstaller, FzfInstaller, NodeInstaller, PhpInstaller, RedisInstaller
 
 
 @click.group()
 def uninstall():
     pass
+
+
+@click.command()
+@click.pass_context
+@click.argument('system', type=click.Choice(('desktop', 'mac', 'server')), required=True)
+def dotfiles(ctx: ClickContext, system: str):
+    installer = DotfilesInstaller(ctx)
+    installer.uninstall(system)
 
 
 @click.command()
@@ -37,6 +45,7 @@ def redis(ctx: ClickContext):
     installer.uninstall()
 
 
+uninstall.add_command(dotfiles)
 uninstall.add_command(fzf)
 uninstall.add_command(nodejs)
 uninstall.add_command(php)
