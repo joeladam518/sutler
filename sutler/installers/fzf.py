@@ -7,20 +7,23 @@ from .installer import Installer
 
 class FzfInstaller(Installer):
     def install(self):
-        home_dir = self.app.context.user.home
-        os.chdir(home_dir)
+        fzf_dir = os.path.join(self.app.context.user.home, '.fzf')
+        install_script_path = os.path.join(fzf_dir, 'install')
 
-        if not os.path.isdir(f'{home_dir}/.fzf'):
-            Repo.clone_from("https://github.com/junegunn/fzf.git", f'{home_dir}/.fzf', depth=1)
+        if not os.path.isdir(fzf_dir):
+            Repo.clone_from("https://github.com/junegunn/fzf.git", fzf_dir, depth=1)
 
-        Run.script(f"{home_dir}/.fzf/install")
+        if not os.path.exists(install_script_path):
+            self.ctx.fail("Could not find fzf's install script")
+
+        Run.script(install_script_path)
 
     def uninstall(self):
-        home_dir = self.app.context.user.home
-        os.chdir(home_dir)
+        fzf_dir = os.path.join(self.app.context.user.home, '.fzf')
+        uninstall_script_path = os.path.join(fzf_dir, 'uninstall')
 
-        if not os.path.exists(f'{home_dir}/.fzf/uninstall'):
-            self.ctx.fail('Could not find fzf\'s uninstall script.')
+        if not os.path.exists(uninstall_script_path):
+            self.ctx.fail("Could not find fzf's uninstall script")
 
-        Run.script(f"{home_dir}/.fzf/uninstall")
-        OS.rm(f'{home_dir}/.fzf')
+        Run.script(uninstall_script_path)
+        OS.rm(fzf_dir)
