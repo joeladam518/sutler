@@ -10,8 +10,8 @@ Vagrant.configure("2") do |config|
     # For a complete reference, please see the online documentation at
     # https://docs.vagrantup.com.
 
-    #config.vm.box = "bento/ubuntu-20.04"
-    config.vm.box = "bento/debian-11"
+    config.vm.box = "bento/ubuntu-20.04"
+    #config.vm.box = "bento/debian-11"
     config.vm.hostname = 'sutlerbox'
     config.vm.network "private_network", ip: "192.168.200.200"
     config.vm.synced_folder ".", "/code"
@@ -32,6 +32,9 @@ Vagrant.configure("2") do |config|
         apt-get upgrade -y
         apt-get install -y apt-transport-https ca-certificates software-properties-common python3-pip
 
+        # TODO: figure out how to get around needing git for GitPython
+        apt-get install git
+
         # Create the home bin directory
         mkdir -p /home/vagrant/bin
         chown vagrant:vagrant /home/vagrant/bin
@@ -39,6 +42,6 @@ Vagrant.configure("2") do |config|
 
         # Link to the proxy script so you develop
         cd /home/vagrant/bin && ln -s /code/scripts/sutler
-        cd /code && pip3 install --editable .
+        cd /code && pip3 install -r requirements.txt --editable .
     SHELL
 end
