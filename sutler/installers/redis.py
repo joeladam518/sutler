@@ -3,9 +3,9 @@ from .installer import Installer
 
 
 class RedisInstaller(Installer):
-    def install(self):
+    def install(self) -> None:
         Run.update()
         Run.install('redis-server')
 
-    def uninstall(self):
+    def uninstall(self) -> None:
         Run.uninstall('redis-server')

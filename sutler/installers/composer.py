@@ -8,7 +8,7 @@ from urllib import request
 
 
 class ComposerInstaller(Installer):
-    def install(self):
+    def install(self) -> None:
         if shutil.which('php') is None:
             self.ctx.fail('You must install php before you can install composer')
 
@@ -39,5 +39,5 @@ class ComposerInstaller(Installer):
         else:
             Run.command(f'rm {composer_setup_path}')
 
-    def uninstall(self):
+    def uninstall(self) -> None:
         Run.command('rm /usr/local/bin/composer', root=True)

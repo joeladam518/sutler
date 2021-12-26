@@ -6,7 +6,7 @@ from ..support import OS
 
 
 class DotfilesInstaller(Installer):
-    def install(self, system: str):
+    def install(self, system: str) -> None:
         home_dir = self.app.context.user.home
         repos_dir = os.path.join(home_dir, 'repos')
         dotfiles_dir = os.path.join(repos_dir, 'dotfiles')
@@ -24,7 +24,7 @@ class DotfilesInstaller(Installer):
 
         Run.script(install_script_path, system)
 
-    def uninstall(self, system: str):
+    def uninstall(self, system: str) -> None:
         home_dir = self.app.context.user.home
         repos_dir = os.path.join(home_dir, 'repos')
         dotfiles_dir = os.path.join(repos_dir, 'dotfiles')
