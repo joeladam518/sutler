@@ -9,7 +9,7 @@ class LempProvisioner(ServerProvisioner):
         click.echo('Setting up your lemp server')
 
         installer = PhpInstaller(self.ctx)
-        installer.install('8.1', env='desktop')
+        installer.install('8.1', env='server')
 
         installer = ComposerInstaller(self.ctx)
         installer.install()
