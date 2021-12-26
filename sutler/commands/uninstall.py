@@ -1,6 +1,7 @@
 import click
 from click.core import Context as ClickContext
-from ..installers import DotfilesInstaller, FzfInstaller, NodeInstaller, PhpInstaller, RedisInstaller
+from ..installers import DotfilesInstaller, FzfInstaller, MariadbInstaller
+from ..installers import NodeInstaller, PhpInstaller, RedisInstaller
 
 
 @click.group()
@@ -20,6 +21,13 @@ def dotfiles(ctx: ClickContext, system: str):
 @click.pass_context
 def fzf(ctx: ClickContext):
     installer = FzfInstaller(ctx)
+    installer.uninstall()
+
+
+@click.command()
+@click.pass_context
+def mariadb(ctx: ClickContext):
+    installer = MariadbInstaller(ctx)
     installer.uninstall()
 
 
