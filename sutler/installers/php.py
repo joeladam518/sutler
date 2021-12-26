@@ -1,6 +1,5 @@
 import click
 from ..application import Run
-from ..helpers import confirm
 from .installer import Installer
 from os.path import exists
 from ..support import List, OS, Version
@@ -81,11 +80,11 @@ class PhpInstaller(Installer):
         packages = [f"php{version}", *list(map(lambda ext: extensionize(ext, version), extensions))]
 
         click.echo()
-        click.secho("Packages to be installed:", fg='cyan')
+        click.echo("Packages to be installed:")
         print(*packages, sep='\n')
 
         click.echo()
-        if confirm('Proceed?', fg='cyan'):
+        if click.confirm('Proceed?', default=None):
             Run.update()
             if not self._php_sources_are_installed():
                 self._install_php_sources()
@@ -106,11 +105,11 @@ class PhpInstaller(Installer):
             return
 
         click.echo()
-        click.secho('Packages to be uninstalled:', fg='cyan')
+        click.echo('Packages to be uninstalled:')
         print(*packages, sep='\n')
 
         click.echo()
-        if confirm('Proceed?', fg='cyan'):
+        if click.confirm('Proceed?', default=None):
             Run.uninstall(*packages)
         else:
             click.secho('Exiting...')
