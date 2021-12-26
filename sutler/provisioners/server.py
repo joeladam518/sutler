@@ -1,22 +1,28 @@
 import click
 import os
-from git import Repo
+from ..application import Run
 from .provisioner import Provisioner
+from ..installers import DotfilesInstaller, FzfInstaller
 
 
 class ServerProvisioner(Provisioner):
     def run(self):
-        click.echo('Setting up your generic server')
-
+        click.echo('Setting up your server')
         os.chdir(self.app.context.user.home)
 
         if not os.path.isdir('./repos'):
             os.mkdir('repos')
 
-        if not os.path.isdir('./repos/dotfiles'):
-            Repo.clone_from('https://github.com/joeladam518/dotfiles.git', './repos/dotfiles')
+        Run.update_and_upgrade()
 
-        if not os.path.isdir('./repos/dotfiles'):
-            self.ctx.fail('dotfiles was no cloned.')
+        # Base stuff
+        Run.install('apt-transport-https', 'software-properties-common', 'build-essential')
 
-        click.secho('Your server is now provisioned.')
+        # Install utility applications
+        Run.install('curl', 'git', 'htop', 'mysql-client', 'python3-pip', 'tmux', 'tree', 'vim', 'xsel')
+
+        installer = DotfilesInstaller(self.ctx)
+        installer.install('desktop')
+
+        installer = FzfInstaller(self.ctx)
+        installer.install()
