@@ -1,0 +1,89 @@
+#!/usr/bin/env bash
+
+# TODO: finish this script
+echo "This script isn't finished. Exiting..." 1>&2
+exit 1
+
+script_dir="$(cd "$(dirname "$0")" >/dev/null 2>&1 && pwd -P)"
+
+# Add the current script dir to path if it's not there
+if [[ ! "$PATH" =~ (^|:)"$script_dir"(:|$) ]]; then
+    export PATH="${PATH}:${script_dir}"
+fi
+
+if [ -z "$db_name" ] || [ -z "$db_user" ] || [ -z "$db_pass" ] || [ -z "$db_root_pass" ]; then
+    echo "Not enough information to run ${0}" 1>&2
+    exit 1
+fi
+
+echo ""
+cmsg -c "Install Mariadb"
+#----------------------------------------------
+apt-get install -y mariadb-server mariadb-client
+mysql_secure_installation
+#----------------------------------------------
+cmsg -c "done!..."
+echo ""
+
+can_login="$(mysql -u root -p"${db_root_pass}" -sse "SELECT EXISTS(SELECT 1 FROM mysql.user WHERE user = 'root')" 2> /dev/null || echo "0")"
+if [ "$can_login" -eq "0" ]; then
+    mysqladmin -u root password "${db_root_pass}"
+fi
+
+user_exists="$(mysql -u root -p"${db_root_pass}" -se "SELECT COUNT(*) FROM mysql.user WHERE user = '${db_user}';")"
+if [ "$user_exists" -gt "0" ]; then
+    mysql -u root -p"${db_root_pass}" -e "DELETE FROM mysql.user WHERE user = '${db_user}';"
+    mysql -u root -p"${db_root_pass}" -e "DELETE FROM mysql.db WHERE user = '${db_user}';"
+fi
+
+echo ""
+cmsg -c "Add a user and grant privileges"
+#----------------------------------------------
+mysql -u root -p"$db_root_pass" -e "UPDATE mysql.user SET Password=PASSWORD('${db_root_pass}') WHERE User='root';"
+mysql -u root -p"$db_root_pass" -e "DELETE FROM mysql.user WHERE User='root' AND Host NOT IN ('localhost', '127.0.0.1', '::1');"
+mysql -u root -p"$db_root_pass" -e "DELETE FROM mysql.user WHERE User='';"
+mysql -u root -p"$db_root_pass" -e "DROP DATABASE IF EXISTS test;"
+mysql -u root -p"$db_root_pass" -e "DELETE FROM mysql.db WHERE Db='test' OR Db='test\\_%';"
+mysql -u root -p"$db_root_pass" -e "GRANT ALL PRIVILEGES ON *.* TO root@'127.0.0.1' IDENTIFIED BY '${db_root_pass}' WITH GRANT OPTION;"
+mysql -u root -p"$db_root_pass" -e "GRANT ALL PRIVILEGES ON *.* TO root@'localhost' IDENTIFIED BY '${db_root_pass}' WITH GRANT OPTION;"
+mysql -u root -p"$db_root_pass" -e "GRANT PROXY ON ''@'%' TO 'root'@'127.0.0.1' WITH GRANT OPTION ;"
+mysql -u root -p"$db_root_pass" -e "FLUSH PRIVILEGES;"
+
+mysql -u root -p"$db_root_pass" -e "CREATE DATABASE IF NOT EXISTS ${db_name} DEFAULT CHARACTER SET utf8mb4 COLLATE utf8mb4_unicode_ci;"
+mysql -u root -p"$db_root_pass" -e "CREATE USER '${db_user}'@'127.0.0.1' IDENTIFIED BY '${db_pass}';"
+mysql -u root -p"$db_root_pass" -e "CREATE USER '${db_user}'@'localhost' IDENTIFIED BY '${db_pass}';"
+mysql -u root -p"$db_root_pass" -e "GRANT ALL PRIVILEGES ON ${db_name}.* TO '${db_user}'@'127.0.0.1';"
+mysql -u root -p"$db_root_pass" -e "GRANT ALL PRIVILEGES ON ${db_name}.* TO '${db_user}'@'localhost';"
+mysql -u root -p"$db_root_pass" -e "FLUSH PRIVILEGES;"
+#----------------------------------------------
+cmsg -c "done!..."
+echo ""
+
+echo ""
+cmsg -c "Now setup Mariadb to support UTF8"
+#----------------------------------------------
+cat > /etc/mysql/conf.d/utf8.conf << EOF
+[client]
+default-character-set = utf8mb4
+[mysql]
+default-character-set = utf8mb4
+[mysqld]
+character-set-server  = utf8mb4
+collation-server      = utf8mb4_unicode_ci
+character_set_server  = utf8mb4
+collation_server      = utf8mb4_unicode_ci
+EOF
+#----------------------------------------------
+cmsg -c "done!..."
+echo ""
+
+echo ""
+cmsg -c "Restart Mariadb"
+#----------------------------------------------
+sudo service mysql restart
+sudo systemctl restart mysql.service
+#----------------------------------------------
+cmsg -c "done!..."
+echo ""
+
+unset can_login user_exists
