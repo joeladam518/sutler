@@ -16,13 +16,13 @@ class ServerProvisioner(Provisioner):
         Run.update_and_upgrade()
 
         # Base stuff
-        Run.install('apt-transport-https', 'software-properties-common', 'build-essential')
+        Run.install('apt-transport-https', 'ca-certificates', 'software-properties-common')
 
         # Install utility applications
-        Run.install('curl', 'git', 'htop', 'mysql-client', 'python3-pip', 'tmux', 'tree', 'vim', 'xsel')
+        Run.install('curl', 'git', 'htop', 'python3-pip', 'tmux', 'tree', 'vim')
 
         installer = DotfilesInstaller(self.ctx)
-        installer.install('desktop')
+        installer.install('server')
 
         installer = FzfInstaller(self.ctx)
         installer.install()
