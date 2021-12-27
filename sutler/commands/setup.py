@@ -3,6 +3,11 @@ from click.core import Context as ClickContext
 from ..provisioners import DesktopProvisioner, LempProvisioner, ServerProvisioner
 
 
+@click.group()
+def setup():
+    pass
+
+
 @click.command()
 @click.pass_context
 def desktop(ctx: ClickContext):
@@ -22,11 +27,6 @@ def lemp(ctx: ClickContext):
 def server(ctx: ClickContext):
     provisioner = ServerProvisioner(ctx)
     provisioner.run()
-
-
-@click.group()
-def setup():
-    pass
 
 
 setup.add_command(desktop)
