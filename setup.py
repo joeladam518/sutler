@@ -10,8 +10,9 @@ setup(
         'GitPython',
         'jinja2',
     ],
-    entry_points='''
-        [console_scripts]
-        sutler=sutler.main:cli
-    ''',
+    entry_points={
+        'console_scripts': [
+            'sutler=sutler.main:cli',
+        ],
+    },
 )
