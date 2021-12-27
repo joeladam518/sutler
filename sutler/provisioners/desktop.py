@@ -9,7 +9,26 @@ from ..installers import NodeInstaller, PhpInstaller, SublimeInstaller
 
 class DesktopProvisioner(Provisioner):
     def run(self):
+        """
+        To provision my ubuntu desktop machine
+
+        NOTE: This script will probably have to be updated before it is run every single time...
+
+        Color for terminal screen (to mimic iTerm):
+        -------------------------------------------
+        black dark   = #000000   black light    = #686868
+        red dark     = #c91b00   red light      = #ff6e67
+        green dark   = #00c200   green light    = #5ffa68
+        yellow dark  = #C7B700   yellow light   = #fffc67
+        blue dark    = #0532e1   blue light     = #5075ff #42A5F5
+        magenta dark = #ca30c7   magenta light  = #ff77ff
+        cyan dark    = #00c5c7   cyan light     = #60fdff
+        white dark   = #D7D7D7   white light    = #ffffff
+        """
+        click.echo()
         click.echo('Setting up your desktop environment')
+        click.echo()
+
         os.chdir(self.app.context.user.home)
 
         repos_path = os.path.join(self.app.context.user.home, 'repos')
@@ -32,7 +51,7 @@ class DesktopProvisioner(Provisioner):
 
         # Install utility applications
         Run.install('curl', 'git', 'gnome-tweak-tool', 'htop', 'mosquitto-clients',
-                    'mysql-client', 'python3-pip', 'ripit', 'tmux', 'tree', 'vim-gtk3')
+                    'mariadb-client', 'python3-pip', 'ripit', 'tmux', 'tree', 'vim-gtk3')
 
         # Install the ability to work with exfat drives
         Run.install('exfat-utils', 'exfat-fuse')
