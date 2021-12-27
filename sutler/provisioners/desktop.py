@@ -4,7 +4,7 @@ from ..application import Run
 from git import Repo
 from .provisioner import Provisioner
 from ..installers import ComposerInstaller, DotfilesInstaller, FzfInstaller
-from ..installers import MariadbInstaller, NodeInstaller, PhpInstaller
+from ..installers import NodeInstaller, PhpInstaller, SublimeInstaller
 
 
 class DesktopProvisioner(Provisioner):
@@ -55,3 +55,6 @@ class DesktopProvisioner(Provisioner):
 
         installer = NodeInstaller(self.ctx)
         installer.install('16')
+
+        installer = SublimeInstaller(self.ctx)
+        installer.install('merge')

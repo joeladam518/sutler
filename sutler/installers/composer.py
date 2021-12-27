@@ -2,6 +2,7 @@ import os
 import hashlib
 import shutil
 from ..application import Run
+from ..helpers import is_installed
 from .installer import Installer
 from subprocess import CalledProcessError
 from urllib import request
@@ -9,7 +10,7 @@ from urllib import request
 
 class ComposerInstaller(Installer):
     def install(self) -> None:
-        if shutil.which('php') is None:
+        if not is_installed('php'):
             self.ctx.fail('You must install php before you can install composer')
 
         home_dir = self.app.context.user.home

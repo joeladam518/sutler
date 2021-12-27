@@ -121,8 +121,8 @@ class PhpInstaller(Installer):
             Run.install('apt-transport-https', 'ca-certificates', 'software-properties-common', 'lsb-release', 'gnupg2')
             Run.command('wget -O /etc/apt/trusted.gpg.d/php.gpg https://packages.sury.org/php/apt.gpg', root=True)
             source = 'deb https://packages.sury.org/php/ $(lsb_release -sc) main'
-            file_path = '/etc/apt/sources.list.d/sury-php.list'
-            Run.command(f'echo "{source}" | sudo tee {file_path}')
+            source_file_path = '/etc/apt/sources.list.d/sury-php.list'
+            Run.command(f'echo "{source}" | sudo tee {source_file_path}')
         elif self.app.context.os == 'ubuntu':
             Run.install('software-properties-common')
             Run.command('add-apt-repository ppa:ondrej/php -y', root=True)

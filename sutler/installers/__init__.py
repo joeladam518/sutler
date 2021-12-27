@@ -6,6 +6,7 @@ from .mariadb import MariadbInstaller
 from .node import NodeInstaller
 from .php import PhpInstaller
 from .redis import RedisInstaller
+from .sumblime import SublimeInstaller
 
 __all__ = [
     'ComposerInstaller',
@@ -14,5 +15,6 @@ __all__ = [
     'MariadbInstaller',
     'NodeInstaller',
     'PhpInstaller',
-    'RedisInstaller'
+    'RedisInstaller',
+    'SublimeInstaller'
 ]
