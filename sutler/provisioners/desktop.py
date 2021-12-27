@@ -61,6 +61,7 @@ class DesktopProvisioner(Provisioner):
         installer = SublimeInstaller(self.ctx)
         installer.install('merge')
 
+        # clone my public repos
         os.chdir(repos_path)
         Repo.clone_from('git@github.com:joeladam518/arduino-mqtt-led.git', 'arduino-mqtt-led')
         Repo.clone_from('git@github.com:joeladam518/BackupScripts.git', 'BackupScripts')
