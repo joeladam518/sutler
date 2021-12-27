@@ -7,7 +7,10 @@ from ..installers import DotfilesInstaller, FzfInstaller
 
 class ServerProvisioner(Provisioner):
     def run(self):
+        click.echo()
         click.echo('Setting up your server')
+        click.echo()
+
         os.chdir(self.app.context.user.home)
 
         if not os.path.isdir('./repos'):
