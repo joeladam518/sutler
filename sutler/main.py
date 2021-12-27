@@ -12,7 +12,7 @@ def cli(ctx: ClickContext):
     if app.is_root():
         ctx.fail("You're not allowed to run sutler as root")
     if app.os_type() != 'debian':
-        ctx.fail("Sorry, sutler currently only supports Debian based systems")
+        ctx.fail("Sorry, currently sutler only supports Debian based systems")
 
 
 # noinspection PyTypeChecker
