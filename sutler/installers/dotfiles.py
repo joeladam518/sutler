@@ -17,7 +17,10 @@ class DotfilesInstaller(Installer):
             os.mkdir(repos_dir, 0o755)
 
         if not os.path.isdir(dotfiles_dir):
-            Repo.clone_from("https://github.com/joeladam518/dotfiles.git", dotfiles_dir, depth=1)
+            if system == 'desktop':
+                Repo.clone_from('git@github.com:joeladam518/dotfiles.git', dotfiles_dir, depth=1)
+            else:
+                Repo.clone_from('https://github.com/joeladam518/dotfiles.git', dotfiles_dir, depth=1)
 
         if not os.path.exists(install_script_path):
             self.ctx.fail('Failed to install dotfiles. Could not find the install script')
