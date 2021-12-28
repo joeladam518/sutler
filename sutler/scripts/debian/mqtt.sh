@@ -1,10 +1,5 @@
 #!/usr/scripts/env bash
 
-if ! { [ -n "$CWD" ] && [ -n "$platform" ] && [ "$provision_type" = "mqtt" ]; }; then
-    echo "You can not call this file directly." 1>&2
-    exit 1
-fi
-
 # Variables
 mqtt_auth_user="jhaker"
 mqtt_default_config_path="/etc/mosquitto/conf.d/default.conf"

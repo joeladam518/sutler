@@ -16,7 +16,7 @@ class SublimeInstaller(Installer):
         Run.update()
         Run.install(f'sublime-{program}')
 
-    def uninstall(self, program: str):
+    def uninstall(self, program: str) -> None:
         if program not in ('text', 'merge'):
             self.ctx.fail("Error: Invalid program name. Valid values are {text|merge}.")
 

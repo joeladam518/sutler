@@ -2,7 +2,8 @@ import os
 import subprocess
 import sys
 from typing import Union
-from sutler.application import App
+from ..application import App
+
 
 # Types
 CompletedProcess = subprocess.CompletedProcess
@@ -18,7 +19,7 @@ def handle_completed_process(process: CompletedProcess, capture_output: bool) ->
         return process.stdout.decode(sys.getdefaultencoding())
 
 
-class Run(object):
+class Run:
     @staticmethod
     def command(cmd: str, *args, **kwargs) -> RunOutput:
         app = App()
@@ -35,7 +36,7 @@ class Run(object):
                 ' '.join(arguments),
                 check=kwargs.get('check', True),
                 shell=True,
-                executable=app.context.shell,
+                executable=app.user.shell,
                 stdout=stdout,
                 capture_output=capture_output,
                 env=kwargs.get('env', None)
@@ -97,13 +98,13 @@ class Run(object):
             raise TypeError('Unsupported os type.')
 
     @classmethod
-    def update(cls):
+    def update(cls) -> None:
         app = App()
         if app.os_type() == 'debian':
             cls.command('apt update', root=True)
 
     @classmethod
-    def update_and_upgrade(cls):
+    def update_and_upgrade(cls) -> None:
         app = App()
         if app.os_type() == 'debian':
             env = os.environ.copy()
