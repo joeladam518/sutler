@@ -15,7 +15,7 @@ class User:
     def is_root(self) -> bool:
         return OS.is_root()
 
-    def print(self):
+    def print(self) -> None:
         for key, value in vars(self).items():
             if isinstance(value, dict):
                 value = ', '.join(['{}={}'.format(k, repr(v)) for k, v in value.items()])

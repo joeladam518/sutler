@@ -4,7 +4,6 @@ from ..application import Run
 from .installer import Installer
 from ..support import List, OS, Version
 
-
 php_extensions = {
     'common': (
         'bcmath',

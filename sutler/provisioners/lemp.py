@@ -6,7 +6,7 @@ from .server import ServerProvisioner
 
 
 class LempProvisioner(ServerProvisioner):
-    def run(self):
+    def run(self) -> None:
         super().run()
 
         click.echo()

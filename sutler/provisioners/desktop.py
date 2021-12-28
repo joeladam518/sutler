@@ -8,7 +8,7 @@ from .provisioner import Provisioner
 
 
 class DesktopProvisioner(Provisioner):
-    def run(self):
+    def run(self) -> None:
         """
         To provision my ubuntu desktop machine
 

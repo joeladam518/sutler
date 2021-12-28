@@ -13,7 +13,7 @@ class Context:
         args = ['{}={}'.format(k, repr(v)) for k, v in vars(self).items()]
         return 'Context({})'.format(', '.join(args))
 
-    def print(self):
+    def print(self) -> None:
         items = vars(self).items()
 
         if len(items) == 0:

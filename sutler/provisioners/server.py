@@ -6,7 +6,7 @@ from ..installers import DotfilesInstaller, FzfInstaller
 
 
 class ServerProvisioner(Provisioner):
-    def run(self):
+    def run(self) -> None:
         click.echo()
         click.echo('Setting up your server')
         click.echo()
