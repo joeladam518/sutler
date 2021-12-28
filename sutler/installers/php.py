@@ -1,8 +1,9 @@
 import click
+from os.path import exists
 from ..application import Run
 from .installer import Installer
-from os.path import exists
 from ..support import List, OS, Version
+
 
 php_extensions = {
     'common': (
@@ -117,26 +118,26 @@ class PhpInstaller(Installer):
         click.echo()
 
     def _install_php_sources(self) -> None:
-        if self.app.context.os in ['debian', 'raspbian']:
+        if self.app.os in ['debian', 'raspbian']:
             Run.install('apt-transport-https', 'ca-certificates', 'software-properties-common', 'lsb-release', 'gnupg2')
             Run.command('wget -O /etc/apt/trusted.gpg.d/php.gpg https://packages.sury.org/php/apt.gpg', root=True)
             source = 'deb https://packages.sury.org/php/ $(lsb_release -sc) main'
             source_file_path = '/etc/apt/sources.list.d/sury-php.list'
             Run.command(f'echo "{source}" | sudo tee {source_file_path}')
-        elif self.app.context.os == 'ubuntu':
+        elif self.app.os == 'ubuntu':
             Run.install('software-properties-common')
             Run.command('add-apt-repository ppa:ondrej/php -y', root=True)
 
     def _php_sources_are_installed(self) -> bool:
         # NOTE: 'cmd' will only work for debian based machines
         cmd = "find /etc/apt/ -name *.list | xargs cat | grep ^[[:space:]]*deb | grep '%s' | grep 'php'"
-        if self.app.context.os in ['debian', 'raspbian']:
+        if self.app.os in ['debian', 'raspbian']:
             if exists('/etc/apt/sources.list.d/sury-php.list'):
                 return True
             proc = Run.command(cmd % 'sury', check=False, supress_output=True)
             return proc.returncode == 0
 
-        if self.app.context.os == 'ubuntu':
+        if self.app.os == 'ubuntu':
             if exists(f"/etc/apt/sources.list.d/ondrej-ubuntu-php-{OS.get_release_value('VERSION_CODENAME')}.list"):
                 return True
             proc = Run.command(cmd % 'ondrej', check=False, supress_output=True)

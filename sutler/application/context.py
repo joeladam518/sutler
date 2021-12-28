@@ -1,29 +1,29 @@
 import click
-from typing import Optional
-from .user import User
 
 
-class Context(object):
-    def __init__(self, os_: str, os_like_: str, shell_: Optional[str], user_: User):
-        self.os = os_
-        self.os_like = os_like_
-        self.shell = shell_
-        self.user = user_
+class Context:
+    """ Object that acts like a dictionary """
+    def __init__(self, **entries):
+        self.__dict__.update(entries)
+
+    def __getattr__(self, item):
+        return None
+
+    def __repr__(self):
+        args = ['{}={}'.format(k, repr(v)) for k, v in vars(self).items()]
+        return 'Context({})'.format(', '.join(args))
 
     def print(self):
-        click.echo()
-        click.secho("Operating System: ", fg='cyan')
-        click.secho(f"{self.os}", fg='bright_white')
-        click.echo()
+        items = vars(self).items()
 
-        click.secho("Operating System like: ", fg='cyan')
-        click.secho(f"{self.os_like}", fg='bright_white')
-        click.echo()
+        if len(items) == 0:
+            click.secho("No context", fg='bright_white')
+            return
 
-        click.secho("Default shell", fg='cyan')
-        click.secho(f"{self.shell}", fg='bright_white')
-        click.echo()
-
-        click.secho("User", fg='cyan')
-        self.user.print()
-        click.echo()
+        for key, value in items:
+            if isinstance(value, dict):
+                value = ', '.join(['{}={}'.format(k, repr(v)) for k, v in value.items()])
+            elif isinstance(value, (list, tuple)):
+                value = ', '.join(list(map(lambda val: str(val), value)))
+            click.secho(f"{key}: ", nl=False, fg='bright_black')
+            click.secho(f"{value}", fg='bright_white')

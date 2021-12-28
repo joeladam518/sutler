@@ -1,11 +1,11 @@
 import os
 import hashlib
 import shutil
+from subprocess import CalledProcessError
+from urllib import request
 from ..application import Run
 from ..helpers import is_installed
 from .installer import Installer
-from subprocess import CalledProcessError
-from urllib import request
 
 
 class ComposerInstaller(Installer):
@@ -13,7 +13,7 @@ class ComposerInstaller(Installer):
         if not is_installed('php'):
             self.ctx.fail('You must install php before you can install composer')
 
-        home_dir = self.app.context.user.home
+        home_dir = self.app.user.home
         composer_setup_path = os.path.join(home_dir, 'composer-setup.php')
         composer_path = os.path.join(home_dir, 'composer.phar')
 

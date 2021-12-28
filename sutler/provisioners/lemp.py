@@ -1,8 +1,8 @@
 import click
 import os
-from .server import ServerProvisioner
 from ..installers import ComposerInstaller, MariadbInstaller, NginxInstaller
 from ..installers import NodeInstaller, PhpInstaller
+from .server import ServerProvisioner
 
 
 class LempProvisioner(ServerProvisioner):
@@ -13,7 +13,7 @@ class LempProvisioner(ServerProvisioner):
         click.echo('Setting up your lemp server')
         click.echo()
 
-        os.chdir(self.app.context.user.home)
+        os.chdir(self.app.user.home)
 
         installer = MariadbInstaller(self.ctx)
         installer.install()
