@@ -32,3 +32,7 @@ class MariadbInstaller(Installer):
 
     def uninstall(self) -> None:
         Run.uninstall('mariadb-server', 'mariadb-client')
+
+        utf8_conf_path = os.path.join('/etc', 'mysql', 'conf.d', 'utf8.conf')
+        if os.path.exists(utf8_conf_path):
+            Run.command(f'rm "{utf8_conf_path}"', root=True)
