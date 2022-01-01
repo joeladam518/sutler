@@ -6,44 +6,44 @@ mqtt_default_config_path="/etc/mosquitto/conf.d/default.conf"
 server_domain="mqtt.joelhaker.com"
 
 # Start provisioning
-cmsg
-cmsg -c "installing mosiquitto mqtt server"
+echo
+echo "installing mosiquitto mqtt server"
 apt-get install -y mosquitto mosquitto-clients
-cmsg -c "done!"
+echo "done!"
 
-cmsg
-cmsg
+echo
+echo
 
-cmsg -y "This next part requires your attention!"
+echo "This next part requires your attention!"
 
-cmsg
-cmsg
+echo
+echo
 
-prompt=$(cmsg -mn "Are you ready? [y/N] ")
+prompt=$(echo -mn "Are you ready? [y/N] ")
 read -r -t 10 -p "$prompt" response
 
 if [  "$?" -ne "0" ]; then
-    cmsg
+    echo
 fi
 
 if [[ ! "$response" =~ ^([yY][eE][sS]|[yY])+$ ]]; then
-    cmsg -r "I'm so sorry that you have the attention span of a goldfish...." 1>&2
+    echo -r "I'm so sorry that you have the attention span of a goldfish...." 1>&2
     exit 1
 fi
 
-cmsg
-cmsg -c "Great! Please enter the password you would like to use for you the user [${mqtt_auth_user}]: "
+echo
+echo "Great! Please enter the password you would like to use for you the user [${mqtt_auth_user}]: "
 mosquitto_passwd -c /etc/mosquitto/passwd ${mqtt_auth_user}
 
-cmsg
-cmsg
+echo
+echo
 
-cmsg -y "Ok, I'm done needing your attention"
+echo "Ok, I'm done needing your attention"
 
-cmsg
-cmsg
+echo
+echo
 
-cmsg -c "Writing the default config to: ${mqtt_default_config_path}"
+echo "Writing the default config to: ${mqtt_default_config_path}"
 #----------------------------------------------
 if [ "${development}" -eq "1" ]; then
 
@@ -82,12 +82,12 @@ EOF
 
 fi
 #----------------------------------------------
-cmsg -c "done!..."
+echo "done!..."
 
-cmsg
-cmsg
+echo
+echo
 
-cmsg -c "Set the fire wall"
+echo -c "Set the fire wall"
 #----------------------------------------------
 if [ "${development}" -eq "1" ]; then
     ufw allow 1883
@@ -97,18 +97,18 @@ else
     ufw allow 8083
 fi
 #----------------------------------------------
-cmsg -c "done!..."
+echo "done!..."
 
-cmsg
-cmsg
+echo
+echo
 
-cmsg -c "Restarting the mosquitto server"
+echo "Restarting the mosquitto server"
 #----------------------------------------------
 systemctl restart mosquitto
 #----------------------------------------------
-cmsg -c "done!..."
+echo "done!..."
 
-cmsg
-cmsg
+echo
+echo
 
-cmsg -g "Done installing the mqtt server"
+echo "Done installing the mqtt server"
