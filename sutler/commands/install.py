@@ -1,5 +1,6 @@
 import click
 from click.core import Context as ClickContext
+from typing import Optional
 from ..installers import ComposerInstaller, DotfilesInstaller, FzfInstaller, MariadbInstaller
 from ..installers import NodeInstaller, PhpInstaller, RedisInstaller
 
@@ -26,9 +27,13 @@ def fzf(ctx: ClickContext):
 
 @click.command()
 @click.pass_context
-def mariadb(ctx: ClickContext):
+@click.option('--db-name', 'db_name', type=str, default=None,
+              help='The databases name.')
+@click.option('--db-user', 'db_user', type=str, default=None,
+              help='The databases user.')
+def mariadb(ctx: ClickContext, db_name: Optional[str], db_user: Optional[str]):
     installer = MariadbInstaller(ctx)
-    installer.install()
+    installer.install(db=db_name, user=db_user)
 
 
 @click.command()
