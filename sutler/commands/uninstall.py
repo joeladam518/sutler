@@ -55,6 +55,7 @@ def redis(ctx: ClickContext):
 
 uninstall.add_command(dotfiles)
 uninstall.add_command(fzf)
+uninstall.add_command(mariadb)
 uninstall.add_command(nodejs)
 uninstall.add_command(php)
 uninstall.add_command(redis)
