@@ -10,32 +10,43 @@ Vagrant.configure("2") do |config|
     # For a complete reference, please see the online documentation at
     # https://docs.vagrantup.com.
 
-    config.vm.box = "bento/ubuntu-20.04"
-    #config.vm.box = "bento/debian-11"
-    config.vm.hostname = 'sutlerbox'
-    config.vm.network "private_network", ip: "192.168.200.200"
     config.vm.synced_folder ".", "/code"
 
-    # Provider-specific configuration so you can fine-tune various
-    # backing providers for Vagrant. These expose provider-specific options.
-    # Example for VirtualBox:
-    config.vm.provider "virtualbox" do |vb|
-        vb.gui = false
-        vb.name = 'sutlerbox'
-        vb.memory = 4096
-        vb.cpus = 2
+    config.vm.define "ubuntu", primary: true do |ubuntu|
+        ubuntu.vm.box = "bento/ubuntu-20.04"
+        ubuntu.vm.hostname = 'sutlerbox-ubuntu'
+        ubuntu.vm.network "private_network", ip: "192.168.200.200"
+
+        # Provider-specific configuration so you can fine-tune various
+        # backing providers for Vagrant. These expose provider-specific options.
+        # Example for VirtualBox:
+        ubuntu.vm.provider "virtualbox" do |vb|
+            vb.gui = false
+            vb.name = 'sutlerbox-ubuntu'
+            vb.memory = 4096
+            vb.cpus = 1
+        end
+
+        # Provision the machine
+        ubuntu.vm.provision "shell", path: "scripts/provision.sh"
     end
 
-    # Provision the machine
-    config.vm.provision "shell", inline: <<-SHELL
-        apt-get update
-        apt-get upgrade -y
-        apt-get install -y apt-transport-https ca-certificates software-properties-common python3-pip
+    config.vm.define "debian", autostart: false do |debian|
+        debian.vm.box = "bento/debian-11"
+        debian.vm.hostname = 'sutlerbox-debian'
+        debian.vm.network "private_network", ip: "192.168.200.201"
 
-        # TODO: figure out how to get around needing git for GitPython
-        apt-get install -y git
+        # Provider-specific configuration so you can fine-tune various
+        # backing providers for Vagrant. These expose provider-specific options.
+        # Example for VirtualBox:
+        debian.vm.provider "virtualbox" do |vb|
+            vb.gui = false
+            vb.name = 'sutlerbox-debian'
+            vb.memory = 4096
+            vb.cpus = 1
+        end
 
-        # Link to the proxy script so you develop
-        cd /code && sudo -u vagrant pip3 install -r requirements.txt --editable .
-    SHELL
+        # Provision the machine
+        debian.vm.provision "shell", path: "scripts/provision.sh"
+    end
 end
