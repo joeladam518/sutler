@@ -112,6 +112,7 @@ def user_exists(user: str, host: Optional[str] = 'localhost') -> bool:
 
 
 class MariadbInstaller(Installer):
+    # TODO: This only works for ubuntu
     def install(self, db: Optional[str] = None, user: Optional[str] = None) -> None:
         Run.install('mariadb-server', 'mariadb-client')
         click.echo()
