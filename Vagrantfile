@@ -9,7 +9,6 @@ Vagrant.configure("2") do |config|
     # The most common configuration options are documented and commented below.
     # For a complete reference, please see the online documentation at
     # https://docs.vagrantup.com.
-
     config.vm.synced_folder ".", "/code"
 
     config.vm.define "ubuntu", primary: true do |ubuntu|
@@ -17,9 +16,7 @@ Vagrant.configure("2") do |config|
         ubuntu.vm.hostname = 'sutlerbox-ubuntu'
         ubuntu.vm.network "private_network", ip: "192.168.200.200"
 
-        # Provider-specific configuration so you can fine-tune various
-        # backing providers for Vagrant. These expose provider-specific options.
-        # Example for VirtualBox:
+        # Provider-specific configuration
         ubuntu.vm.provider "virtualbox" do |vb|
             vb.gui = false
             vb.name = 'sutlerbox-ubuntu'
@@ -36,9 +33,7 @@ Vagrant.configure("2") do |config|
         debian.vm.hostname = 'sutlerbox-debian'
         debian.vm.network "private_network", ip: "192.168.200.201"
 
-        # Provider-specific configuration so you can fine-tune various
-        # backing providers for Vagrant. These expose provider-specific options.
-        # Example for VirtualBox:
+        # Provider-specific configuration
         debian.vm.provider "virtualbox" do |vb|
             vb.gui = false
             vb.name = 'sutlerbox-debian'
