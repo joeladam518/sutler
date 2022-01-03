@@ -1,129 +1,141 @@
 import click
 import os
-from typing import Optional
+from subprocess import CompletedProcess
+from typing import Optional, Union
 from ..application import Run
 from .installer import Installer
+from ..support import Version
 
 
-def allow_regular_users_to_access_root_mysql(password: Optional[str] = None) -> None:
-    # Allows any user to access mariadb root.
-    # https://mariadb.com/kb/en/authentication-plugin-unix-socket/
-    execute(
-        "UPDATE mysql.user SET plugin = 'mysql_native_password' WHERE User = 'root'; FLUSH PRIVILEGES;",
-        password=password,
-        username='root'
-    )
-
-
-def create_db(name: str) -> None:
-    if not name or name == '*':
-        click.ClickException('Failed to create db. Invalid name.')
-    else:
-        execute(f"CREATE DATABASE IF NOT EXISTS {name} DEFAULT CHARACTER SET utf8mb4 COLLATE utf8mb4_unicode_ci;")
-
-
-def create_user(username: str, password: str, db_name: str, host: str = 'localhost') -> None:
-    if not username or username == 'root':
-        click.ClickException('Failed to create user. Invalid username.')
-
-    if not password:
-        click.ClickException('Failed to create user. Invalid password.')
-
-    if not host:
-        click.ClickException('Failed to create user. Invalid host.')
-
-    if not db_name or db_name == '*':
-        click.ClickException('Failed to create user. Invalid db.')
-
-    if user_doesnt_exist(username, host):
-        execute(f"CREATE USER '{username}'@'{host}' IDENTIFIED BY '{password}';")
-    else:
-        update_user_password(username, password, host)
-        execute(f"REVOKE ALL PRIVILEGES ON *.* FROM '{username}'@'{host}';")
-        execute("FLUSH PRIVILEGES;")
-
-    execute(f"GRANT ALL PRIVILEGES ON {db_name}.* TO '{username}'@'{host}';")
-    execute("FLUSH PRIVILEGES;")
-
-
-def disallow_regular_users_to_access_root_mysql(password: Optional[str] = None) -> None:
-    # Resets root authentication back to unix_socket
-    # https://mariadb.com/kb/en/authentication-plugin-unix-socket/
-    execute(
-        "UPDATE mysql.user SET plugin = 'unix_socket' WHERE User = 'root'; FLUSH PRIVILEGES;",
-        password=password,
-        username='root'
-    )
-
-
-def execute(query: str, password: Optional[str] = None, username: Optional[str] = 'root') -> None:
-    if username and password:
-        Run.command(f'mysql -u "{username}" -p "{password}" -e "{query}"', root=True)
-    else:
-        Run.command(f'mysql -e "{query}"', root=True)
-
-
-def secure_installation() -> str:
+class MariadbConfigurator:
     """
-    Mirrors the mysql_secure_installation script from mariadb
-    https://github.com/atcurtis/mariadb/blob/master/scripts/mysql_secure_installation.sh
-
-    :return: The root password for mariadb
-    :rtype: str
+    NOTES:
+        - >= version 10.4 mysql.user is a view and not a table. You have to use operations like
+          "ALTER USER" and "SET Password" instead of modifying the table directly.
+        - ubuntu user the unix_socket auth for root out of the box where debian uses mysql_native_password
+        - Eventually, we should migrate to the auth_ed25519 plugin instead of mysql_native_password
+          because it's more secure.
     """
-    password = click.prompt(
-        "Enter your desired root password for mariadb",
-        type=str,
-        hide_input=True,
-        confirmation_prompt='Confirm the root password',
-        show_default=False,
-    )
+    def __init__(self, password: Optional[str] = None, host: str = 'localhost'):
+        self.host = host
+        self.user = 'root'
+        self.password = password
+        self.version = self.get_version()
 
-    # Set the root user's password. But REMEMBER mariadb will only let root login as mysql root...
-    update_user_password('root', password)
-    # Remove anonymous users
-    execute("DELETE FROM mysql.user WHERE User = '';")
-    # Disallow remote root login
-    execute("DELETE FROM mysql.user WHERE User = 'root' AND Host NOT IN ('localhost', '127.0.0.1', '::1');")
-    # Remove test database
-    execute("DROP DATABASE IF EXISTS test;")
-    execute("DELETE FROM mysql.db WHERE Db = 'test' OR Db = 'test\\_%'")
-    # Reset privileges
-    execute("FLUSH PRIVILEGES;")
+    def allow_regular_users_to_access_root_mysql(self) -> None:
+        # Allows any user to access mariadb root.
+        # https://mariadb.com/kb/en/authentication-plugin-unix-socket/
+        query1 = f"UPDATE mysql.user SET plugin = 'mysql_native_password' WHERE User = 'root' AND Host = '{self.host}';"
+        query2 = f"ALTER USER 'root'@'{self.host}' IDENTIFIED VIA 'mysql_native_password';"
+        self.execute(query1 if self.version < Version('10.4') else query2)
+        self.execute("FLUSH PRIVILEGES;")
 
-    return password
+    def create_db(self, name: str) -> None:
+        if not name or name == '*':
+            click.ClickException('Failed to create db. Invalid name.')
 
+        self.execute(f"CREATE DATABASE IF NOT EXISTS {name} DEFAULT CHARACTER SET utf8mb4 COLLATE utf8mb4_unicode_ci;")
 
-def update_user_password(username: str, password: str, host: Optional[str] = None) -> None:
-    query = f"UPDATE mysql.user SET Password = PASSWORD('{password}') WHERE User = '{username}'"
-    query += f" AND Host = '{host}';" if host else ";"
-    execute(query)
+    def create_user(self, username: str, password: str, db_name: str, host: str = 'localhost') -> None:
+        if not username or username == 'root':
+            click.ClickException('Failed to create user. Invalid username.')
 
+        if not password:
+            click.ClickException('Failed to create user. Invalid password.')
 
-def user_doesnt_exist(user: str, host: Optional[str] = 'localhost') -> bool:
-    return not user_exists(user, host)
+        if not host:
+            click.ClickException('Failed to create user. Invalid host.')
 
+        if not db_name or db_name == '*':
+            click.ClickException('Failed to create user. Invalid db.')
 
-def user_exists(user: str, host: Optional[str] = 'localhost') -> bool:
-    query = f"SELECT COUNT(*) FROM mysql.user WHERE User = '{user}'"
-    query += f" AND Host = '{host}';" if host else ";"
-    result = Run.command(f'mysql -se "{query}"', root=True, capture_output=True)
-    return int(result) > 0
+        if self.user_doesnt_exist(username, host):
+            self.execute(f"CREATE USER '{username}'@'{host}' IDENTIFIED BY '{password}';")
+        else:
+            self.update_user_password(username, password, host)
+            self.execute(f"REVOKE ALL PRIVILEGES ON *.* FROM '{username}'@'{host}';")
+            self.execute("FLUSH PRIVILEGES;")
+
+        self.execute(f"GRANT ALL PRIVILEGES ON {db_name}.* TO '{username}'@'{host}';")
+        self.execute("FLUSH PRIVILEGES;")
+
+    def disallow_regular_users_to_access_root_mysql(self) -> None:
+        # Resets root authentication back to unix_socket
+        # https://mariadb.com/kb/en/authentication-plugin-unix-socket/
+        query1 = f"UPDATE mysql.user SET plugin = 'unix_socket' WHERE User = 'root' AND Host = '{self.host}';"
+        query2 = f"ALTER USER 'root'@'{self.host}' IDENTIFIED VIA 'unix_socket';"
+        self.execute(query1 if self.version < Version('10.4') else query2)
+        self.execute("FLUSH PRIVILEGES;")
+
+    def execute(self, query: str, root: bool = True, capture_output: bool = False) -> Union[CompletedProcess, str]:
+        command = f'mysql'
+        command += f' --user="{self.user}" --password="{self.password}"' if self.user and self.password else ''
+        command += f' --silent' if capture_output else ''
+        command += f' --execute="{query}"'
+        return Run.command(command, root=root, capture_output=capture_output)
+
+    def get_version(self) -> Version:
+        return Version(self.execute("SELECT VERSION();", capture_output=True))
+
+    def secure_installation(self) -> str:
+        """
+        Mirrors the mysql_secure_installation script from mariadb
+        https://github.com/atcurtis/mariadb/blob/master/scripts/mysql_secure_installation.sh
+
+        :return: The root password for mariadb
+        :rtype: str
+        """
+        self.password = click.prompt(
+            "Enter your desired root password for mariadb",
+            type=str,
+            hide_input=True,
+            confirmation_prompt='Confirm the root password',
+            show_default=False,
+        )
+
+        # Set the root user's password. But REMEMBER mariadb will only let root login as mysql root...
+        self.update_user_password('root', self.password)
+        self.disallow_regular_users_to_access_root_mysql()
+        # Remove anonymous users
+        self.execute("DELETE FROM mysql.user WHERE User = '';")
+        # Disallow remote root login
+        self.execute("DELETE FROM mysql.user WHERE User = 'root' AND Host NOT IN ('localhost', '127.0.0.1', '::1');")
+        # Remove test database
+        self.execute("DROP DATABASE IF EXISTS test;")
+        self.execute("DELETE FROM mysql.db WHERE Db = 'test' OR Db = 'test\\_%'")
+        # Reset privileges
+        self.execute("FLUSH PRIVILEGES;")
+
+        return self.password
+
+    def update_user_password(self, username: str, password: str, host: str = 'localhost') -> None:
+        query1 = f"UPDATE mysql.user SET Password = PASSWORD('{password}') WHERE User='{username}' AND Host='{host}';"
+        query2 = f"SET PASSWORD FOR '{username}'@'{host}' = PASSWORD('{password}');"
+        self.execute(query1 if self.version < Version('10.4') else query2)
+
+    def user_doesnt_exist(self, user: str, host: Optional[str] = 'localhost') -> bool:
+        return not self.user_exists(user, host)
+
+    def user_exists(self, user: str, host: Optional[str] = 'localhost') -> bool:
+        query = f"SELECT COUNT(*) FROM mysql.user WHERE User = '{user}'"
+        query += f" AND Host = '{host}';" if host else ";"
+        return int(self.execute(query, capture_output=True)) > 0
 
 
 class MariadbInstaller(Installer):
-    # TODO: This only works for ubuntu
     def install(self, db: Optional[str] = None, user: Optional[str] = None) -> None:
         Run.install('mariadb-server', 'mariadb-client')
         click.echo()
 
+        mariadb = MariadbConfigurator()
+
         # Secure the mariadb installation
         # Run.command('mysql_secure_installation', root=True)
-        secure_installation()
+        mariadb.secure_installation()
 
         # Setup Mariadb to support utf-8
         source = self.app.templates_path('mysql', 'utf8.conf')
-        destination = os.path.join('/etc', 'mysql', 'conf.d', 'utf8.conf')
+        destination = os.path.join(os.sep, 'etc', 'mysql', 'conf.d', '99-utf8.conf')
         Run.command(f'cp "{source}" "{destination}"', root=True)
 
         # Create a database if we have the required information
@@ -138,8 +150,8 @@ class MariadbInstaller(Installer):
                 default=None
             )
             if user_password:
-                create_db(name=db)
-                create_user(username=user, password=user_password, db_name=db)
+                mariadb.create_db(name=db)
+                mariadb.create_user(username=user, password=user_password, db_name=db)
 
         click.echo()
 
@@ -147,6 +159,6 @@ class MariadbInstaller(Installer):
         Run.uninstall('mariadb-server', 'mariadb-client')
 
         # TODO: Should I just remove the entire 'mysql' directory?
-        config_path = os.path.join('/etc', 'mysql', 'conf.d', 'utf8.conf')
+        config_path = os.path.join(os.sep, 'etc', 'mysql', 'conf.d', '99-utf8.conf')
         if os.path.exists(config_path):
             Run.command(f'rm "{config_path}"', root=True)
