@@ -1,31 +1,13 @@
 from typing import Union, Tuple
 
 
-def tuplize_float(value: float) -> tuple:
-    return tuplize_str(str(value))
-
-
-def tuplize_int(value: int) -> tuple:
-    return tuplize_float(float(value))
-
-
-def tuplize_str(value: str) -> tuple:
-    try:
-        if '.' in value:
-            return tuple(map(lambda val: int(val), value.split('.')))
-        else:
-            return tuplize_int(int(value))
-    except ValueError:
-        raise ValueError(f'Can not convert "{value}" to a version.')
-
-
 def versionize(version: Union[str, int, float, Tuple[int, int], Tuple[int, int, int]]) -> Tuple[int, int, int]:
     if isinstance(version, int):
-        version = tuplize_int(version)
+        version = versionize_int(version)
     elif isinstance(version, float):
-        version = tuplize_float(version)
+        version = versionize_float(version)
     elif isinstance(version, str):
-        version = tuplize_str(version)
+        version = versionize_str(version)
 
     if len(version) >= 3:
         return int(version[0]), int(version[1]), int(version[2])
@@ -37,6 +19,37 @@ def versionize(version: Union[str, int, float, Tuple[int, int], Tuple[int, int, 
         return int(version[0]), 0, 0
 
     return 0, 0, 0
+
+
+def versionize_float(value: float) -> tuple:
+    return versionize_str(str(value))
+
+
+def versionize_int(value: int) -> tuple:
+    return versionize_float(float(value))
+
+
+def versionize_str(value: str) -> tuple:
+    error_message = f'Can not convert "{value}" to a version.'
+
+    if '.' not in value:
+        try:
+            return versionize_int(int(value))
+        except ValueError:
+            raise ValueError(error_message)
+
+    string_list = []
+    for val in value.split('.'):
+        try:
+            if '-' in val:
+                val_parts = val.split('-')
+                string_list.append(int(val_parts[0]))
+            else:
+                string_list.append(int(val))
+        except ValueError:
+            raise ValueError(error_message)
+
+    return tuple(string_list)
 
 
 class Version:

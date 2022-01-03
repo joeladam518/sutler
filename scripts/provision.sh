@@ -1,0 +1,12 @@
+#!/usr/bin/env bash
+
+export DEBIAN_FRONTEND=noninteractive
+apt-get update
+apt-get upgrade -y
+apt-get install -y apt-transport-https ca-certificates software-properties-common python3-pip
+
+# TODO: figure out how to get around needing git for GitPython
+apt-get install -y git
+
+# Link to the proxy script so you develop
+cd /code && sudo -u vagrant pip3 install -r requirements.txt --editable .

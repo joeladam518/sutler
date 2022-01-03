@@ -12,49 +12,42 @@ abort_adding_user() {
 ########################################################################################################################
 
 user_name="$1"
-script_dir="$(cd "$(dirname "$0")" >/dev/null 2>&1 && pwd -P)"
-
-# Add the current script dir to path if it's not there
-if [[ ! "$PATH" =~ (^|:)"$script_dir"(:|$) ]]; then
-    export PATH="${PATH}:${script_dir}"
-fi
+user_home_dir="/home/${user_name}"
 
 # Validate input
 if [ -z "$user_name" ]; then
-    cmsg -r "You must enter a user name to create" 1>&2
+    echo "You must enter a user name to create" 1>&2
     exit 1
 fi
 
-user_home_dir="/home/${user_name}"
-
 ########################################################################################################################
-cmsg -c "Start"
+echo "Start"
 
-temp_pwd="$(cat /dev/urandom | tr -dc 'a-zA-Z0-9' | fold -w 32 | head -n 1)"
+temp_pwd="$(cat "/dev/urandom" | tr -dc 'a-zA-Z0-9' | fold -w 32 | head -n 1)"
 temp_pwd_length="${#temp_pwd}"
 
 # Validate temp password
 if [ -z "$temp_pwd" ] || [ "$temp_pwd_length" != "32" ]; then
-    cmsg -r "Failed to create tmp password." 1>&2
+    echo "Failed to create tmp password." 1>&2
     exit 1
 fi
 
 # Create the user
 if ! adduser --disabled-password --debug --gecos "Server Admin" "${user_name}"; then
-    cmsg -r "Failed to create user." 1>&2
+    echo "Failed to create user." 1>&2
     exit 1
 fi
 
 # Make sure we have authorized_keys in the root dir. If we don't, we will effectively lockout all users.
 if [ ! -f "${HOME}/.ssh/authorized_keys" ]; then
-    cmsg -r "Could not find the root user's authorized_keys file" 1>&2
+    echo "Could not find the root user's authorized_keys file" 1>&2
     abort_adding_user "$user_name"
     exit 1
 fi
 
 # Create the ssh keys for new user
 if ! su -c "cd ${user_home_dir} && ssh-keygen -q -b 2048 -t rsa -f ~/.ssh/id_rsa -N ''" - "$user_name"; then
-    cmsg -r "Failed to create ssh keys." 1>&2
+    echo "Failed to create ssh keys." 1>&2
     abort_adding_user "$user_name"
     exit 1
 fi
@@ -74,7 +67,7 @@ echo -e "${temp_pwd}\n${temp_pwd}" | passwd "$user_name"
 
 # Did it work?
 if [ "$?" != "0" ]; then
-    cmsg -r "Failed to set the users password."
+    echo "Failed to set the users password." 1>&2
     abort_adding_user
     exit 1
 fi
@@ -93,19 +86,19 @@ systemctl reload sshd
 echo > "${HOME}/.ssh/authorized_keys"
 
 # Let the root user know the temp password fot the new user
-cmsg
-cmsg -y "*******************  Warning  *******************"
-cmsg -y "The new user will be forced to set a new password upon logging in for the first time."
-cmsg -y "They will need the following temp password to do that:"
-cmsg
-cmsg "$temp_pwd"
-cmsg
-cmsg -y "*************************************************"
-cmsg
+echo
+echo "*******************  Warning  *******************"
+echo "The new user will be forced to set a new password upon logging in for the first time."
+echo "They will need the following temp password to do that:"
+echo
+echo "$temp_pwd"
+echo
+echo "*************************************************"
+echo
 
 # Start the firewall!
 ufw allow OpenSSH
 ufw enable
 
-cmsg -c "Done!"
+echo -c "Done!"
 ########################################################################################################################
