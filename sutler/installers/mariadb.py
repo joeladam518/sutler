@@ -12,8 +12,8 @@ class MariadbConfigurator:
     NOTES:
         - >= version 10.4 mysql.user is a view and not a table. You have to use operations like
           "ALTER USER" and "SET Password" instead of modifying the table directly.
-        - ubuntu user the unix_socket auth for root out of the box where debian uses mysql_native_password
-        - Eventually, we should migrate to the auth_ed25519 plugin instead of mysql_native_password
+        - ubuntu uses the 'unix_socket' plugin for root out of the box, where debian uses 'mysql_native_password'
+        - Eventually, we should migrate away from 'mysql_native_password to the 'auth_ed25519' plugin
           because it's more secure.
     """
     def __init__(self, password: Optional[str] = None, host: str = 'localhost'):
