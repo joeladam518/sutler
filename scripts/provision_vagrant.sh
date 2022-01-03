@@ -8,5 +8,5 @@ apt-get install -y apt-transport-https ca-certificates software-properties-commo
 # TODO: figure out how to get around needing git for GitPython
 apt-get install -y git
 
-# Link to the proxy script so you develop
+# install dependencies
 cd /code && sudo -u vagrant pip3 install -r requirements.txt --editable .
