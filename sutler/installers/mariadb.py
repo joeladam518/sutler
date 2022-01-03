@@ -139,7 +139,16 @@ class MariadbInstaller(Installer):
         Run.command(f'cp "{source}" "{destination}"', root=True)
 
         # Create a database if we have the required information
-        if db and user:
+        if db:
+            if not user:
+                click.echo()
+                user = click.prompt(
+                    f'Please provide a user for {db}',
+                    type=str,
+                    hide_input=False,
+                    show_default=False,
+                    default=None
+                )
             click.echo()
             user_password = click.prompt(
                 f"Enter {user}'s password",
@@ -149,9 +158,8 @@ class MariadbInstaller(Installer):
                 show_default=False,
                 default=None
             )
-            if user_password:
-                mariadb.create_db(name=db)
-                mariadb.create_user(username=user, password=user_password, db_name=db)
+            mariadb.create_db(name=db)
+            mariadb.create_user(username=user, password=user_password, db_name=db)
 
         click.echo()
 
