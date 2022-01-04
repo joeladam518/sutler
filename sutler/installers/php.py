@@ -20,7 +20,7 @@ php_extensions = {
         'zip'
     ),
     'desktop': (),
-    'development': (
+    'dev': (
         'intl',
         'dev',
         'igbinary',

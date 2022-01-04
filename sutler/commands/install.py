@@ -47,8 +47,8 @@ def nodejs(ctx: ClickContext, version: str):
 @click.command()
 @click.pass_context
 @click.argument('version', type=str, required=True)
-@click.option('-e', '--env', 'environment', type=click.Choice(('desktop', 'development', 'server')),
-              default='desktop', help='The environment on witch to install php on.')
+@click.option('-e', '--env', 'environment', type=click.Choice(('desktop', 'dev', 'server')),
+              default='desktop', help='The type of environment you\'re installing php on.')
 @click.option('-a', '--additional', 'additional', type=str, multiple=True, default=(),
               help="Any additional extensions you might want to install.")
 @click.option('-x', '--exclude', 'exclude', type=str, multiple=True, default=(),
