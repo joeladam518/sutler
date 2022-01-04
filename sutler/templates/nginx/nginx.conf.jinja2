@@ -20,7 +20,7 @@ http {
     types_hash_max_size 2048;
     # server_tokens off;
 
-    server_names_hash_bucket_size 64;
+    # server_names_hash_bucket_size 64;
     # server_name_in_redirect off;
 
     include /etc/nginx/mime.types;
@@ -30,7 +30,7 @@ http {
     # SSL Settings
     ##
 
-    ssl_protocols TLSv1 TLSv1.1 TLSv1.2; # Dropping SSLv3, ref: POODLE
+    ssl_protocols TLSv1 TLSv1.1 TLSv1.2 TLSv1.3; # Dropping SSLv3, ref: POODLE
     ssl_prefer_server_ciphers on;
 
     ##
@@ -54,7 +54,6 @@ http {
     include /etc/nginx/sites-enabled/*;
 }
 
-
 #mail {
 #   # See sample authentication script at:
 #   # http://wiki.nginx.org/ImapAuthenticateWithApachePhpScript
@@ -75,4 +74,3 @@ http {
 #       proxy      on;
 #   }
 #}
-
