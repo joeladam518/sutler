@@ -2,6 +2,7 @@ import click
 import os
 from getpass import getuser
 from jinja2 import Environment, FileSystemLoader
+from typing import Any, Dict
 from .context import Context
 from .singleton import SingletonMeta
 from ..support import OS
@@ -72,6 +73,17 @@ class App(metaclass=SingletonMeta):
         click.secho(f"templates_path: ", nl=False, fg='bright_black')
         click.secho(f"{self.templates_path()}", fg='bright_white')
         click.echo()
+
+    def render_file(self, tp: str, fp: str, **variables: Any) -> None:
+        """
+        :param str tp: Template path
+        :param str fp: File Path
+        :param Any variables: The variables for the template
+        :return: None
+        :rtype: None
+        """
+        template = self.jinja.get_template(tp)
+        template.stream(variables).dump(fp, 'utf-8')
 
     def scripts_path(self, *paths: str) -> str:
         scripts_path = os.path.join(self.base_path, 'scripts')
