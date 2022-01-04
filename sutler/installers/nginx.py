@@ -18,4 +18,4 @@ class NginxInstaller(Installer):
         Run.command('systemctl stop nginx', root=True)
 
     def uninstall(self) -> None:
-        pass
+        Run.uninstall('nginx')
