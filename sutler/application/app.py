@@ -82,10 +82,8 @@ class App(metaclass=SingletonMeta):
         :return: None
         :rtype: None
         """
-        if root:
-        else:
-            template = self.jinja.get_template(tp)
-            template.stream(variables).dump(fp, 'utf-8')
+        template = self.jinja.get_template(tp)
+        template.stream(variables).dump(fp, 'utf-8')
 
     def scripts_path(self, *paths: str) -> str:
         scripts_path = os.path.join(self.base_path, 'scripts')
