@@ -64,6 +64,10 @@ class OS:
         else:
             shutil.rmtree(path)
 
+    @staticmethod
+    def root_path() -> str:
+        return os.path.abspath(os.sep)
+
     @classmethod
     def shell(cls) -> str:
         sys_platform = cls.platform()
