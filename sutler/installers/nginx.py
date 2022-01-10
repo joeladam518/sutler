@@ -6,6 +6,9 @@ from .installer import Installer
 
 
 class NginxInstaller(Installer):
+    def _copy_file(self, from_path: str, to_path: str, root: bool = False) -> None:
+        Run.command(f"cp {from_path} {to_path}", root=root)
+
     def _render_file(self, tp: str, fp: str, root: bool = False, **variables: Any) -> None:
         """
         :param str tp: Template path
@@ -14,18 +17,21 @@ class NginxInstaller(Installer):
         :return: None
         :rtype: None
         """
-        tmp_dir = self.app.sys_path('tmp', 'sutler-templates')
-        filename = os.path.basename(fp)
-
-        if not os.path.exists(tmp_dir):
-            os.makedirs(tmp_dir)
-
-        tmp_file_path = os.path.join(tmp_dir, filename)
         template = self.app.jinja.get_template(tp)
-        template.stream(variables).dump(tmp_file_path, 'utf-8')
+        stream = template.stream(variables)
 
-        Run.command(f"mv {tmp_file_path} {fp}", root=root)
-        if root:
+        if not root:
+            stream.dump(fp, 'utf-8')
+        else:
+            tmp_dir = self.app.sys_path('tmp', 'sutler-templates')
+
+            if not os.path.exists(tmp_dir):
+                os.makedirs(tmp_dir)
+
+            tmp_fp = os.path.join(tmp_dir, os.path.basename(fp))
+            stream.dump(tmp_fp, 'utf-8')
+
+            Run.command(f"mv {tmp_fp} {fp}", root=True)
             Run.command(f"chown root:root {fp}", root=True)
 
     def install(self, project: str, domain: str, php_version: str) -> None:
@@ -33,11 +39,13 @@ class NginxInstaller(Installer):
         Run.install('nginx')
         Run.command('systemctl stop nginx', root=True)
 
-        # make the directory for the project
+        # Make the project's directory on the server and throw a couple of test files on it.
         project_path = self.app.sys_path('var', 'www', project)
         Run.command(f"mkdir -p {project_path}", root=True)
         Run.command(f"mkdir -p {project_path}/public", root=True)
-        Run.command(f"chown -r www-data:www-data {project_path}", root=True)
+        self._render_file(os.path.join('php', 'test.php.jinja2'), os.path.join(project_path, 'public', 'index.php'))
+        self._copy_file(self.app.templates_path('php', 'info.php'), os.path.join(project_path, 'public', 'info.php'))
+        Run.command(f"chown -R www-data:www-data {project_path}", root=True)
 
         # Build all the config paths
         etc_path = self.app.sys_path('etc', 'nginx')
