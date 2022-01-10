@@ -1,0 +1,17 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="utf-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1">
+    <title>{{ project_name }} Test Page</title>
+    <?php
+        date_default_timezone_set('America/New_York');
+    ?>
+</head>
+<body>
+    <h1>Hello world.</h1>
+    <p>This is a test page for {{ project_name }}.</p>
+    <p>Today's date is: <?= date('m/d/Y h:i a'); ?></p>
+    <p><a href="/info.php">Php info</a></p>
+</body>
+</html>
