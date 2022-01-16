@@ -26,6 +26,7 @@ class App(metaclass=SingletonMeta):
         TODO: This function might not be needed. It seems like if I use subprocess and only escalate the
               user's privileges during those individual subprocess calls I won't escalate sutler's privileges...
               Maybe... Keeping it around just in case and until I'm sure I don't need it.
+              Additionally I'm pretty sure this will only work for posix based systems...
 
         :rtype: None
         """
