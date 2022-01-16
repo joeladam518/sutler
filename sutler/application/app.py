@@ -15,7 +15,11 @@ class App(metaclass=SingletonMeta):
         self.jinja = Environment(loader=FileSystemLoader(self.templates_path()))
         self.os = OS.type()
         self.os_like = OS.type_like()
-        self.user = User(getuser(),  OS.shell(), os.getuid(), os.getgid(), tuple(os.getgroups()))
+        self.user = User(getuser(), OS.shell())
+        if self.os != 'windows':
+            self.user.uid = os.getuid()
+            self.user.gid = os.getgid()
+            self.user.gids = tuple(os.getgroups())
 
     def drop_privileges(self) -> None:
         """Drop any escalated privileges
@@ -38,6 +42,9 @@ class App(metaclass=SingletonMeta):
         # 0o022 == 0755 for directories and 0644 for files
         # 0o027 == 0750 for directories and 0640 for files
         os.umask(0o027)
+
+    def is_root(self) -> bool:
+        return OS.is_root()
 
     def os_type(self) -> str:
         return 'debian' if self.os in ['debian', 'raspbian', 'ubuntu'] else self.os

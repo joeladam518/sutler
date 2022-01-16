@@ -27,14 +27,19 @@ class OS:
     def get_release_value(cls, key: str) -> str:
         return cls.get_release().get(key, '')
 
-    @classmethod
-    def is_root(cls) -> bool:
+    @staticmethod
+    def is_root() -> bool:
         try:
-            is_admin = os.getuid() == 0
+            return os.getuid() == 0
         except AttributeError:
-            is_admin = ctypes.windll.shell32.IsUserAnAdmin() != 0
+            pass
 
-        return is_admin
+        try:
+            return ctypes.windll.shell32.IsUserAnAdmin() == 1
+        except AttributeError:
+            pass
+
+        return False
 
     @staticmethod
     def platform() -> str:

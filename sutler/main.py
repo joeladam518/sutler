@@ -9,7 +9,7 @@ from .commands import test
 @click.pass_context
 def cli(ctx: ClickContext):
     app = ctx.ensure_object(App)
-    if app.user.is_root():
+    if app.is_root():
         ctx.fail("You're not allowed to run sutler as root")
     if app.os_type() != 'debian':
         ctx.fail("Sorry, currently sutler only supports Debian based systems")
