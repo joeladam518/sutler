@@ -13,11 +13,11 @@ class LempProvisioner(Provisioner):
     def run(self, domain: str, php_version: str, project: Optional[str] = None) -> None:
         """
         Provision your lemp server
-        :param str domain:        The domain of your site
-        :param str php_version:   The php version you would like to install
-        :param Optional project:  Project name. This will be the folder we put all of you project files in. If None,
-                                  We'll just slug your domain.
-        :return:
+        :param str domain:             The domain of your site
+        :param str php_version:        The php version you would like to install
+        :param Optional[str] project:  Project name. This will be the folder we put all of you project files in.
+                                       If None, we'll just slug the domain
+        :return: None
         """
         # Slug the domain id no project given
         if not project:
@@ -31,19 +31,13 @@ class LempProvisioner(Provisioner):
         click.echo('Setting up your lemp server')
         click.echo()
 
-        os.chdir(self.app.user.home)
-
         # Install the LEMP stack
-        installer = MariadbInstaller(self.ctx)
-        installer.install()
-        installer = NodeInstaller(self.ctx)
-        installer.install('16')
-        installer = PhpInstaller(self.ctx)
-        installer.install(php_version, env='server')
-        installer = ComposerInstaller(self.ctx)
-        installer.install()
-        installer = NginxInstaller(self.ctx)
-        installer.install()
+        os.chdir(self.app.user.home)
+        MariadbInstaller(self.ctx).install()
+        NodeInstaller(self.ctx).install('16')
+        PhpInstaller(self.ctx).install(php_version, env='server')
+        ComposerInstaller(self.ctx).install()
+        NginxInstaller(self.ctx).install()
 
         # Configure the server
         self._configure_nginx(project, domain, php_version)
@@ -52,7 +46,6 @@ class LempProvisioner(Provisioner):
     def _configure_nginx(self, domain: str, php_version: str, project: str) -> None:
         """
         Configure Nginx
-
         :param str domain: The domain for the nginx config
         :param str php_version: The php version to install
         :param str project: The project name. (For folder names an such...)
@@ -101,19 +94,17 @@ class LempProvisioner(Provisioner):
         os.chdir(sites_enabled_path)
         Run.command(f"rm {sites_enabled_path}/*", root=True)
         Run.command(f"ln -s {project_config_path}", root=True)
+        os.chdir(self.app.user.home)
 
         # TODO: Which one is better to use?
         Run.command('systemctl start nginx', root=True)
         # Run.command('service nginx start', root=True)
 
-    def _configure_ufw(self):
+    def _configure_ufw(self) -> None:
         """
         Configure the firewall
-        :return:
+        :return: None
         """
-        click.echo()
-        click.echo('Checking ufw status:')
-        Run.command("ufw status", root=True)
         click.echo()
         Run.command("ufw allow SSH", root=True)
         Run.command("ufw allow 'Nginx HTTP'", root=True)
@@ -123,23 +114,33 @@ class LempProvisioner(Provisioner):
         Run.command("ufw status", root=True)
         click.echo()
 
-    def _copy_file(self, fp: str, tp: str, root: bool = False) -> None:
+    def _copy_file(self, _from: str, _to: str, root: bool = False) -> None:
         """
         Copy a file
-
-        :param str fp: From Path
-        :param str tp: To Path
+        :param str _from: From Path
+        :param str _to: To Path
         :param bool root: Run as root
-        :return:
+        :return: None
         """
-        Run.command(f"cp {fp} {tp}", root=root)
+        Run.command(f"cp {_from} {_to}", root=root)
+
+    def _move_file(self, _from: str, _to: str, root: bool = False) -> None:
+        """
+        Move a file
+        :param str _from: From Path
+        :param str _to: To Path
+        :param bool root: Run as root
+        :return: None
+        """
+        Run.command(f"mv {_from} {_to}", root=root)
 
     def _render_file(self, tp: str, fp: str, root: bool = False, **variables: Any) -> None:
         """
+        Render a Template
         :param str tp: Template path
         :param str fp: File Path
         :param Any variables: The variables for the template
-        :return:
+        :return: None
         """
         template = self.app.jinja.get_template(tp)
         stream = template.stream(variables)
@@ -155,5 +156,5 @@ class LempProvisioner(Provisioner):
             tmp_fp = os.path.join(tmp_dir, os.path.basename(fp))
             stream.dump(tmp_fp, 'utf-8')
 
-            Run.command(f"mv {tmp_fp} {fp}", root=True)
+            self._move_file(tmp_fp, fp, root=True)
             Run.command(f"chown root:root {fp}", root=True)
