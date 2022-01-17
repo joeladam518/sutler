@@ -10,6 +10,56 @@ from ..support import Str
 
 
 class LempProvisioner(Provisioner):
+    def run(self, domain: str, php_version: str, project: Optional[str] = None) -> None:
+        """
+        Provision your lemp server
+        :param str domain:        The domain of your site
+        :param str php_version:   The php version you would like to install
+        :param Optional project:  Project name. This will be the folder we put all of you project files in. If None,
+                                  We'll just slug your domain.
+        :return:
+        """
+
+        # Slug the domain id no project given
+        if not project:
+            project = Str.slug(domain)
+
+        # Run the server provisioner first
+        provisioner = ServerProvisioner(self.ctx)
+        provisioner.run()
+
+        click.echo()
+        click.echo('Setting up your lemp server')
+        click.echo()
+
+        os.chdir(self.app.user.home)
+
+        installer = MariadbInstaller(self.ctx)
+        installer.install()
+
+        installer = NodeInstaller(self.ctx)
+        installer.install('16')
+
+        installer = PhpInstaller(self.ctx)
+        installer.install(php_version, env='server')
+
+        installer = ComposerInstaller(self.ctx)
+        installer.install()
+
+        installer = NginxInstaller(self.ctx)
+        installer.install()
+
+        # Configure Nginx
+        self._configure_nginx(project, domain, php_version)
+
+        # Configure ufw
+        # Run.command("ufw allow 'Nginx HTTP'", root=True)
+        # Run.command("ufw allow 'Nginx HTTPS'", root=True)
+        # click.echo()
+        # click.echo('Checking ufw status:')
+        # Run.command("ufw status", root=True)
+        # click.echo()
+
     def _configure_nginx(self, domain: str, php_version: str, project: str):
         # TODO: Which one is better to use?
         # Run.command('service nginx stop', root=True)
@@ -85,53 +135,3 @@ class LempProvisioner(Provisioner):
 
             Run.command(f"mv {tmp_fp} {fp}", root=True)
             Run.command(f"chown root:root {fp}", root=True)
-
-    def run(self, domain: str, php_version: str, project: Optional[str] = None) -> None:
-        """
-        Provision your lemp server
-        :param str domain:        The domain of your site
-        :param str php_version:   The php version you would like to install
-        :param Optional project:  Project name. This will be the folder we put all of you project files in. If None,
-                                  We'll just slug your domain.
-        :return:
-        """
-
-        # Slug the domain id no project given
-        if not project:
-            project = Str.slug(domain)
-
-        # Run the server provisioner first
-        provisioner = ServerProvisioner(self.ctx)
-        provisioner.run()
-
-        click.echo()
-        click.echo('Setting up your lemp server')
-        click.echo()
-
-        os.chdir(self.app.user.home)
-
-        installer = MariadbInstaller(self.ctx)
-        installer.install()
-
-        installer = NodeInstaller(self.ctx)
-        installer.install('16')
-
-        installer = PhpInstaller(self.ctx)
-        installer.install(php_version, env='server')
-
-        installer = ComposerInstaller(self.ctx)
-        installer.install()
-
-        installer = NginxInstaller(self.ctx)
-        installer.install()
-
-        # Configure Nginx
-        self._configure_nginx(project, domain, php_version)
-
-        # Configure ufw
-        # Run.command("ufw allow 'Nginx HTTP'", root=True)
-        # Run.command("ufw allow 'Nginx HTTPS'", root=True)
-        # click.echo()
-        # click.echo('Checking ufw status:')
-        # Run.command("ufw status", root=True)
-        # click.echo()
