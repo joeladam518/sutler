@@ -74,7 +74,7 @@ class PhpInstaller(Installer):
 
         # filter out extensions
         extensions = Arr.unique(extensions)
-        extensions = Arr.exclude(extensions, list(exclude))
+        extensions = Arr.exclude(extensions, exclude)
 
         # build the extension strings and add them to the packages list
         packages = [f"php{version}", *list(map(lambda ext: extensionize(ext, version), extensions))]

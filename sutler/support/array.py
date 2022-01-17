@@ -14,11 +14,6 @@ class Arr:
         return original_type([item for item in items if item not in _exclude])
 
     @staticmethod
-    def only(items: ArrType, _only: ArrType) -> ArrType:
-        original_type = type(items)
-        return original_type([item for item in items if item in _only])
-
-    @staticmethod
     def unique(items: ArrType) -> ArrType:
         original_type = type(items)
         return original_type(OrderedDict.fromkeys(items))
