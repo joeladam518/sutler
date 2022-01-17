@@ -19,7 +19,6 @@ class LempProvisioner(Provisioner):
                                   We'll just slug your domain.
         :return:
         """
-
         # Slug the domain id no project given
         if not project:
             project = Str.slug(domain)
@@ -34,36 +33,34 @@ class LempProvisioner(Provisioner):
 
         os.chdir(self.app.user.home)
 
+        # Install the LEMP stack
         installer = MariadbInstaller(self.ctx)
         installer.install()
-
         installer = NodeInstaller(self.ctx)
         installer.install('16')
-
         installer = PhpInstaller(self.ctx)
         installer.install(php_version, env='server')
-
         installer = ComposerInstaller(self.ctx)
         installer.install()
-
         installer = NginxInstaller(self.ctx)
         installer.install()
 
-        # Configure Nginx
+        # Configure the server
         self._configure_nginx(project, domain, php_version)
+        # self._configure_ufw()
 
-        # Configure ufw
-        # Run.command("ufw allow 'Nginx HTTP'", root=True)
-        # Run.command("ufw allow 'Nginx HTTPS'", root=True)
-        # click.echo()
-        # click.echo('Checking ufw status:')
-        # Run.command("ufw status", root=True)
-        # click.echo()
+    def _configure_nginx(self, domain: str, php_version: str, project: str) -> None:
+        """
+        Configure Nginx
 
-    def _configure_nginx(self, domain: str, php_version: str, project: str):
+        :param str domain: The domain for the nginx config
+        :param str php_version: The php version to install
+        :param str project: The project name. (For folder names an such...)
+        :return:
+        """
         # TODO: Which one is better to use?
-        # Run.command('service nginx stop', root=True)
         Run.command('systemctl stop nginx', root=True)
+        # Run.command('service nginx stop', root=True)
 
         # Make the project's directory on the server and throw a couple of test files on it.
         project_path = self.app.sys_path('var', 'www', project)
@@ -80,7 +77,7 @@ class LempProvisioner(Provisioner):
         sites_enabled_path = os.path.join(etc_path, 'sites-enabled')
         project_config_path = os.path.join(sites_available_path, project)
 
-        # Let's keep the old nginx config path
+        # Keep the old nginx config
         if os.path.exists(config_path):
             Run.command(f'mv {config_path} {config_path}.old', root=True)
 
@@ -100,24 +97,49 @@ class LempProvisioner(Provisioner):
             gzip_config=self.app.jinja.get_template('nginx/snippets/compression.conf.jinja2').render()
         )
 
-        # enable the nginx project site
+        # Enable the nginx project site
         os.chdir(sites_enabled_path)
         Run.command(f"rm {sites_enabled_path}/*", root=True)
         Run.command(f"ln -s {project_config_path}", root=True)
-        # TODO: Which one is better to use?
-        # Run.command('service nginx start', root=True)
-        Run.command('systemctl start nginx', root=True)
 
-    def _copy_file(self, from_path: str, to_path: str, root: bool = False) -> None:
-        Run.command(f"cp {from_path} {to_path}", root=root)
+        # TODO: Which one is better to use?
+        Run.command('systemctl start nginx', root=True)
+        # Run.command('service nginx start', root=True)
+
+    def _configure_ufw(self):
+        """
+        Configure the firewall
+        :return:
+        """
+        click.echo()
+        click.echo('Checking ufw status:')
+        Run.command("ufw status", root=True)
+        click.echo()
+        Run.command("ufw allow SSH", root=True)
+        Run.command("ufw allow 'Nginx HTTP'", root=True)
+        Run.command("ufw allow 'Nginx HTTPS'", root=True)
+        click.echo()
+        click.echo('Checking ufw status:')
+        Run.command("ufw status", root=True)
+        click.echo()
+
+    def _copy_file(self, fp: str, tp: str, root: bool = False) -> None:
+        """
+        Copy a file
+
+        :param str fp: From Path
+        :param str tp: To Path
+        :param bool root: Run as root
+        :return:
+        """
+        Run.command(f"cp {fp} {tp}", root=root)
 
     def _render_file(self, tp: str, fp: str, root: bool = False, **variables: Any) -> None:
         """
         :param str tp: Template path
         :param str fp: File Path
         :param Any variables: The variables for the template
-        :return: None
-        :rtype: None
+        :return:
         """
         template = self.app.jinja.get_template(tp)
         stream = template.stream(variables)
