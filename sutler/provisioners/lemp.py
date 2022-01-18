@@ -69,7 +69,8 @@ class LempProvisioner(Provisioner):
         self._render_file(
             os.path.join('php', 'test.php.jinja2'),
             os.path.join(project_files_path, 'public', 'index.php'),
-            root=True
+            root=True,
+            project_name=project
         )
         self._copy_file(
             self.app.templates_path('php', 'info.php'),
@@ -114,7 +115,7 @@ class LempProvisioner(Provisioner):
         :return: None
         """
         click.echo()
-        Run.command("ufw allow SSH", root=True)
+        Run.command("ufw allow ssh", root=True)
         Run.command("ufw allow 'Nginx HTTP'", root=True)
         Run.command("ufw allow 'Nginx HTTPS'", root=True)
         click.echo()
