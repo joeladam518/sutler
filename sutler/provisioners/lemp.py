@@ -55,34 +55,42 @@ class LempProvisioner(Provisioner):
         Run.command('systemctl stop nginx', root=True)
         # Run.command('service nginx stop', root=True)
 
-        # Make the project's directory on the server and throw a couple of test files on it.
-        project_path = self.app.sys_path('var', 'www', project)
-        Run.command(f"mkdir -p {project_path}", root=True)
-        Run.command(f"mkdir -p {project_path}/public", root=True)
-        self._render_file(os.path.join('php', 'test.php.jinja2'), os.path.join(project_path, 'public', 'index.php'))
-        self._copy_file(self.app.templates_path('php', 'info.php'), os.path.join(project_path, 'public', 'info.php'))
-        Run.command(f"chown -R www-data:www-data {project_path}", root=True)
+        # Build all the paths
+        nginx_etc_path = self.app.sys_path('etc', 'nginx')
+        nginx_config_path = os.path.join(nginx_etc_path, 'nginx.conf')
+        sites_available_path = os.path.join(nginx_etc_path, 'sites-available')
+        sites_enabled_path = os.path.join(nginx_etc_path, 'sites-enabled')
+        project_nginx_path = os.path.join(sites_available_path, project)
+        project_files_path = self.app.sys_path('var', 'www', project)
 
-        # Build all the config paths
-        etc_path = self.app.sys_path('etc', 'nginx')
-        config_path = os.path.join(etc_path, 'nginx.conf')
-        sites_available_path = os.path.join(etc_path, 'sites-available')
-        sites_enabled_path = os.path.join(etc_path, 'sites-enabled')
-        project_config_path = os.path.join(sites_available_path, project)
+        # Make the project's directory on the server and throw a couple of test files on it.
+        Run.command(f"mkdir -p {project_files_path}", root=True)
+        Run.command(f"mkdir -p {project_files_path}/public", root=True)
+        self._render_file(
+            os.path.join('php', 'test.php.jinja2'),
+            os.path.join(project_files_path, 'public', 'index.php'),
+            root=True
+        )
+        self._copy_file(
+            self.app.templates_path('php', 'info.php'),
+            os.path.join(project_files_path, 'public', 'info.php'),
+            root=True
+        )
+        Run.command(f"chown -R www-data:www-data {project_files_path}", root=True)
 
         # Keep the old nginx config
-        if os.path.exists(config_path):
-            Run.command(f'mv {config_path} {config_path}.old', root=True)
+        if os.path.exists(nginx_config_path):
+            Run.command(f'mv {nginx_config_path} {nginx_config_path}.old', root=True)
 
         # Render the template files to their config paths
         self._render_file(
             os.path.join('nginx', 'nginx.conf.jinja2'),
-            config_path,
+            nginx_config_path,
             root=True
         )
         self._render_file(
             os.path.join('nginx', 'sites-available', 'php-http.nginx.jinja2'),
-            project_config_path,
+            project_nginx_path,
             root=True,
             domain=domain,
             project_name=project,
@@ -93,7 +101,7 @@ class LempProvisioner(Provisioner):
         # Enable the nginx project site
         os.chdir(sites_enabled_path)
         Run.command(f"rm {sites_enabled_path}/*", root=True)
-        Run.command(f"ln -s {project_config_path}", root=True)
+        Run.command(f"ln -s {project_nginx_path}", root=True)
         os.chdir(self.app.user.home)
 
         # TODO: Which one is better to use?
