@@ -40,7 +40,7 @@ class LempProvisioner(Provisioner):
         NginxInstaller(self.ctx).install()
 
         # Configure the server
-        self._configure_nginx(project, domain, php_version)
+        self._configure_nginx(domain, php_version, project)
         self._configure_ufw()
 
     def _configure_nginx(self, domain: str, php_version: str, project: str) -> None:
