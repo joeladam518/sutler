@@ -41,8 +41,9 @@ class LempProvisioner(Provisioner):
 
         # Configure the server
         self._configure_nginx(domain, php_version, project)
-        if self.app.os == 'ubuntu':
-            self._configure_ufw()
+        # TODO: uncomment
+        # if self.app.os == 'ubuntu':
+        #     self._configure_ufw()
 
     def _configure_nginx(self, domain: str, php_version: str, project: str) -> None:
         """
