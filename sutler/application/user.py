@@ -1,19 +1,16 @@
 import click
 import os
-from ..support import OS
+from typing import Optional
 
 
 class User:
-    def __init__(self, name: str, shell: str, uid: int, gid: int, gids: tuple = ()):
-        self.name = name
-        self.home = os.path.expanduser(f"~{name}")
-        self.shell = shell
-        self.uid = uid
-        self.gid = gid
-        self.gids = gids
-
-    def is_root(self) -> bool:
-        return OS.is_root()
+    def __init__(self, name: str, shell: str, **kwargs):
+        self.name: str = name
+        self.shell: str = shell
+        self.home: str = os.path.expanduser(f"~{name}")
+        self.uid: Optional[int] = kwargs.get('uid', None)
+        self.gid: Optional[int] = kwargs.get('gid', None)
+        self.gids: Optional[tuple] = kwargs.get('gids', None)
 
     def print(self) -> None:
         for key, value in vars(self).items():

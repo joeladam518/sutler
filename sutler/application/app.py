@@ -15,13 +15,18 @@ class App(metaclass=SingletonMeta):
         self.jinja = Environment(loader=FileSystemLoader(self.templates_path()))
         self.os = OS.type()
         self.os_like = OS.type_like()
-        self.user = User(getuser(),  OS.shell(), os.getuid(), os.getgid(), tuple(os.getgroups()))
+        self.user = User(getuser(), OS.shell())
+        if self.os != 'windows':
+            self.user.uid = os.getuid()
+            self.user.gid = os.getgid()
+            self.user.gids = tuple(os.getgroups())
 
     def drop_privileges(self) -> None:
         """Drop any escalated privileges
         TODO: This function might not be needed. It seems like if I use subprocess and only escalate the
               user's privileges during those individual subprocess calls I won't escalate sutler's privileges...
               Maybe... Keeping it around just in case and until I'm sure I don't need it.
+              Additionally I'm pretty sure this will only work for posix based systems...
 
         :rtype: None
         """
@@ -38,6 +43,9 @@ class App(metaclass=SingletonMeta):
         # 0o022 == 0755 for directories and 0644 for files
         # 0o027 == 0750 for directories and 0640 for files
         os.umask(0o027)
+
+    def is_root(self) -> bool:
+        return OS.is_root()
 
     def os_type(self) -> str:
         return 'debian' if self.os in ['debian', 'raspbian', 'ubuntu'] else self.os
@@ -77,6 +85,10 @@ class App(metaclass=SingletonMeta):
         scripts_path = os.path.join(self.base_path, 'scripts')
         paths = list(map(lambda path: path.strip().rstrip(os.sep), paths))
         return scripts_path if len(paths) == 0 else os.path.join(scripts_path, *paths)
+
+    def sys_path(self, *paths) -> str:
+        paths = list(map(lambda path: path.strip().rstrip(os.sep), paths))
+        return OS.root_path() if len(paths) == 0 else os.path.join(OS.root_path(), *paths)
 
     def templates_path(self, *paths: str) -> str:
         templates_path = os.path.join(self.base_path, 'templates')

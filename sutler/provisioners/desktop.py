@@ -10,7 +10,7 @@ from .provisioner import Provisioner
 class DesktopProvisioner(Provisioner):
     def run(self) -> None:
         """
-        To provision my ubuntu desktop machine
+        Provision my ubuntu desktop machine
 
         NOTE: This script will probably have to be updated before it is run every single time...
 
@@ -24,6 +24,8 @@ class DesktopProvisioner(Provisioner):
         magenta dark = #ca30c7   magenta light  = #ff77ff
         cyan dark    = #00c5c7   cyan light     = #60fdff
         white dark   = #D7D7D7   white light    = #ffffff
+
+        :return: None
         """
         click.echo()
         click.echo('Setting up your desktop environment')
@@ -45,44 +47,37 @@ class DesktopProvisioner(Provisioner):
         # Base stuff
         Run.install('apt-transport-https', 'build-essential', 'ca-certificates', 'software-properties-common')
 
+        # Install restricted extras
         if self.app.os == 'ubuntu':
-            # Installing restricted extras
             Run.install('ubuntu-restricted-extras', 'ubuntu-restricted-addons')
 
-        # Install utility applications
+        # Install some useful applications
         Run.install('curl', 'git', 'gnome-tweak-tool', 'htop', 'mosquitto-clients',
                     'mariadb-client', 'python3-pip', 'ripit', 'tmux', 'tree', 'vim-gtk3')
+
+        # Install bash git prompt
+        os.chdir(self.app.user.home)
+        Repo.clone_from("https://github.com/magicmonty/bash-git-prompt.git", ".bash-git-prompt", depth=1)
 
         # Install the ability to work with exfat drives
         Run.install('exfat-utils', 'exfat-fuse')
 
+        # Install some snaps
         Run.command('snap refresh')
         Run.command('snap install audacity gimp vlc')
 
-        installer = DotfilesInstaller(self.ctx)
-        installer.install('desktop')
+        # Install even more stuff
+        DotfilesInstaller(self.ctx).install('desktop')
+        FzfInstaller(self.ctx).install()
+        PhpInstaller(self.ctx).install('8.1', env='desktop')
+        ComposerInstaller(self.ctx).install()
+        NodeInstaller(self.ctx).install('16')
+        SublimeInstaller(self.ctx).install('merge')
 
-        installer = FzfInstaller(self.ctx)
-        installer.install()
-
-        installer = PhpInstaller(self.ctx)
-        installer.install('8.1', env='desktop')
-
-        installer = ComposerInstaller(self.ctx)
-        installer.install()
-
-        installer = NodeInstaller(self.ctx)
-        installer.install('16')
-
-        installer = SublimeInstaller(self.ctx)
-        installer.install('merge')
-
-        os.chdir(self.app.user.home)
-        Repo.clone_from("https://github.com/magicmonty/bash-git-prompt.git", ".bash-git-prompt", depth=1)
-
+        # Update the command line editor to vim (Has to be done manually)
         Run.command('update-alternatives --config editor', root=True)
 
-        # clone my public repos
+        # Clone my public repos
         os.chdir(repos_path)
         Repo.clone_from('git@github.com:joeladam518/arduino-mqtt-led.git', 'arduino-mqtt-led')
         Repo.clone_from('git@github.com:joeladam518/BackupScripts.git', 'BackupScripts')
@@ -93,7 +88,8 @@ class DesktopProvisioner(Provisioner):
         Repo.clone_from('git@github.com:joeladam518/sutler.git', 'sutler')
 
         click.echo()
-        click.echo("Reminder of the other programs you like but unfortunately their installation can't be automated")
+        click.echo("Reminder of the other programs you like, but unfortunately their installation can't be automated")
+        click.echo("yet...")
         click.echo()
         click.echo("* Arduino - https://www.arduino.cc/en/software")
         click.echo("* Chrome - https://www.google.com/chrome/")

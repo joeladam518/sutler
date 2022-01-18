@@ -2,7 +2,7 @@ import click
 from os.path import exists
 from ..application import Run
 from .installer import Installer
-from ..support import List, OS, Version
+from ..support import Arr, OS, Version
 
 php_extensions = {
     'common': (
@@ -20,7 +20,7 @@ php_extensions = {
         'zip'
     ),
     'desktop': (),
-    'development': (
+    'dev': (
         'intl',
         'dev',
         'igbinary',
@@ -73,8 +73,8 @@ class PhpInstaller(Installer):
             extensions.append('json')
 
         # filter out extensions
-        extensions = List.unique(extensions)
-        extensions = List.only(extensions, list(exclude))
+        extensions = Arr.unique(extensions)
+        extensions = Arr.exclude(extensions, exclude)
 
         # build the extension strings and add them to the packages list
         packages = [f"php{version}", *list(map(lambda ext: extensionize(ext, version), extensions))]

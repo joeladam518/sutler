@@ -30,7 +30,7 @@ def fzf(ctx: ClickContext):
 @click.option('--db-name', 'db_name', type=str, default=None,
               help='The databases name.')
 @click.option('--db-user', 'db_user', type=str, default=None,
-              help='The databases user.')
+              help='The database\'s user.')
 def mariadb(ctx: ClickContext, db_name: Optional[str], db_user: Optional[str]):
     installer = MariadbInstaller(ctx)
     installer.install(db=db_name, user=db_user)
@@ -47,12 +47,12 @@ def nodejs(ctx: ClickContext, version: str):
 @click.command()
 @click.pass_context
 @click.argument('version', type=str, required=True)
-@click.option('-e', '--env', 'environment', type=str, default='desktop',
-              help='The environment on witch to install php on.')
+@click.option('-e', '--env', 'environment', type=click.Choice(('desktop', 'dev', 'server')),
+              default='desktop', help='The type of environment you\'re installing php on.')
 @click.option('-a', '--additional', 'additional', type=str, multiple=True, default=(),
-              help="Any additional extension you might want to install")
+              help="Any additional extensions you might want to install.")
 @click.option('-x', '--exclude', 'exclude', type=str, multiple=True, default=(),
-              help="Extension you want to exclude from installing")
+              help="Extensions you want to exclude from installing.")
 def php(ctx: ClickContext, version: str, environment: str, additional: tuple, exclude: tuple):
     installer = PhpInstaller(ctx)
     installer.install(version, environment, additional, exclude)
