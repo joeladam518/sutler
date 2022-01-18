@@ -19,20 +19,20 @@ class LempProvisioner(Provisioner):
                                        If None, we'll just slug the domain
         :return: None
         """
-        # Slug the domain id no project given
-        if not project:
-            project = Str.slug(domain)
-
-        # Run the server provisioner first
-        provisioner = ServerProvisioner(self.ctx)
-        provisioner.run()
+        # Run the base server provisioner first
+        ServerProvisioner(self.ctx).run()
 
         click.echo()
         click.echo('Setting up your lemp server')
         click.echo()
 
-        # Install the LEMP stack
         os.chdir(self.app.user.home)
+
+        # Slug the domain id no project given
+        if not project:
+            project = Str.slug(domain)
+
+        # Install the LEMP stack
         MariadbInstaller(self.ctx).install()
         NodeInstaller(self.ctx).install('16')
         PhpInstaller(self.ctx).install(php_version, env='server')
@@ -41,7 +41,7 @@ class LempProvisioner(Provisioner):
 
         # Configure the server
         self._configure_nginx(project, domain, php_version)
-        # self._configure_ufw()
+        self._configure_ufw()
 
     def _configure_nginx(self, domain: str, php_version: str, project: str) -> None:
         """
@@ -112,6 +112,9 @@ class LempProvisioner(Provisioner):
         click.echo()
         click.echo('Checking ufw status:')
         Run.command("ufw status", root=True)
+        click.echo()
+        # TODO: maybe ask if we should enable the firewall?
+        Run.command("ufw enable", root=True)
         click.echo()
 
     def _copy_file(self, _from: str, _to: str, root: bool = False) -> None:
