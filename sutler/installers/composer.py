@@ -31,13 +31,13 @@ class ComposerInstaller(Installer):
             self.ctx.fail("Failed to install php-composer. Hashes didnt match")
 
         try:
-            self.app.os.exec(f'php {composer_setup_path}')
-            self.app.os.mv(composer_path, '/usr/local/bin/composer', root=True)
+            self.app.system.exec(f'php {composer_setup_path}')
+            self.app.system.mv(composer_path, '/usr/local/bin/composer', root=True)
         except CalledProcessError as ex:
-            self.app.os.rm(composer_setup_path)
+            self.app.system.rm(composer_setup_path)
             raise ex
         else:
-            self.app.os.rm(composer_setup_path)
+            self.app.system.rm(composer_setup_path)
 
     def uninstall(self) -> None:
-        self.app.os.rm('/usr/local/bin/composer', root=True)
+        self.app.system.rm('/usr/local/bin/composer', root=True)

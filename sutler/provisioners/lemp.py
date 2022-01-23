@@ -43,7 +43,7 @@ class LempProvisioner(Provisioner):
         self._configure_nginx(domain, php_version, project)
 
         # Configure the firewall
-        if self.app.os.type in ['ubuntu', 'debian']:
+        if self.app.system.type in ['ubuntu', 'debian']:
             self._configure_ufw()
 
     def _configure_nginx(self, domain: str, php_version: str, project: str) -> None:
@@ -54,7 +54,7 @@ class LempProvisioner(Provisioner):
         :param str project: The project name. (For folder names an such...)
         :return:
         """
-        self.app.os.exec('systemctl stop nginx', root=True)
+        self.app.system.exec('systemctl stop nginx', root=True)
 
         # Build all the paths
         nginx_etc_path = self.app.sys_path('etc', 'nginx')
@@ -65,26 +65,26 @@ class LempProvisioner(Provisioner):
         project_files_path = self.app.sys_path('var', 'www', project)
 
         # Make the project's directory on the server and throw a couple of test files on it.
-        self.app.os.exec(f"mkdir -p {project_files_path}", root=True)
-        self.app.os.exec(f"mkdir -p {project_files_path}/public", root=True)
+        self.app.system.exec(f"mkdir -p {project_files_path}", root=True)
+        self.app.system.exec(f"mkdir -p {project_files_path}/public", root=True)
         self._render_file(
             os.path.join('php', 'test.php.jinja2'),
             os.path.join(project_files_path, 'public', 'index.php'),
             root=True,
             project_name=project
         )
-        self.app.os.cp(
+        self.app.system.cp(
             self.app.templates_path('php', 'info.php'),
             os.path.join(project_files_path, 'public', 'info.php'),
             root=True
         )
 
         # Set the ownership
-        self.app.os.exec(f"chown -R www-data:www-data {project_files_path}", root=True)
+        self.app.system.exec(f"chown -R www-data:www-data {project_files_path}", root=True)
 
         # Keep the old nginx config
         if os.path.exists(nginx_config_path):
-            self.app.os.exec(f'mv {nginx_config_path} {nginx_config_path}.old', root=True)
+            self.app.system.exec(f'mv {nginx_config_path} {nginx_config_path}.old', root=True)
 
         # Render the template files to their config paths
         self._render_file(
@@ -104,10 +104,10 @@ class LempProvisioner(Provisioner):
 
         # Enable the nginx project site
         os.chdir(sites_enabled_path)
-        self.app.os.exec(f"rm {sites_enabled_path}/*", root=True)
-        self.app.os.exec(f"ln -s {project_nginx_path}", root=True)
+        self.app.system.exec(f"rm {sites_enabled_path}/*", root=True)
+        self.app.system.exec(f"ln -s {project_nginx_path}", root=True)
 
-        self.app.os.exec('systemctl start nginx', root=True)
+        self.app.system.exec('systemctl start nginx', root=True)
         os.chdir(self.app.user.home)
 
     def _configure_ufw(self) -> None:
@@ -116,18 +116,18 @@ class LempProvisioner(Provisioner):
         :return: None
         """
         if not installed('ufw'):
-            self.app.os.install('ufw')
+            self.app.system.install('ufw')
 
         click.echo()
-        self.app.os.exec("ufw allow ssh", root=True)
-        self.app.os.exec("ufw allow 'Nginx HTTP'", root=True)
-        self.app.os.exec("ufw allow 'Nginx HTTPS'", root=True)
+        self.app.system.exec("ufw allow ssh", root=True)
+        self.app.system.exec("ufw allow 'Nginx HTTP'", root=True)
+        self.app.system.exec("ufw allow 'Nginx HTTPS'", root=True)
         click.echo()
         click.echo('Checking ufw status:')
-        self.app.os.exec("ufw status", root=True)
+        self.app.system.exec("ufw status", root=True)
         click.echo()
         # TODO: maybe ask if we should enable the firewall?
-        self.app.os.exec("ufw enable", root=True)
+        self.app.system.exec("ufw enable", root=True)
         click.echo()
 
     def _render_file(self, tp: str, fp: str, root: bool = False, **variables: Any) -> None:
@@ -152,5 +152,5 @@ class LempProvisioner(Provisioner):
             tmp_fp = os.path.join(tmp_dir, os.path.basename(fp))
             stream.dump(tmp_fp, 'utf-8')
 
-            self.app.os.mv(tmp_fp, fp, root=True)
-            self.app.os.exec(f"chown root:root {fp}", root=True)
+            self.app.system.mv(tmp_fp, fp, root=True)
+            self.app.system.exec(f"chown root:root {fp}", root=True)

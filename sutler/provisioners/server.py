@@ -23,15 +23,15 @@ class ServerProvisioner(Provisioner):
         ssh_path = os.path.join(self.app.user.home, '.ssh')
         if not os.path.isdir(ssh_path):
             os.mkdir(ssh_path)
-            self.app.os.exec(f'cd "{ssh_path}" && ssh-keygen -t rsa')
+            self.app.system.exec(f'cd "{ssh_path}" && ssh-keygen -t rsa')
 
-        self.app.os.update_and_upgrade()
+        self.app.system.update_and_upgrade()
 
         # Base stuff
-        self.app.os.install('apt-transport-https', 'build-essential', 'ca-certificates', 'software-properties-common')
+        self.app.system.install('apt-transport-https', 'build-essential', 'ca-certificates', 'software-properties-common')
 
         # Install utility applications
-        self.app.os.install('curl', 'git', 'htop', 'python3-pip', 'tmux', 'tree', 'vim', 'virtualenv')
+        self.app.system.install('curl', 'git', 'htop', 'python3-pip', 'tmux', 'tree', 'vim', 'virtualenv')
 
         # Install the base stuff I like on all my servers
         DotfilesInstaller(self.ctx).install('server')

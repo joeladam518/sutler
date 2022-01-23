@@ -14,14 +14,15 @@ class App(metaclass=SingletonMeta):
         self.base_path = os.path.dirname(os.path.dirname(os.path.abspath(__file__))).rstrip(os.sep)
         self.context = Context()
         self.jinja = Environment(loader=FileSystemLoader(self.templates_path()))
-        # TODO: When we start operating systems that are not debian based we will need to
-        #       refactor this to a factory that figures that out and instantiates the right os class
-        self.os = DebianSystem(app=self, type=OS.type(), type_like=OS.type_like())
         self.user = User(getuser(), OS.shell())
+
         if self.os.type != 'windows':
             self.user.uid = os.getuid()
             self.user.gid = os.getgid()
             self.user.gids = tuple(os.getgroups())
+        # TODO: When we start operating systems that are not debian based we will need to
+        #       refactor this to a factory that figures that out and instantiates the right os class
+        self.system = DebianSystem(app=self, type=OS.type(), type_like=OS.type_like())
 
     def is_root(self) -> bool:
         return OS.is_root()
@@ -33,11 +34,11 @@ class App(metaclass=SingletonMeta):
     def print(self) -> None:
         click.echo()
         click.secho("Operating System", fg='cyan')
-        click.secho(f"{self.os.type}", fg='bright_white')
+        click.secho(f"{self.system.type}", fg='bright_white')
         click.echo()
 
         click.secho("Operating System like", fg='cyan')
-        click.secho(f"{self.os.type_like}", fg='bright_white')
+        click.secho(f"{self.system.type_like}", fg='bright_white')
         click.echo()
 
         click.secho("User", fg='cyan')
