@@ -2,17 +2,13 @@ import os
 from ..application import Run
 from .installer import Installer
 
-node_versions = (
-    '14',
-    '15',
-    '16',
-    '17'
-)
 
 
 class NodeInstaller(Installer):
+    versions = ('14', '15', '16', '17')
+
     def install(self, version: str) -> None:
-        if version not in node_versions:
+        if version not in self.versions:
             self.ctx.fail('Invalid node version')
         Run.command(f"curl -sL \"https://deb.nodesource.com/setup_{version}.x\" | sudo -E bash -")
         Run.install('nodejs')
