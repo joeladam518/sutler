@@ -1,10 +1,12 @@
 import click
 import os
 from subprocess import CompletedProcess
-from typing import Optional, Union
-from ..application import App
+from typing import Optional, TYPE_CHECKING, Union
 from .installer import Installer
 from ..support import Version
+
+if TYPE_CHECKING:
+    from ..application import App
 
 
 class MariadbConfigurator:
@@ -16,7 +18,7 @@ class MariadbConfigurator:
         - Eventually, we should migrate away from 'mysql_native_password to the 'auth_ed25519' plugin
           because it's more secure.
     """
-    def __init__(self, app: App, password: Optional[str] = None, host: str = 'localhost'):
+    def __init__(self, app: 'App', password: Optional[str] = None, host: str = 'localhost'):
         self.app = app
         self.host = host
         self.user = 'root'

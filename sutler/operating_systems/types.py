@@ -4,9 +4,11 @@ import shutil
 import subprocess
 import sys
 from abc import ABC
-from typing import Union
-from ..application import App
+from typing import TYPE_CHECKING, Union
 from ..support import OS
+
+if TYPE_CHECKING:
+    from ..application import App
 
 # Types
 CompletedProcess = subprocess.CompletedProcess
@@ -28,18 +30,14 @@ def handle_completed_process(process: CompletedProcess, capture_output: bool) ->
 class PosixSystem(ABC):
     """
     Posix system helper class
-    type: str
+    app: ..application.App
         The operating system type. For a posix systems, this will return the operating system's name.
         example: 'ubuntu', 'raspbian', 'arch', 'fedora', debian. etc... But, for window and mac it will just
         return 'windows' or 'mac'
-    type_like: str
-        This property is mainly for linux distros and will return what the operating system was based off of.
-        example: for 'ubuntu' or 'raspbian' oses, this will return 'debian'
     """
-    def __init__(self, app: App, **kwargs):
-        self.app: App = app
-        self.type = kwargs.get('type', None)
-        self.type_like = kwargs.get('type_like', 'posix')
+
+    def __init__(self, app: 'App'):
+        self.app: 'App' = app
 
     def cp(self, fp: str, tp: str, root: bool = False) -> CompletedProcess:
         """
