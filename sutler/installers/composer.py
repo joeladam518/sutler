@@ -3,7 +3,6 @@ import hashlib
 import shutil
 from subprocess import CalledProcessError
 from urllib import request
-from ..application import Run
 from ..helpers import installed
 from .installer import Installer
 
@@ -32,13 +31,13 @@ class ComposerInstaller(Installer):
             self.ctx.fail("Failed to install php-composer. Hashes didnt match")
 
         try:
-            Run.command(f'php {composer_setup_path}')
-            Run.command(f'mv {composer_path} /usr/local/bin/composer', root=True)
+            self.app.os.exec(f'php {composer_setup_path}')
+            self.app.os.mv(composer_path, '/usr/local/bin/composer', root=True)
         except CalledProcessError as ex:
-            Run.command(f'rm {composer_setup_path}')
+            self.app.os.rm(composer_setup_path)
             raise ex
         else:
-            Run.command(f'rm {composer_setup_path}')
+            self.app.os.rm(composer_setup_path)
 
     def uninstall(self) -> None:
-        Run.command('rm /usr/local/bin/composer', root=True)
+        self.app.os.rm('/usr/local/bin/composer', root=True)

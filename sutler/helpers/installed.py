@@ -1,6 +1,5 @@
 import shutil
-from ..application import Run
-
+from ..application import App
 
 
 def installed(program: str) -> bool:
@@ -20,5 +19,6 @@ def is_cmd_installed(program: str) -> bool:
 
 
 def is_pkg_installed(program: str) -> bool:
-    proc = Run.command(f"dpkg -l | grep -E '^ii' | grep -iwq '{program}'", check=False)
+    app = App()
+    proc = app.os.exec(f"dpkg -l | grep -E '^ii' | grep -iwq '{program}'", check=False)
     return proc.returncode == 0

@@ -1,7 +1,6 @@
 import click
 import os
 from git import Repo
-from ..application import Run
 from ..installers import ComposerInstaller, DotfilesInstaller, FzfInstaller
 from ..installers import NodeInstaller, PhpInstaller, SublimeInstaller
 from .provisioner import Provisioner
@@ -40,31 +39,31 @@ class DesktopProvisioner(Provisioner):
         ssh_path = os.path.join(self.app.user.home, '.ssh')
         if not os.path.isdir(ssh_path):
             os.mkdir(ssh_path)
-            Run.command(f'cd "{ssh_path}" && ssh-keygen -t rsa')
+            self.app.os.exec(f'cd "{ssh_path}" && ssh-keygen -t rsa')
 
-        Run.update_and_upgrade()
+        self.app.os.update_and_upgrade()
 
         # Base stuff
-        Run.install('apt-transport-https', 'build-essential', 'ca-certificates', 'software-properties-common')
+        self.app.os.install('apt-transport-https', 'build-essential', 'ca-certificates', 'software-properties-common')
 
         # Install restricted extras
-        if self.app.os == 'ubuntu':
-            Run.install('ubuntu-restricted-extras', 'ubuntu-restricted-addons')
+        if self.app.os.type == 'ubuntu':
+            self.app.os.install('ubuntu-restricted-extras', 'ubuntu-restricted-addons')
 
         # Install some useful applications
-        Run.install('curl', 'git', 'gnome-tweak-tool', 'htop', 'mosquitto-clients', 'mariadb-client',
-                    'python3-pip', 'ripit', 'tmux', 'tree', 'vim-gtk3', 'virtualenv')
+        self.app.os.install('curl', 'git', 'gnome-tweak-tool', 'htop', 'mosquitto-clients', 'mariadb-client',
+                         'python3-pip', 'ripit', 'tmux', 'tree', 'vim-gtk3', 'virtualenv')
 
         # Install bash git prompt
         os.chdir(self.app.user.home)
         Repo.clone_from("https://github.com/magicmonty/bash-git-prompt.git", ".bash-git-prompt", depth=1)
 
         # Install the ability to work with exfat drives
-        Run.install('exfat-utils', 'exfat-fuse')
+        self.app.os.install('exfat-utils', 'exfat-fuse')
 
         # Install some snaps
-        Run.command('snap refresh')
-        Run.command('snap install audacity gimp vlc')
+        self.app.os.exec('snap refresh')
+        self.app.os.exec('snap install audacity gimp vlc')
 
         # Install even more stuff
         DotfilesInstaller(self.ctx).install('desktop')
@@ -75,7 +74,7 @@ class DesktopProvisioner(Provisioner):
         SublimeInstaller(self.ctx).install('merge')
 
         # Update the command line editor to vim (Has to be done manually)
-        Run.command('update-alternatives --config editor', root=True)
+        self.app.os.exec('update-alternatives --config editor', root=True)
 
         # Clone my public repos
         if click.confirm('Install repos?'):

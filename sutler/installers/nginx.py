@@ -1,12 +1,11 @@
 import click
-from ..application import Run
 from .installer import Installer
 
 
 class NginxInstaller(Installer):
     def install(self) -> None:
-        Run.update()
-        Run.install('nginx')
+        self.app.os.exec.update()
+        self.app.os.exec.install('nginx')
 
     def uninstall(self) -> None:
-        Run.uninstall('nginx')
+        self.app.os.exec.uninstall('nginx')

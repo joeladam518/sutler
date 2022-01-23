@@ -1,8 +1,6 @@
 import os
 from git import Repo
-from ..application import Run
 from .installer import Installer
-from ..support import OS
 
 
 class DotfilesInstaller(Installer):
@@ -25,7 +23,7 @@ class DotfilesInstaller(Installer):
         if not os.path.exists(install_script_path):
             self.ctx.fail('Failed to install dotfiles. Could not find the install script')
 
-        Run.script(install_script_path, system)
+        self.app.os.exec_script(install_script_path, system)
 
     def uninstall(self, system: str) -> None:
         home_dir = self.app.user.home
@@ -37,5 +35,5 @@ class DotfilesInstaller(Installer):
         if not os.path.exists(uninstall_script_path):
             self.ctx.fail('Failed to uninstall dotfiles. Could not find the uninstall script')
 
-        Run.script(uninstall_script_path, system)
-        OS.rm(dotfiles_dir)
+        self.app.os.exec_script(uninstall_script_path, system)
+        self.app.os.rm(dotfiles_dir)

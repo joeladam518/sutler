@@ -1,6 +1,5 @@
 import click
 import os
-from ..application import Run
 from .provisioner import Provisioner
 from ..installers import DotfilesInstaller, FzfInstaller
 
@@ -24,15 +23,15 @@ class ServerProvisioner(Provisioner):
         ssh_path = os.path.join(self.app.user.home, '.ssh')
         if not os.path.isdir(ssh_path):
             os.mkdir(ssh_path)
-            Run.command(f'cd "{ssh_path}" && ssh-keygen -t rsa')
+            self.app.os.exec(f'cd "{ssh_path}" && ssh-keygen -t rsa')
 
-        Run.update_and_upgrade()
+        self.app.os.update_and_upgrade()
 
         # Base stuff
-        Run.install('apt-transport-https', 'build-essential', 'ca-certificates', 'software-properties-common')
+        self.app.os.install('apt-transport-https', 'build-essential', 'ca-certificates', 'software-properties-common')
 
         # Install utility applications
-        Run.install('curl', 'git', 'htop', 'python3-pip', 'tmux', 'tree', 'vim', 'virtualenv')
+        self.app.os.install('curl', 'git', 'htop', 'python3-pip', 'tmux', 'tree', 'vim', 'virtualenv')
 
         # Install the base stuff I like on all my servers
         DotfilesInstaller(self.ctx).install('server')

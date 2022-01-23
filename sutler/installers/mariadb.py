@@ -2,7 +2,7 @@ import click
 import os
 from subprocess import CompletedProcess
 from typing import Optional, Union
-from ..application import Run
+from ..application import App
 from .installer import Installer
 from ..support import Version
 
@@ -16,7 +16,8 @@ class MariadbConfigurator:
         - Eventually, we should migrate away from 'mysql_native_password to the 'auth_ed25519' plugin
           because it's more secure.
     """
-    def __init__(self, password: Optional[str] = None, host: str = 'localhost'):
+    def __init__(self, app: App, password: Optional[str] = None, host: str = 'localhost'):
+        self.app = app
         self.host = host
         self.user = 'root'
         self.password = password
@@ -72,7 +73,7 @@ class MariadbConfigurator:
         command += f' --user="{self.user}" --password="{self.password}"' if self.user and self.password else ''
         command += f' --silent' if capture_output else ''
         command += f' --execute="{query}"'
-        return Run.command(command, root=root, capture_output=capture_output)
+        return self.app.os.exec(command, root=root, capture_output=capture_output)
 
     def get_version(self) -> Version:
         return Version(self.execute("SELECT VERSION();", capture_output=True))
@@ -124,19 +125,19 @@ class MariadbConfigurator:
 
 class MariadbInstaller(Installer):
     def install(self, db: Optional[str] = None, user: Optional[str] = None) -> None:
-        Run.install('mariadb-server', 'mariadb-client')
+        self.app.os.install('mariadb-server', 'mariadb-client')
         click.echo()
 
-        mariadb = MariadbConfigurator()
+        mariadb = MariadbConfigurator(self.app)
 
         # Secure the mariadb installation
-        # Run.command('mysql_secure_installation', root=True)
+        # self.app.os.exec('mysql_secure_installation', root=True)
         mariadb.secure_installation()
 
         # Setup Mariadb to support utf-8
         source = self.app.templates_path('mysql', 'utf8.conf')
         destination = os.path.join(os.sep, 'etc', 'mysql', 'conf.d', '99-utf8.conf')
-        Run.command(f'cp "{source}" "{destination}"', root=True)
+        self.app.os.exec(f'cp "{source}" "{destination}"', root=True)
 
         # Create a database if we have the required information
         if db:
@@ -164,9 +165,10 @@ class MariadbInstaller(Installer):
         click.echo()
 
     def uninstall(self) -> None:
-        Run.uninstall('mariadb-server', 'mariadb-client')
+        self.app.os.uninstall('mariadb-server', 'mariadb-client')
 
         # TODO: Should I just remove the entire 'mysql' directory?
         config_path = os.path.join(os.sep, 'etc', 'mysql', 'conf.d', '99-utf8.conf')
+
         if os.path.exists(config_path):
-            Run.command(f'rm "{config_path}"', root=True)
+            self.app.os.rm(config_path, root=True)

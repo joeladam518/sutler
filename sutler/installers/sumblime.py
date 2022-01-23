@@ -1,4 +1,3 @@
-from ..application import Run
 from ..helpers import installed
 from .installer import Installer
 
@@ -11,17 +10,17 @@ class SublimeInstaller(Installer):
         if program not in ('text', 'merge'):
             self.ctx.fail("Error: Invalid program name. Valid values are {text|merge}.")
 
-        Run.command('wget -qO - https://download.sublimetext.com/sublimehq-pub.gpg | sudo apt-key add -')
-        Run.command(f'echo "{self.__source}" | sudo tee {self.__source_file_path}', root=True)
-        Run.update()
-        Run.install(f'sublime-{program}')
+        self.app.os.exec('wget -qO - https://download.sublimetext.com/sublimehq-pub.gpg | sudo apt-key add -')
+        self.app.os.exec(f'echo "{self.__source}" | sudo tee {self.__source_file_path}', root=True)
+        self.app.os.update()
+        self.app.os.install(f'sublime-{program}')
 
     def uninstall(self, program: str) -> None:
         if program not in ('text', 'merge'):
             self.ctx.fail("Error: Invalid program name. Valid values are {text|merge}.")
 
-        Run.uninstall(f'sublime-{program}')
+        self.app.os.uninstall(f'sublime-{program}')
 
         if not installed('sublime-text') and not installed('sublime-merge'):
-            Run.command(f'rm {self.__source_file_path}', root=True)
-            Run.update()
+            self.app.os.exec(f'rm {self.__source_file_path}', root=True)
+            self.app.os.update()

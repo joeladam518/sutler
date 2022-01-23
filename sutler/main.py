@@ -11,7 +11,7 @@ def cli(ctx: ClickContext):
     app = ctx.ensure_object(App)
     if app.is_root():
         ctx.fail("You're not allowed to run sutler as root")
-    if app.os_type() != 'debian':
+    if app.os.type_like not in ['ubuntu debian', 'debian']:
         ctx.fail("Sorry, currently sutler only supports Debian based systems")
     if ctx.invoked_subcommand is None:
         click.echo(ctx.get_help())
