@@ -32,7 +32,7 @@ class ServerProvisioner(Provisioner):
         Run.install('apt-transport-https', 'build-essential', 'ca-certificates', 'software-properties-common')
 
         # Install utility applications
-        Run.install('curl', 'git', 'htop', 'python3-pip', 'tmux', 'tree', 'vim')
+        Run.install('curl', 'git', 'htop', 'python3-pip', 'tmux', 'tree', 'vim', 'virtualenv')
 
         # Install the base stuff I like on all my servers
         DotfilesInstaller(self.ctx).install('server')

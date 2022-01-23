@@ -52,8 +52,8 @@ class DesktopProvisioner(Provisioner):
             Run.install('ubuntu-restricted-extras', 'ubuntu-restricted-addons')
 
         # Install some useful applications
-        Run.install('curl', 'git', 'gnome-tweak-tool', 'htop', 'mosquitto-clients',
-                    'mariadb-client', 'python3-pip', 'ripit', 'tmux', 'tree', 'vim-gtk3')
+        Run.install('curl', 'git', 'gnome-tweak-tool', 'htop', 'mosquitto-clients', 'mariadb-client',
+                    'python3-pip', 'ripit', 'tmux', 'tree', 'vim-gtk3', 'virtualenv')
 
         # Install bash git prompt
         os.chdir(self.app.user.home)
