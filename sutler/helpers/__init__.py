@@ -1,6 +1,6 @@
 # -*- coding: utf-8 -*-
-from .installed import is_installed
+from .installed import installed
 
 __all__ = [
-    'is_installed',
+    'installed',
 ]

@@ -4,13 +4,13 @@ import shutil
 from subprocess import CalledProcessError
 from urllib import request
 from ..application import Run
-from ..helpers import is_installed
+from ..helpers import installed
 from .installer import Installer
 
 
 class ComposerInstaller(Installer):
     def install(self) -> None:
-        if not is_installed('php'):
+        if not installed('php'):
             self.ctx.fail('You must install php before you can install composer')
 
         home_dir = self.app.user.home

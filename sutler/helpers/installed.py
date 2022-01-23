@@ -2,7 +2,8 @@ import shutil
 from ..application import Run
 
 
-def is_installed(program: str) -> bool:
+
+def installed(program: str) -> bool:
     """Checks is a program is installed.
     NOTE: Works in most cases, but not in every case. Doesn't recognize jetbrains programs.
           It's also finicky, you need to know the exact name of the command or package.

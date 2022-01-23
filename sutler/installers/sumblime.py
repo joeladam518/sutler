@@ -1,5 +1,5 @@
 from ..application import Run
-from ..helpers import is_installed
+from ..helpers import installed
 from .installer import Installer
 
 
@@ -22,6 +22,6 @@ class SublimeInstaller(Installer):
 
         Run.uninstall(f'sublime-{program}')
 
-        if not is_installed('sublime-text') and not is_installed('sublime-merge'):
+        if not installed('sublime-text') and not installed('sublime-merge'):
             Run.command(f'rm {self.__source_file_path}', root=True)
             Run.update()
