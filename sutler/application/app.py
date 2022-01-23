@@ -15,8 +15,9 @@ class App(metaclass=SingletonMeta):
         self.context = Context()
         self.jinja = Environment(loader=FileSystemLoader(self.templates_path()))
         self.user = User(getuser(), OS.shell())
-
-        if self.os.type != 'windows':
+        self.os = OS.type()
+        self.os_like = OS.type_like()
+        if self.os != 'windows':
             self.user.uid = os.getuid()
             self.user.gid = os.getgid()
             self.user.gids = tuple(os.getgroups())
@@ -34,11 +35,11 @@ class App(metaclass=SingletonMeta):
     def print(self) -> None:
         click.echo()
         click.secho("Operating System", fg='cyan')
-        click.secho(f"{self.system.type}", fg='bright_white')
+        click.secho(f"{self.os}", fg='bright_white')
         click.echo()
 
         click.secho("Operating System like", fg='cyan')
-        click.secho(f"{self.system.type_like}", fg='bright_white')
+        click.secho(f"{self.os_like}", fg='bright_white')
         click.echo()
 
         click.secho("User", fg='cyan')

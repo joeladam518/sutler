@@ -43,7 +43,7 @@ class LempProvisioner(Provisioner):
         self._configure_nginx(domain, php_version, project)
 
         # Configure the firewall
-        if self.app.system.type in ['ubuntu', 'debian']:
+        if self.app.os in ['ubuntu', 'debian']:
             self._configure_ufw()
 
     def _configure_nginx(self, domain: str, php_version: str, project: str) -> None:

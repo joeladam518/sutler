@@ -47,12 +47,12 @@ class DesktopProvisioner(Provisioner):
         self.app.system.install('apt-transport-https', 'build-essential', 'ca-certificates', 'software-properties-common')
 
         # Install restricted extras
-        if self.app.system.type == 'ubuntu':
+        if self.app.os == 'ubuntu':
             self.app.system.install('ubuntu-restricted-extras', 'ubuntu-restricted-addons')
 
         # Install some useful applications
         self.app.system.install('curl', 'git', 'gnome-tweak-tool', 'htop', 'mosquitto-clients', 'mariadb-client',
-                         'python3-pip', 'ripit', 'tmux', 'tree', 'vim-gtk3', 'virtualenv')
+                                'python3-pip', 'ripit', 'tmux', 'tree', 'vim-gtk3', 'virtualenv')
 
         # Install bash git prompt
         os.chdir(self.app.user.home)
