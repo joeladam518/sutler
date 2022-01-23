@@ -4,47 +4,6 @@ from ..application import Run
 from .installer import Installer
 from ..support import Arr, OS, Version
 
-php_extensions = {
-    'common': (
-        'bcmath',
-        'cli',
-        'common',
-        'curl',
-        'mbstring',
-        'mysql',
-        'opcache',
-        'pgsql',
-        'readline',
-        'sqlite3',
-        'xml',
-        'zip'
-    ),
-    'desktop': (),
-    'dev': (
-        'intl',
-        'dev',
-        'igbinary',
-        'memcached',
-        # 'pcov',  # code coverage
-        'redis',
-        'xdebug'
-    ),
-    'server': (
-        'fpm',
-        'gd',
-        'igbinary',
-        'memcached',
-        # 'imap',  # work with IMAP protocol, as well as the NNTP, POP3 and local mailbox access methods.
-        'intl',
-        'redis',
-    ),
-}
-
-php_versions = {
-    'install': ('7.4', '8.0', '8.1'),
-    'uninstall': ('5.3', '5.4', '5.5', '5.6', '7.0', '7.1', '7.2', '7.3', '7.4', '8.0', '8.1'),
-}
-
 
 def extensionize(extension: str, version: str) -> str:
     return f"php{version}-{extension}"
@@ -59,22 +18,35 @@ def get_installed_packages(version: str) -> list:
 
 
 class PhpInstaller(Installer):
-    def install(self, version: str, env: str = 'desktop', append: tuple = (), exclude: tuple = ()) -> None:
-        if version not in php_versions['install']:
+    extensions = {
+        "common": ('bcmath', 'cli', 'common', 'curl', 'mbstring', 'mysql', 'opcache', 'pgsql', 'readline', 'sqlite3',
+                   'xml', 'zip'),
+        "desktop": (),
+        "development": ('dev', 'igbinary', 'intl', 'memcached', 'redis', 'xdebug'),
+        "server": ('fpm', 'gd', 'igbinary', 'intl', 'memcached', 'redis'),
+    }
+
+    versions = {
+        "install": ('7.4', '8.0', '8.1'),
+        "uninstall": ('5.4', '5.5', '5.6', '7.0', '7.1', '7.2', '7.3', '7.4', '8.0', '8.1'),
+    }
+
+    def install(self, version: str, env: str = 'desktop', add: tuple = (), remove: tuple = ()) -> None:
+        if version not in self.versions['install']:
             self.ctx.fail('Invalid php version')
 
-        if env not in php_extensions:
+        if env not in ['desktop', 'development', 'server']:
             self.ctx.fail('Environment not supported')
 
         # combine the extensions to be installed
-        extensions = [*php_extensions['common'], *php_extensions[env], *append]
+        extensions = [*self.extensions['common'], *self.extensions[env], *add]
 
         if Version(version) < Version('8.0'):
             extensions.append('json')
 
         # filter out extensions
         extensions = Arr.unique(extensions)
-        extensions = Arr.exclude(extensions, exclude)
+        extensions = Arr.exclude(extensions, remove)
 
         # build the extension strings and add them to the packages list
         packages = [f"php{version}", *list(map(lambda ext: extensionize(ext, version), extensions))]
@@ -85,9 +57,9 @@ class PhpInstaller(Installer):
 
         click.echo()
         if click.confirm('Proceed?', default=None):
+            if not self._sources_are_installed():
+                self._install_sources()
             Run.update()
-            if not self._php_sources_are_installed():
-                self._install_php_sources()
             Run.install(*packages)
         else:
             click.secho('Exiting...')
@@ -95,7 +67,7 @@ class PhpInstaller(Installer):
         click.echo()
 
     def uninstall(self, version: str) -> None:
-        if version not in php_versions['uninstall']:
+        if version not in self.versions['uninstall']:
             self.ctx.fail('Invalid php version')
 
         packages = get_installed_packages(version)
@@ -116,7 +88,8 @@ class PhpInstaller(Installer):
 
         click.echo()
 
-    def _install_php_sources(self) -> None:
+    def _install_sources(self) -> None:
+        Run.update()
         if self.app.os in ['debian', 'raspbian']:
             Run.install('apt-transport-https', 'ca-certificates', 'software-properties-common', 'lsb-release', 'gnupg2')
             Run.command('wget -O /etc/apt/trusted.gpg.d/php.gpg https://packages.sury.org/php/apt.gpg', root=True)
@@ -127,7 +100,7 @@ class PhpInstaller(Installer):
             Run.install('software-properties-common')
             Run.command('add-apt-repository ppa:ondrej/php -y', root=True)
 
-    def _php_sources_are_installed(self) -> bool:
+    def _sources_are_installed(self) -> bool:
         # NOTE: 'cmd' will only work for debian based machines
         cmd = "find /etc/apt/ -name *.list | xargs cat | grep ^[[:space:]]*deb | grep '%s' | grep 'php'"
         if self.app.os in ['debian', 'raspbian']:
