@@ -2,6 +2,7 @@ import click
 import os
 from typing import Any, Optional
 from ..application import Run
+from ..helpers import installed
 from ..installers import ComposerInstaller, MariadbInstaller, NginxInstaller
 from ..installers import NodeInstaller, PhpInstaller
 from .provisioner import Provisioner
@@ -41,9 +42,10 @@ class LempProvisioner(Provisioner):
 
         # Configure the server
         self._configure_nginx(domain, php_version, project)
-        # TODO: uncomment
-        # if self.app.os == 'ubuntu':
-        #     self._configure_ufw()
+
+        # Configure the firewall
+        if self.app.os in ['ubuntu', 'debian']:
+            self._configure_ufw()
 
     def _configure_nginx(self, domain: str, php_version: str, project: str) -> None:
         """
@@ -53,9 +55,7 @@ class LempProvisioner(Provisioner):
         :param str project: The project name. (For folder names an such...)
         :return:
         """
-        # TODO: Which one is better to use?
         Run.command('systemctl stop nginx', root=True)
-        # Run.command('service nginx stop', root=True)
 
         # Build all the paths
         nginx_etc_path = self.app.sys_path('etc', 'nginx')
@@ -105,17 +105,18 @@ class LempProvisioner(Provisioner):
         os.chdir(sites_enabled_path)
         Run.command(f"rm {sites_enabled_path}/*", root=True)
         Run.command(f"ln -s {project_nginx_path}", root=True)
-        os.chdir(self.app.user.home)
-
-        # TODO: Which one is better to use?
+        
         Run.command('systemctl start nginx', root=True)
-        # Run.command('service nginx start', root=True)
+        os.chdir(self.app.user.home)
 
     def _configure_ufw(self) -> None:
         """
         Configure the firewall
         :return: None
         """
+        if not installed('ufw'):
+            Run.install('ufw')
+
         click.echo()
         Run.command("ufw allow ssh", root=True)
         Run.command("ufw allow 'Nginx HTTP'", root=True)
