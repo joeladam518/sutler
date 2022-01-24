@@ -30,7 +30,7 @@ def handle_completed_process(process: CompletedProcess, capture_output: bool) ->
 class PosixSystem(ABC):
     """
     Posix system helper class
-    app: ..application.App
+    app: App
         The operating system type. For a posix systems, this will return the operating system's name.
         example: 'ubuntu', 'raspbian', 'arch', 'fedora', debian. etc... But, for window and mac it will just
         return 'windows' or 'mac'
