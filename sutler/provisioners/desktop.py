@@ -78,14 +78,15 @@ class DesktopProvisioner(Provisioner):
         Run.command('update-alternatives --config editor', root=True)
 
         # Clone my public repos
-        os.chdir(repos_path)
-        Repo.clone_from('git@github.com:joeladam518/arduino-mqtt-led.git', 'arduino-mqtt-led')
-        Repo.clone_from('git@github.com:joeladam518/BackupScripts.git', 'BackupScripts')
-        Repo.clone_from('git@github.com:joeladam518/CurtainCallWP.git', 'CurtainCallWP')
-        Repo.clone_from('git@github.com:joeladam518/colorschemes.git', 'colorschemes')
-        Repo.clone_from('git@github.com:joeladam518/feather-mqtt-rgb-tree.git', 'feather-mqtt-rgb-tree')
-        Repo.clone_from('git@github.com:joeladam518/feather-mqtt-temp-sensor.git', 'feather-mqtt-temp-sensor')
-        Repo.clone_from('git@github.com:joeladam518/sutler.git', 'sutler')
+        if click.confirm('Install repos?'):
+            os.chdir(repos_path)
+            Repo.clone_from('git@github.com:joeladam518/arduino-mqtt-led.git', 'arduino-mqtt-led')
+            Repo.clone_from('git@github.com:joeladam518/BackupScripts.git', 'BackupScripts')
+            Repo.clone_from('git@github.com:joeladam518/CurtainCallWP.git', 'CurtainCallWP')
+            Repo.clone_from('git@github.com:joeladam518/colorschemes.git', 'colorschemes')
+            Repo.clone_from('git@github.com:joeladam518/feather-mqtt-rgb-tree.git', 'feather-mqtt-rgb-tree')
+            Repo.clone_from('git@github.com:joeladam518/feather-mqtt-temp-sensor.git', 'feather-mqtt-temp-sensor')
+            Repo.clone_from('git@github.com:joeladam518/sutler.git', 'sutler')
 
         click.echo()
         click.echo("Reminder of the other programs you like, but unfortunately their installation can't be automated")
