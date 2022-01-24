@@ -30,7 +30,8 @@ def handle_completed_process(process: CompletedProcess, capture_output: bool) ->
 class PosixSystem(ABC):
     """
     Posix system helper class
-    app: App
+
+    app : App
         The operating system type. For a posix systems, this will return the operating system's name.
         example: 'ubuntu', 'raspbian', 'arch', 'fedora', debian. etc... But, for window and mac it will just
         return 'windows' or 'mac'
@@ -42,21 +43,26 @@ class PosixSystem(ABC):
     def cp(self, fp: str, tp: str, root: bool = False) -> CompletedProcess:
         """
         Copy a file
+
         :param str fp: From Path
         :param str tp: To Path
         :param bool root: Run as root
-        :return: None
+        :return: CompletedProcess
+        :rtype: CompletedProcess
         """
         return self.exec(f'cp "{fp}" "{tp}"', root=root)
 
-    def drop_privileges(self):
-        """Drop any escalated privileges
+    def drop_privileges(self) -> None:
+        """
+        Drop any escalated privileges
+
         TODO: This function might not be needed. It seems like if I use subprocess and only escalate the
               user's privileges during those individual subprocess calls I won't escalate sutler's privileges...
               Maybe... Keeping it around just in case and until I'm sure I don't need it.
               Additionally I'm pretty sure this will only work for posix based systems...
 
         :return: None
+        :rtype: None
         """
         if not OS.is_root():
             # We're not root so, like, whatever dude
@@ -75,6 +81,7 @@ class PosixSystem(ABC):
     def exec(self, cmd: str, *args, **kwargs) -> RunOutput:
         """
         Execute a command
+
         :param str cmd: The command
         :param args: The command's arguments
         :param kwargs: The command's arguments (using keys)
@@ -109,6 +116,7 @@ class PosixSystem(ABC):
     def exec_script(self, path: str, *args, **kwargs) -> RunOutput:
         """
         Run a script
+
         :param str path: The path to the script to run
         :param args: The script's arguments
         :param kwargs: The script's arguments (using keys)
@@ -144,6 +152,7 @@ class PosixSystem(ABC):
     def mv(self, fp: str, tp: str, root: bool = False) -> CompletedProcess:
         """
         Move a file
+
         :param str fp: From Path
         :param str tp: To Path
         :param bool root: Run as root
@@ -155,6 +164,7 @@ class PosixSystem(ABC):
     def rm(self, path: str, root: bool = False) -> None:
         """
         Remove a file
+
         :param str path: file path
         :param bool root: Run as root
         :return: None
@@ -177,6 +187,7 @@ class PosixSystem(ABC):
     def rename(self, old: str, new: str, root: bool = False) -> CompletedProcess:
         """
         Move a file. (proxy for mv)
+
         :param str old: Old file name
         :param str new: New file name
         :param bool root: Run as root

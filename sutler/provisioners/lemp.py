@@ -13,11 +13,13 @@ class LempProvisioner(Provisioner):
     def run(self, domain: str, php_version: str, project: Optional[str] = None) -> None:
         """
         Provision your lemp server
+
         :param str domain:             The domain of your site
         :param str php_version:        The php version you would like to install
         :param Optional[str] project:  Project name. This will be the folder we put all of you project files in.
                                        If None, we'll just slug the domain
         :return: None
+        :rtype
         """
         # Run the base server provisioner first
         ServerProvisioner(self.ctx).run()
@@ -49,10 +51,12 @@ class LempProvisioner(Provisioner):
     def _configure_nginx(self, domain: str, php_version: str, project: str) -> None:
         """
         Configure Nginx
+
         :param str domain: The domain for the nginx config
         :param str php_version: The php version to install
         :param str project: The project name. (For folder names an such...)
-        :return:
+        :return: None
+        :rtype: None
         """
         self.app.system.exec('systemctl stop nginx', root=True)
 
@@ -113,7 +117,9 @@ class LempProvisioner(Provisioner):
     def _configure_ufw(self) -> None:
         """
         Configure the firewall
+
         :return: None
+        :rtype: None
         """
         if not installed('ufw'):
             self.app.system.install('ufw')
@@ -133,10 +139,12 @@ class LempProvisioner(Provisioner):
     def _render_file(self, tp: str, fp: str, root: bool = False, **variables: Any) -> None:
         """
         Render a Template
+
         :param str tp: Template path
         :param str fp: File Path
         :param Any variables: The variables for the template
         :return: None
+        :rtype: None
         """
         template = self.app.jinja.get_template(tp)
         stream = template.stream(variables)
