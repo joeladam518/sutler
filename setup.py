@@ -15,6 +15,9 @@ setup(
         'GitPython',
         'jinja2',
     ],
+    extras_require={
+        'build': ['pyinstaller'],
+    },
     entry_points={
         'console_scripts': [
             'sutler=sutler.main:cli',

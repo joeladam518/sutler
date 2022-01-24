@@ -1,8 +1,11 @@
+altgraph==0.17.2
 click==8.0.3
 gitdb==4.0.9
-GitPython==3.1.24
+GitPython==3.1.26
 Jinja2==3.0.3
 MarkupSafe==2.0.1
-protobuf==3.19.1
+protobuf==3.19.3
+pyinstaller==4.8
+pyinstaller-hooks-contrib==2021.5
 smmap==5.0.0
 typing_extensions==4.0.1
