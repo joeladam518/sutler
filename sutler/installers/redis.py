@@ -3,8 +3,8 @@ from .installer import Installer
 
 class RedisInstaller(Installer):
     def install(self) -> None:
-        self.app.system.update()
-        self.app.system.install('redis-server')
+        self.app.sys.update()
+        self.app.sys.install('redis-server')
 
     def uninstall(self) -> None:
-        self.app.system.uninstall('redis-server')
+        self.app.sys.uninstall('redis-server')

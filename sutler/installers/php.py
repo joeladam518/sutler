@@ -1,7 +1,8 @@
 import click
 from os.path import exists
 from .installer import Installer
-from ..support import Arr, OS, Version
+from ..support import Arr, Version
+from ..system import Sys
 
 
 def extensionize(extension: str, version: str) -> str:
@@ -24,7 +25,7 @@ class PhpInstaller(Installer):
 
     def get_installed_packages(self, version: str) -> list:
         cmd = "dpkg -l | grep php%s | sed 's/^ii\s*//' | sed 's/\s\{3,\}.*$//' | tr '\n' ' '"
-        packages = self.app.system.exec(cmd % version, capture_output=True)
+        packages = self.app.sys.exec(cmd % version, capture_output=True)
         packages = packages.strip().split(' ')
 
         return list(filter(lambda package: bool(package), packages))
@@ -57,8 +58,8 @@ class PhpInstaller(Installer):
         if click.confirm('Proceed?', default=None):
             if not self._sources_are_installed():
                 self._install_sources()
-            self.app.system.update()
-            self.app.system.install(*packages)
+            self.app.sys.update()
+            self.app.sys.install(*packages)
         else:
             click.secho('Exiting...')
 
@@ -80,37 +81,37 @@ class PhpInstaller(Installer):
 
         click.echo()
         if click.confirm('Proceed?', default=None):
-            self.app.system.uninstall(*packages)
+            self.app.sys.uninstall(*packages)
         else:
             click.secho('Exiting...')
 
         click.echo()
 
     def _install_sources(self) -> None:
-        self.app.system.update()
-        if self.app.os in ['debian', 'raspbian']:
-            self.app.system.install('apt-transport-https', 'ca-certificates', 'software-properties-common', 'lsb-release', 'gnupg2')
-            self.app.system.exec('wget -O /etc/apt/trusted.gpg.d/php.gpg https://packages.sury.org/php/apt.gpg', root=True)
+        self.app.sys.update()
+        if self.app.sys.id in ['debian', 'raspbian']:
+            self.app.sys.install('apt-transport-https', 'ca-certificates', 'software-properties-common', 'lsb-release', 'gnupg2')
+            self.app.sys.exec('wget -O /etc/apt/trusted.gpg.d/php.gpg https://packages.sury.org/php/apt.gpg', root=True)
             source = 'deb https://packages.sury.org/php/ $(lsb_release -sc) main'
             source_file_path = '/etc/apt/sources.list.d/sury-php.list'
-            self.app.system.exec(f'echo "{source}" | sudo tee {source_file_path}')
-        elif self.app.os == 'ubuntu':
-            self.app.system.install('software-properties-common')
-            self.app.system.exec('add-apt-repository ppa:ondrej/php -y', root=True)
+            self.app.sys.exec(f'echo "{source}" | sudo tee {source_file_path}')
+        elif self.app.sys.id == 'ubuntu':
+            self.app.sys.install('software-properties-common')
+            self.app.sys.exec('add-apt-repository ppa:ondrej/php -y', root=True)
 
     def _sources_are_installed(self) -> bool:
         # NOTE: 'cmd' will only work for debian based machines
         cmd = "find /etc/apt/ -name *.list | xargs cat | grep ^[[:space:]]*deb | grep '%s' | grep 'php'"
-        if self.app.os in ['debian', 'raspbian']:
+        if self.app.sys.id in ['debian', 'raspbian']:
             if exists('/etc/apt/sources.list.d/sury-php.list'):
                 return True
-            proc = self.app.system.exec(cmd % 'sury', check=False, supress_output=True)
+            proc = self.app.sys.exec(cmd % 'sury', check=False, supress_output=True)
             return proc.returncode == 0
 
-        if self.app.os == 'ubuntu':
-            if exists(f"/etc/apt/sources.list.d/ondrej-ubuntu-php-{OS.get_release_value('VERSION_CODENAME')}.list"):
+        if self.app.sys.id == 'ubuntu':
+            if exists(f"/etc/apt/sources.list.d/ondrej-ubuntu-php-{self.app.sys.codename}"):
                 return True
-            proc = self.app.system.exec(cmd % 'ondrej', check=False, supress_output=True)
+            proc = self.app.sys.exec(cmd % 'ondrej', check=False, supress_output=True)
             return proc.returncode == 0
 
         return False

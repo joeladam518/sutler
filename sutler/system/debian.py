@@ -1,8 +1,13 @@
 import os
-from .types import PosixSystem
+from .base import Sys
+from .posix import PosixSystem
 
 
 class DebianSystem(PosixSystem):
+    @property
+    def codename(self):
+        return Sys.release_info('VERSION_CODENAME')
+
     def install(self, *args: str) -> None:
         self.exec('apt install -y', *args, root=True)
 
@@ -14,9 +19,11 @@ class DebianSystem(PosixSystem):
         self.exec('apt autoremove -y', root=True)
 
     def update(self) -> None:
+        """Update the package repository"""
         self.exec('apt update', root=True)
 
     def update_and_upgrade(self) -> None:
+        """Update the package repository and upgrade the systems packages"""
         env = os.environ.copy()
         env['DEBIAN_FRONTEND'] = 'noninteractive'
         self.exec('apt update', root=True)

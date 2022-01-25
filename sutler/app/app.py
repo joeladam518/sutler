@@ -2,9 +2,8 @@ import click
 import os
 from jinja2 import Environment, FileSystemLoader
 from .context import Context
-from ..operating_systems import DebianSystem, User
+from ..system import DebianSystem, Sys, User
 from .singleton import SingletonMeta
-from ..support import OS
 
 
 class App(metaclass=SingletonMeta):
@@ -12,14 +11,12 @@ class App(metaclass=SingletonMeta):
         self.base_path = os.path.dirname(os.path.dirname(os.path.abspath(__file__))).rstrip(os.sep)
         self.context = Context()
         self.jinja = Environment(loader=FileSystemLoader(self.templates_path()))
-        self.os = OS.type()
-        self.os_like = OS.type_like()
-        # TODO: When we start operating systems that are not debian based we will need to
+        # TODO: When we start with operating systems that are not debian based we will need to
         #       refactor this to a factory that figures tha out and instantiates the right os class
-        self.system = DebianSystem()
+        self.sys = DebianSystem()
 
     def is_root(self) -> bool:
-        return OS.is_root()
+        return self.sys.is_root()
 
     def path(self, *paths: str) -> str:
         paths = list(map(lambda path: path.strip().rstrip(os.sep), paths))
@@ -28,11 +25,11 @@ class App(metaclass=SingletonMeta):
     def print(self) -> None:
         click.echo()
         click.secho("Operating System", fg='cyan')
-        click.secho(f"{self.os}", fg='bright_white')
+        click.secho(f"{self.sys.id}", fg='bright_white')
         click.echo()
 
         click.secho("Operating System like", fg='cyan')
-        click.secho(f"{self.os_like}", fg='bright_white')
+        click.secho(f"{' '.join(self.sys.id_like)}", fg='bright_white')
         click.echo()
 
         click.secho("User", fg='cyan')
@@ -59,7 +56,7 @@ class App(metaclass=SingletonMeta):
 
     def sys_path(self, *paths) -> str:
         paths = list(map(lambda path: path.strip().rstrip(os.sep), paths))
-        return OS.root_path() if len(paths) == 0 else os.path.join(OS.root_path(), *paths)
+        return Sys.root_path() if len(paths) == 0 else os.path.join(Sys.root_path(), *paths)
 
     def templates_path(self, *paths: str) -> str:
         templates_path = os.path.join(self.base_path, 'templates')
@@ -68,4 +65,4 @@ class App(metaclass=SingletonMeta):
 
     @property
     def user(self) -> User:
-        return self.system.user
+        return self.sys.user

@@ -75,7 +75,7 @@ class MariadbConfigurator:
         command += f' --user="{self.user}" --password="{self.password}"' if self.user and self.password else ''
         command += f' --silent' if capture_output else ''
         command += f' --execute="{query}"'
-        return self.app.system.exec(command, root=root, capture_output=capture_output)
+        return self.app.sys.exec(command, root=root, capture_output=capture_output)
 
     def get_version(self) -> Version:
         return Version(self.execute("SELECT VERSION();", capture_output=True))
@@ -127,19 +127,19 @@ class MariadbConfigurator:
 
 class MariadbInstaller(Installer):
     def install(self, db: Optional[str] = None, user: Optional[str] = None) -> None:
-        self.app.system.install('mariadb-server', 'mariadb-client')
+        self.app.sys.install('mariadb-server', 'mariadb-client')
         click.echo()
 
         mariadb = MariadbConfigurator(self.app)
 
         # Secure the mariadb installation
-        # self.app.os.exec('mysql_secure_installation', root=True)
+        # self.app.systems.exec('mysql_secure_installation', root=True)
         mariadb.secure_installation()
 
         # Setup Mariadb to support utf-8
         source = self.app.templates_path('mysql', 'utf8.conf')
         destination = os.path.join(os.sep, 'etc', 'mysql', 'conf.d', '99-utf8.conf')
-        self.app.system.exec(f'cp "{source}" "{destination}"', root=True)
+        self.app.sys.exec(f'cp "{source}" "{destination}"', root=True)
 
         # Create a database if we have the required information
         if db:
@@ -167,10 +167,10 @@ class MariadbInstaller(Installer):
         click.echo()
 
     def uninstall(self) -> None:
-        self.app.system.uninstall('mariadb-server', 'mariadb-client')
+        self.app.sys.uninstall('mariadb-server', 'mariadb-client')
 
         # TODO: Should I just remove the entire 'mysql' directory?
         config_path = os.path.join(os.sep, 'etc', 'mysql', 'conf.d', '99-utf8.conf')
 
         if os.path.exists(config_path):
-            self.app.system.rm(config_path, root=True)
+            self.app.sys.rm(config_path, root=True)

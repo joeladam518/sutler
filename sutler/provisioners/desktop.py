@@ -39,19 +39,19 @@ class DesktopProvisioner(Provisioner):
         ssh_path = os.path.join(self.app.user.home, '.ssh')
         if not os.path.isdir(ssh_path):
             os.mkdir(ssh_path)
-            self.app.system.exec(f'cd "{ssh_path}" && ssh-keygen -t rsa')
+            self.app.sys.exec(f'cd "{ssh_path}" && ssh-keygen -t rsa')
 
-        self.app.system.update_and_upgrade()
+        self.app.sys.update_and_upgrade()
 
         # Base stuff
-        self.app.system.install('apt-transport-https', 'build-essential', 'ca-certificates', 'software-properties-common')
+        self.app.sys.install('apt-transport-https', 'build-essential', 'ca-certificates', 'software-properties-common')
 
         # Install restricted extras
-        if self.app.os == 'ubuntu':
-            self.app.system.install('ubuntu-restricted-extras', 'ubuntu-restricted-addons')
+        if self.app.sys.id == 'ubuntu':
+            self.app.sys.install('ubuntu-restricted-extras', 'ubuntu-restricted-addons')
 
         # Install some useful applications
-        self.app.system.install('curl', 'git', 'gnome-tweak-tool', 'htop', 'mosquitto-clients', 'mariadb-client',
+        self.app.sys.install('curl', 'git', 'gnome-tweak-tool', 'htop', 'mosquitto-clients', 'mariadb-client',
                                 'python3-pip', 'ripit', 'tmux', 'tree', 'vim-gtk3', 'virtualenv')
 
         # Install bash git prompt
@@ -59,11 +59,11 @@ class DesktopProvisioner(Provisioner):
         Repo.clone_from("https://github.com/magicmonty/bash-git-prompt.git", ".bash-git-prompt", depth=1)
 
         # Install the ability to work with exfat drives
-        self.app.system.install('exfat-utils', 'exfat-fuse')
+        self.app.sys.install('exfat-utils', 'exfat-fuse')
 
         # Install some snaps
-        self.app.system.exec('snap refresh')
-        self.app.system.exec('snap install audacity gimp vlc')
+        self.app.sys.exec('snap refresh')
+        self.app.sys.exec('snap install audacity gimp vlc')
 
         # Install even more stuff
         DotfilesInstaller(self.ctx).install('desktop')
@@ -74,7 +74,7 @@ class DesktopProvisioner(Provisioner):
         SublimeInstaller(self.ctx).install('merge')
 
         # Update the command line editor to vim (Has to be done manually)
-        self.app.system.exec('update-alternatives --config editor', root=True)
+        self.app.sys.exec('update-alternatives --config editor', root=True)
 
         # Clone my public repos
         if click.confirm('Install repos?'):

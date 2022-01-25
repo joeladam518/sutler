@@ -1,12 +1,10 @@
-import click
 import os
-import shutil
 import subprocess
 import sys
-from abc import ABC
+from abc import ABC, abstractmethod
 from getpass import getuser
 from typing import Union
-from ..support import OS
+from .base import Sys
 from .user import User
 
 # Types
@@ -14,29 +12,24 @@ CompletedProcess = subprocess.CompletedProcess
 RunOutput = Union[CompletedProcess, str]
 
 
-def handle_completed_process(process: CompletedProcess, capture_output: bool) -> RunOutput:
-    if not capture_output:
-        return process
-    elif process.returncode > 0:
-        return process.stderr.decode(sys.getdefaultencoding())
-    else:
-        return process.stdout.decode(sys.getdefaultencoding())
-
-
-# TODO: Add a WindowsSystem Abstract Base Class (ABC)
-
-
-class PosixSystem(ABC):
+class System(ABC):
     def __init__(self):
-        self.user: User = User(
-            name=getuser(),
-            shell=OS.shell(),
-            uid=os.getuid(),
-            gid=os.getgid(),
-            gids=tuple(os.getgroups())
-        )
+        self.id: str = Sys.id()
+        self.id_like: tuple = Sys.id_like()
+        self.name: str = Sys.name()
+        self.type: str = Sys.type()
+        self.user: User = User(getuser(), Sys.shell())
 
-    def cp(self, fp: str, tp: str, root: bool = False) -> CompletedProcess:
+    def __handle_completed_process(self, process: CompletedProcess, capture: bool = False):
+        self.drop_privileges()
+        if not capture:
+            return process
+        else:
+            output = process.stderr if process.returncode > 0 else process.stdout
+            return output.decode(sys.getdefaultencoding())
+
+    @abstractmethod
+    def cp(self, fp: str, tp: str, root: bool = False):
         """
         Copy a file
 
@@ -46,9 +39,10 @@ class PosixSystem(ABC):
         :return: CompletedProcess
         :rtype: CompletedProcess
         """
-        return self.exec(f'cp "{fp}" "{tp}"', root=root)
+        pass
 
-    def drop_privileges(self) -> None:
+    @abstractmethod
+    def drop_privileges(self):
         """
         Drop any escalated privileges
 
@@ -60,19 +54,7 @@ class PosixSystem(ABC):
         :return: None
         :rtype: None
         """
-        if not OS.is_root():
-            # We're not root so, like, whatever dude
-            return
-
-        # Reset the uid, guid, and groups back to the user who called this script
-        os.setuid(self.user.uid)
-        os.setgid(self.user.gid)
-        os.setgroups(list(self.user.gids))
-
-        # Ensure a very conservative umask
-        # 0o022 == 0755 for directories and 0644 for files
-        # 0o027 == 0750 for directories and 0640 for files
-        os.umask(0o027)
+        pass
 
     def exec(self, cmd: str, *args, **kwargs) -> RunOutput:
         """
@@ -93,7 +75,7 @@ class PosixSystem(ABC):
             arguments.insert(0, 'sudo')
 
         try:
-            proc = subprocess.run(
+            process = subprocess.run(
                 ' '.join(arguments),
                 check=kwargs.get('check', True),
                 shell=True,
@@ -106,8 +88,7 @@ class PosixSystem(ABC):
             self.drop_privileges()
             raise ex
         else:
-            self.drop_privileges()
-            return handle_completed_process(proc, capture_output)
+            return self.__handle_completed_process(process, capture_output)
 
     def exec_script(self, path: str, *args, **kwargs) -> RunOutput:
         """
@@ -131,7 +112,7 @@ class PosixSystem(ABC):
             arguments.insert(0, 'sudo')
 
         try:
-            proc = subprocess.run(
+            process = subprocess.run(
                 arguments,
                 check=kwargs.get('check', True),
                 stdout=stdout,
@@ -142,10 +123,20 @@ class PosixSystem(ABC):
             self.drop_privileges()
             raise ex
         else:
-            self.drop_privileges()
-            return handle_completed_process(proc, capture_output)
+            return self.__handle_completed_process(process, capture_output)
 
-    def mv(self, fp: str, tp: str, root: bool = False) -> CompletedProcess:
+    @abstractmethod
+    def is_root(self) -> bool:
+        """
+        Determine if sutler is running as root
+
+        :return: bool
+        :rtype: bool
+        """
+        pass
+
+    @abstractmethod
+    def mv(self, fp: str, tp: str, root: bool = False):
         """
         Move a file
 
@@ -155,9 +146,23 @@ class PosixSystem(ABC):
         :return: The completed process
         :rtype: CompletedProcess
         """
-        return self.exec(f'mv "{fp}" "{tp}"', root=root)
+        pass
 
-    def rm(self, path: str, root: bool = False) -> None:
+    @abstractmethod
+    def rename(self, old: str, new: str, root: bool = False):
+        """
+        Rename a file
+
+        :param str old: Old file name
+        :param str new: New file name
+        :param bool root: Run as root
+        :return: The completed process
+        :rtype: CompletedProcess
+        """
+        pass
+
+    @abstractmethod
+    def rm(self, path: str, root: bool = False):
         """
         Remove a file
 
@@ -166,28 +171,4 @@ class PosixSystem(ABC):
         :return: None
         :rtype: None
         """
-        if not os.path.exists(path):
-            click.ClickException(f'Can not remove "{path}". Path doesn\'t exist.')
-
-        if os.path.isfile(path) or os.path.islink(path):
-            if root:
-                self.exec(f'rm "{path}"', root=True)
-            else:
-                os.unlink(path)
-        else:
-            if root:
-                self.exec(f'rm -r "{path}"', root=True)
-            else:
-                shutil.rmtree(path)
-
-    def rename(self, old: str, new: str, root: bool = False) -> CompletedProcess:
-        """
-        Move a file. (proxy for mv)
-
-        :param str old: Old file name
-        :param str new: New file name
-        :param bool root: Run as root
-        :return: The completed process
-        :rtype: CompletedProcess
-        """
-        return self.mv(old, new, root=root)
+        pass

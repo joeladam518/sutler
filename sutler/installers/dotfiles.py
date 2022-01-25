@@ -23,7 +23,7 @@ class DotfilesInstaller(Installer):
         if not os.path.exists(install_script_path):
             self.ctx.fail('Failed to install dotfiles. Could not find the install script')
 
-        self.app.system.exec_script(install_script_path, system)
+        self.app.sys.exec_script(install_script_path, system)
 
     def uninstall(self, system: str) -> None:
         home_dir = self.app.user.home
@@ -35,5 +35,5 @@ class DotfilesInstaller(Installer):
         if not os.path.exists(uninstall_script_path):
             self.ctx.fail('Failed to uninstall dotfiles. Could not find the uninstall script')
 
-        self.app.system.exec_script(uninstall_script_path, system)
-        self.app.system.rm(dotfiles_dir)
+        self.app.sys.exec_script(uninstall_script_path, system)
+        self.app.sys.rm(dotfiles_dir)

@@ -3,8 +3,8 @@ from .installer import Installer
 
 class NginxInstaller(Installer):
     def install(self) -> None:
-        self.app.system.update()
-        self.app.system.install('nginx')
+        self.app.sys.update()
+        self.app.sys.install('nginx')
 
     def uninstall(self) -> None:
-        self.app.system.uninstall('nginx')
+        self.app.sys.uninstall('nginx')
