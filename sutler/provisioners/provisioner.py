@@ -1,6 +1,6 @@
 from abc import ABC
 from click.core import Context as ClickContext
-from ..application import App
+from ..app import App
 
 
 class Provisioner(ABC):

@@ -1,6 +1,6 @@
 import click
 from click.core import Context as ClickContext
-from .application import App
+from .app import App
 from .commands import install, setup, uninstall
 from .commands import test
 

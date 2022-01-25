@@ -3,7 +3,7 @@ from click.core import Context as ClickContext
 from typing import TYPE_CHECKING
 
 if TYPE_CHECKING:
-    from ..application import App
+    from ..app import App
 
 
 @click.command()

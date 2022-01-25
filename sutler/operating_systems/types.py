@@ -4,11 +4,10 @@ import shutil
 import subprocess
 import sys
 from abc import ABC
-from typing import TYPE_CHECKING, Union
+from getpass import getuser
+from typing import Union
 from ..support import OS
-
-if TYPE_CHECKING:
-    from ..application import App
+from .user import User
 
 # Types
 CompletedProcess = subprocess.CompletedProcess
@@ -28,17 +27,14 @@ def handle_completed_process(process: CompletedProcess, capture_output: bool) ->
 
 
 class PosixSystem(ABC):
-    """
-    Posix system helper class
-
-    app : App
-        The operating system type. For a posix systems, this will return the operating system's name.
-        example: 'ubuntu', 'raspbian', 'arch', 'fedora', debian. etc... But, for window and mac it will just
-        return 'windows' or 'mac'
-    """
-
-    def __init__(self, app: 'App'):
-        self.app: 'App' = app
+    def __init__(self):
+        self.user: User = User(
+            name=getuser(),
+            shell=OS.shell(),
+            uid=os.getuid(),
+            gid=os.getgid(),
+            gids=tuple(os.getgroups())
+        )
 
     def cp(self, fp: str, tp: str, root: bool = False) -> CompletedProcess:
         """
@@ -69,9 +65,9 @@ class PosixSystem(ABC):
             return
 
         # Reset the uid, guid, and groups back to the user who called this script
-        os.setuid(self.app.user.uid)
-        os.setgid(self.app.user.gid)
-        os.setgroups(list(self.app.user.gids))
+        os.setuid(self.user.uid)
+        os.setgid(self.user.gid)
+        os.setgroups(list(self.user.gids))
 
         # Ensure a very conservative umask
         # 0o022 == 0755 for directories and 0644 for files
@@ -101,7 +97,7 @@ class PosixSystem(ABC):
                 ' '.join(arguments),
                 check=kwargs.get('check', True),
                 shell=True,
-                executable=self.app.user.shell,
+                executable=self.user.shell,
                 stdout=stdout,
                 capture_output=capture_output,
                 env=kwargs.get('env', None)

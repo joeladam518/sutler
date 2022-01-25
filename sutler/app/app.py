@@ -1,12 +1,10 @@
 import click
 import os
-from getpass import getuser
 from jinja2 import Environment, FileSystemLoader
 from .context import Context
-from ..operating_systems import DebianSystem
+from ..operating_systems import DebianSystem, User
 from .singleton import SingletonMeta
 from ..support import OS
-from .user import User
 
 
 class App(metaclass=SingletonMeta):
@@ -18,12 +16,7 @@ class App(metaclass=SingletonMeta):
         self.os_like = OS.type_like()
         # TODO: When we start operating systems that are not debian based we will need to
         #       refactor this to a factory that figures tha out and instantiates the right os class
-        self.system = DebianSystem(app=self)
-        self.user = User(getuser(), OS.shell())
-        if self.os != 'windows':
-            self.user.uid = os.getuid()
-            self.user.gid = os.getgid()
-            self.user.gids = tuple(os.getgroups())
+        self.system = DebianSystem()
 
     def is_root(self) -> bool:
         return OS.is_root()
@@ -72,3 +65,7 @@ class App(metaclass=SingletonMeta):
         templates_path = os.path.join(self.base_path, 'templates')
         paths = list(map(lambda path: path.strip().rstrip(os.sep), paths))
         return templates_path if len(paths) == 0 else os.path.join(templates_path, *paths)
+
+    @property
+    def user(self) -> User:
+        return self.system.user

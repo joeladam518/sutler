@@ -6,7 +6,7 @@ from .installer import Installer
 from ..support import Version
 
 if TYPE_CHECKING:
-    from ..application import App
+    from ..app import App
 
 
 class MariadbConfigurator:
