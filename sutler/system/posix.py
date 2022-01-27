@@ -43,13 +43,13 @@ class PosixSystem(System):
         if not os.path.exists(path):
             click.ClickException(f'Can not remove "{path}". Path doesn\'t exist.')
 
-        if os.path.isdir(path):
-            if root:
-                self.exec(f'rm -r "{path}"', root=True)
-            else:
-                shutil.rmtree(path)
-        else:
-            if root:
+        if root:
+            if os.path.isfile(path) or os.path.islink(path):
                 self.exec(f'rm "{path}"', root=True)
             else:
+                self.exec(f'rm -r "{path}"', root=True)
+        else:
+            if os.path.isfile(path) or os.path.islink(path):
                 os.unlink(path)
+            else:
+                shutil.rmtree(path)

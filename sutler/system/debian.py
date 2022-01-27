@@ -6,12 +6,15 @@ from .posix import PosixSystem
 class DebianSystem(PosixSystem):
     @property
     def codename(self):
+        """Return the codename for the debian system"""
         return Sys.release_info('VERSION_CODENAME')
 
     def install(self, *args: str) -> None:
+        """Install a program"""
         self.exec('apt install -y', *args, root=True)
 
     def uninstall(self, *args: str) -> None:
+        """Uninstall a program"""
         # TODO: Which is the better way?
         # self.exec("apt-get purge -y", *args, root=True)
         # self.exec("apt-get --purge autoremove -y", root=True)
