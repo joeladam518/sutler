@@ -82,8 +82,10 @@ class LempProvisioner(Provisioner):
             os.path.join(project_files_path, 'public', 'info.php'),
             root=True
         )
-        # Set the ownership
-        self.app.os.exec(f"chown -R www-data:www-data {project_files_path}", root=True)
+        self.app.os.exec(
+            f"chown -R www-data:www-data {project_files_path}",
+            root=True
+        )
 
         # Keep the old nginx config
         if os.path.exists(nginx_config_path):
@@ -109,9 +111,9 @@ class LempProvisioner(Provisioner):
         os.chdir(sites_enabled_path)
         self.app.os.exec(f"rm {sites_enabled_path}/*", root=True)
         self.app.os.exec(f"ln -s {project_nginx_path}", root=True)
+        os.chdir(self.app.user.home)
 
         self.app.os.exec('systemctl start nginx', root=True)
-        os.chdir(self.app.user.home)
 
     def _configure_ufw(self) -> None:
         """

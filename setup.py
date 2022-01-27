@@ -16,7 +16,9 @@ setup(
         'jinja2',
     ],
     extras_require={
-        'build': ['pyinstaller'],
+        'build': [
+            'pyinstaller'
+        ],
     },
     entry_points={
         'console_scripts': [

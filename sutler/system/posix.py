@@ -1,7 +1,6 @@
 import click
 import os
 import shutil
-from subprocess import CompletedProcess
 from .base import System
 
 
