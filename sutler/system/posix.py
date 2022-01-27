@@ -12,7 +12,7 @@ class PosixSystem(System):
         self.user.gid = os.getgid(),
         self.user.gids = tuple(os.getgroups())
 
-    def cp(self, src: str, dst: str, root: bool = False):
+    def cp(self, src: str, dst: str, root: bool = False) -> None:
         if root:
             self.exec(f'cp "{src}" "{dst}"', root=True)
         else:
@@ -36,13 +36,13 @@ class PosixSystem(System):
     def is_root(self) -> bool:
         return os.getuid() == 0
 
-    def mv(self, src: str, dst: str, root: bool = False):
+    def mv(self, src: str, dst: str, root: bool = False) -> None:
         if root:
             self.exec(f'mv "{src}" "{dst}"', root=True)
         else:
             shutil.move(src, dst)
 
-    def rename(self, old: str, new: str, root: bool = False):
+    def rename(self, old: str, new: str, root: bool = False) -> None:
         self.mv(old, new, root=root)
 
     def rm(self, path: str, root: bool = False) -> None:

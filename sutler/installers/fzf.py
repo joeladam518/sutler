@@ -14,7 +14,7 @@ class FzfInstaller(Installer):
         if not os.path.exists(install_script_path):
             self.ctx.fail("Could not find fzf's install script")
 
-        self.app.sys.exec_script(install_script_path)
+        self.app.os.exec_script(install_script_path)
 
     def uninstall(self) -> None:
         fzf_dir = os.path.join(self.app.user.home, '.fzf')
@@ -23,5 +23,5 @@ class FzfInstaller(Installer):
         if not os.path.exists(uninstall_script_path):
             self.ctx.fail("Could not find fzf's uninstall script")
 
-        self.app.sys.exec_script(uninstall_script_path)
-        self.app.sys.rm(fzf_dir)
+        self.app.os.exec_script(uninstall_script_path)
+        self.app.os.rm(fzf_dir)

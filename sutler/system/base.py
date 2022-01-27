@@ -13,48 +13,58 @@ CompletedProcess = subprocess.CompletedProcess
 RunOutput = Union[CompletedProcess, str]
 
 
-def get_os_release_path() -> Optional[str]:
-    if os.path.exists('/etc/os-release'):
-        return '/etc/os-release'
-
-    if os.path.exists('/usr/lib/os-release'):
-        return '/usr/lib/os-release'
-
-    return None
-
-
-def get_os_release() -> dict:
-    if hasattr(platform, 'freedesktop_os_release'):
-        try:
-            return platform.freedesktop_os_release()
-        except OSError:
-            return {}
-
-    # for backward compatibility with older versions of python
-    path = get_os_release_path()
-
-    if not path:
-        return {}
-
-    with open(path) as f:
-        reader = csv.reader(f, delimiter="=")
-        return {key: value for key, value in reader}
-
-
 class Sys:
     """Helper class to gather some os information"""
-
     __os_release_data = {}
 
     @classmethod
+    def get_os_release(cls) -> dict:
+        """
+        Get the freedesktop release info. Mainly for linux operating systems.
+        https://www.freedesktop.org/software/systemd/man/os-release.html
+
+        In python 3.10 they introduced the 'freedesktop_os_release' function, but for older versions
+        I've included a polyfill here.
+
+        :return: A dict of release information
+        :rtype: dict
+        """
+        if cls.type() not in ['linux', 'freebsd']:
+            return {}
+
+        if hasattr(platform, 'freedesktop_os_release'):
+            try:
+                return platform.freedesktop_os_release()
+            except OSError:
+                return {}
+
+        # For backward compatibility with older versions of python
+        if os.path.exists('/etc/os-release'):
+            path = '/etc/os-release'
+        elif os.path.exists('/usr/lib/os-release'):
+            path = '/usr/lib/os-release'
+        else:
+            path = None
+
+        if not path:
+            return {}
+
+        with open(path) as f:
+            reader = csv.reader(f, delimiter="=")
+            return {key: value for key, value in reader}
+
+    @classmethod
     def id(cls) -> str:
-        """Get the operating system's identifier"""
+        """
+        Get the operating system's identifier. If not a freedesktop system,
+        this will just return the type of system.
+
+        :return: Operating system identifier
+        :rtype: str
+        """
         system_type = cls.type()
 
-        if system_type == 'mac':
-            return 'macos'
-
-        if system_type == 'linux' or system_type == 'freebsd':
+        if system_type in ['linux', 'freebsd']:
             # Returns the lowercase operating system name for linux/freebsd based systems
             # https://www.freedesktop.org/software/systemd/man/os-release.html#ID=
             return cls.release_info('ID')
@@ -74,25 +84,25 @@ class Sys:
         """
         system_type = cls.type()
 
-        if system_type == 'linux' or system_type == 'freebsd':
+        if system_type in ['linux', 'freebsd']:
             id_like = cls.release_info('ID_LIKE')
-            if id_like:
-                return tuple(id_like.split(' '))
 
-            return cls.release_info('ID'),
+            if not id_like:
+                id_ = cls.release_info('ID')
+                return (id_,) if id_ else ()
+
+            return tuple(id_like.split(' '))
 
         return system_type,
 
     @classmethod
-    def name(cls):
+    def name(cls) -> str:
         system_type = cls.type()
 
         if system_type == 'mac':
             return 'macOS'
 
-        if system_type == 'linux' or system_type == 'freebsd':
-            # Returns the lowercase operating system name for linux/freebsd based systems
-            # https://www.freedesktop.org/software/systemd/man/os-release.html#ID=
+        if system_type in ['linux', 'freebsd']:
             return cls.release_info('NAME')
 
         return platform.system()
@@ -100,30 +110,16 @@ class Sys:
     @classmethod
     def release_info(cls, key: Optional[str] = None) -> Union[dict, str]:
         if not cls.__os_release_data:
-            cls.__os_release_data = get_os_release()
+            cls.__os_release_data = cls.get_os_release()
 
-        return cls.__os_release_data.get(key, '') if key else cls.__os_release_data
+        if key:
+            return cls.__os_release_data.get(key, '')
 
-    @classmethod
-    def release_version(cls) -> Optional[str]:
-        system_type = cls.type()
-
-        if system_type == 'windows':
-            return platform.release()
-
-        if system_type == 'mac':
-            mac_ver = platform.mac_ver()
-            return mac_ver[0]
-
-        if system_type == 'linux' or system_type == 'freebsd':
-            # Returns the lowercase operating system name for linux/freebsd based systems
-            # https://www.freedesktop.org/software/systemd/man/os-release.html#ID=
-            return cls.release_info('VERSION_ID')
-
-        return None
+        return cls.__os_release_data
 
     @staticmethod
     def root_path() -> str:
+        """Get the root path for the system"""
         return os.path.abspath(os.sep)
 
     @classmethod
@@ -140,18 +136,26 @@ class Sys:
         if sys.platform in ['win32', 'win64', 'cygwin']:
             return 'windows'
 
-        if sys.platform == 'darwin':
+        system_type = platform.system().lower()
+
+        if system_type == 'darwin':
             return 'mac'
 
-        if sys.platform == 'linux':
-            return 'linux'
+        return system_type
 
-        name = platform.system().lower()
+    @classmethod
+    def version(cls) -> str:
+        """Get the operating system version"""
+        system_type = cls.type()
 
-        if name == 'darwin':
-            return 'mac'
+        if system_type == 'windows':
+            return platform.release()
 
-        return name
+        if system_type == 'mac':
+            mac_ver = platform.mac_ver()
+            return mac_ver[0]
+
+        return cls.release_info('VERSION_ID')
 
 
 class System(ABC):
@@ -162,29 +166,30 @@ class System(ABC):
         self.type: str = Sys.type()
         self.user: User = User(getuser(), Sys.shell())
 
-    def __handle_completed_process(self, process: CompletedProcess, capture: bool = False):
+    def __handle_completed_process(self, process: CompletedProcess, capture: bool = False) -> RunOutput:
         self.drop_privileges()
-        if not capture:
-            return process
-        else:
+
+        if capture:
             output = process.stderr if process.returncode > 0 else process.stdout
             return output.decode(sys.getdefaultencoding())
 
+        return process
+
     @abstractmethod
-    def cp(self, src: str, dst: str, root: bool = False):
+    def cp(self, src: str, dst: str, root: bool = False) -> None:
         """
         Copy a file
 
         :param str src: From Path
         :param str dst: To Path
         :param bool root: Run as root
-        :return: CompletedProcess
-        :rtype: CompletedProcess
+        :return: None
+        :rtype: None
         """
         pass
 
     @abstractmethod
-    def drop_privileges(self):
+    def drop_privileges(self) -> None:
         """
         Drop any escalated privileges
 
@@ -277,7 +282,7 @@ class System(ABC):
         pass
 
     @abstractmethod
-    def mv(self, src: str, dst: str, root: bool = False):
+    def mv(self, src: str, dst: str, root: bool = False) -> None:
         """
         Move a file
 
@@ -285,12 +290,12 @@ class System(ABC):
         :param str dst: To Path
         :param bool root: Run as root
         :return: The completed process
-        :rtype: CompletedProcess
+        :rtype: None
         """
         pass
 
     @abstractmethod
-    def rename(self, old: str, new: str, root: bool = False):
+    def rename(self, old: str, new: str, root: bool = False) -> None:
         """
         Rename a file
 
@@ -298,12 +303,12 @@ class System(ABC):
         :param str new: New file name
         :param bool root: Run as root
         :return: The completed process
-        :rtype: CompletedProcess
+        :rtype: None
         """
         pass
 
     @abstractmethod
-    def rm(self, path: str, root: bool = False):
+    def rm(self, path: str, root: bool = False) -> None:
         """
         Remove a file
 

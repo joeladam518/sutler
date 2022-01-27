@@ -13,10 +13,10 @@ class App(metaclass=SingletonMeta):
         self.jinja = Environment(loader=FileSystemLoader(self.templates_path()))
         # TODO: When we start with operating systems that are not debian based we will need to
         #       refactor this to a factory that figures tha out and instantiates the right os class
-        self.sys = DebianSystem()
+        self.os = DebianSystem()
 
     def is_root(self) -> bool:
-        return self.sys.is_root()
+        return self.os.is_root()
 
     def path(self, *paths: str) -> str:
         paths = list(map(lambda path: path.strip().rstrip(os.sep), paths))
@@ -25,11 +25,11 @@ class App(metaclass=SingletonMeta):
     def print(self) -> None:
         click.echo()
         click.secho("Operating System", fg='cyan')
-        click.secho(f"{self.sys.id}", fg='bright_white')
+        click.secho(f"{self.os.id}", fg='bright_white')
         click.echo()
 
         click.secho("Operating System like", fg='cyan')
-        click.secho(f"{' '.join(self.sys.id_like)}", fg='bright_white')
+        click.secho(f"{' '.join(self.os.id_like)}", fg='bright_white')
         click.echo()
 
         click.secho("User", fg='cyan')
@@ -65,4 +65,4 @@ class App(metaclass=SingletonMeta):
 
     @property
     def user(self) -> 'User':
-        return self.sys.user
+        return self.os.user

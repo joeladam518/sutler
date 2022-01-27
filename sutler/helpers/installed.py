@@ -20,5 +20,5 @@ def is_cmd_installed(program: str) -> bool:
 
 def is_pkg_installed(program: str) -> bool:
     app = App()
-    proc = app.sys.exec(f"dpkg -l | grep -E '^ii' | grep -iwq '{program}'", check=False)
+    proc = app.os.exec(f"dpkg -l | grep -E '^ii' | grep -iwq '{program}'", check=False)
     return proc.returncode == 0
