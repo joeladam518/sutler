@@ -1,7 +1,5 @@
 import os
 from git import Repo
-from ..application import Run
-from ..support import OS
 from .installer import Installer
 
 
@@ -16,7 +14,7 @@ class FzfInstaller(Installer):
         if not os.path.exists(install_script_path):
             self.ctx.fail("Could not find fzf's install script")
 
-        Run.script(install_script_path)
+        self.app.os.exec_script(install_script_path)
 
     def uninstall(self) -> None:
         fzf_dir = os.path.join(self.app.user.home, '.fzf')
@@ -25,5 +23,5 @@ class FzfInstaller(Installer):
         if not os.path.exists(uninstall_script_path):
             self.ctx.fail("Could not find fzf's uninstall script")
 
-        Run.script(uninstall_script_path)
-        OS.rm(fzf_dir)
+        self.app.os.exec_script(uninstall_script_path)
+        self.app.os.rm(fzf_dir)

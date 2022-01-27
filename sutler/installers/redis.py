@@ -1,11 +1,10 @@
-from ..application import Run
 from .installer import Installer
 
 
 class RedisInstaller(Installer):
     def install(self) -> None:
-        Run.update()
-        Run.install('redis-server')
+        self.app.os.update()
+        self.app.os.install('redis-server')
 
     def uninstall(self) -> None:
-        Run.uninstall('redis-server')
+        self.app.os.uninstall('redis-server')

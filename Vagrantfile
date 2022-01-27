@@ -39,4 +39,21 @@ Vagrant.configure("2") do |config|
         # Provision the machine
         debian.vm.provision "shell", path: "scripts/provision_vagrant.sh"
     end
+
+    config.vm.define "freebsd", autostart: false do |freebsd|
+        freebsd.vm.box = "bento/freebsd-12.2"
+        freebsd.vm.hostname = 'sutlerbox-freebsd'
+        freebsd.vm.network "private_network", ip: "192.168.200.202"
+
+        # Provider-specific configuration
+        freebsd.vm.provider "virtualbox" do |vb|
+            vb.gui = false
+            vb.name = 'sutlerbox-freebsd'
+            vb.memory = 4096
+            vb.cpus = 1
+        end
+
+        # Provision the machine
+        # freebsd.vm.provision "shell", path: "scripts/provision_vagrant.sh"
+    end
 end
