@@ -2,7 +2,7 @@ import click
 import os
 import shutil
 from subprocess import CompletedProcess
-from .system import System
+from .base import System
 
 
 class PosixSystem(System):

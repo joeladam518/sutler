@@ -64,5 +64,5 @@ class App(metaclass=SingletonMeta):
         return templates_path if len(paths) == 0 else os.path.join(templates_path, *paths)
 
     @property
-    def user(self) -> User:
+    def user(self) -> 'User':
         return self.sys.user

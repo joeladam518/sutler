@@ -1,8 +1,7 @@
 import click
-from os.path import exists
+import os
 from .installer import Installer
 from ..support import Arr, Version
-from ..system import Sys
 
 
 def extensionize(extension: str, version: str) -> str:
@@ -27,7 +26,6 @@ class PhpInstaller(Installer):
         cmd = "dpkg -l | grep php%s | sed 's/^ii\s*//' | sed 's/\s\{3,\}.*$//' | tr '\n' ' '"
         packages = self.app.sys.exec(cmd % version, capture_output=True)
         packages = packages.strip().split(' ')
-
         return list(filter(lambda package: bool(package), packages))
 
     def install(self, version: str, env: str = 'desktop', add: tuple = (), remove: tuple = ()) -> None:
@@ -103,13 +101,13 @@ class PhpInstaller(Installer):
         # NOTE: 'cmd' will only work for debian based machines
         cmd = "find /etc/apt/ -name *.list | xargs cat | grep ^[[:space:]]*deb | grep '%s' | grep 'php'"
         if self.app.sys.id in ['debian', 'raspbian']:
-            if exists('/etc/apt/sources.list.d/sury-php.list'):
+            if os.path.exists('/etc/apt/sources.list.d/sury-php.list'):
                 return True
             proc = self.app.sys.exec(cmd % 'sury', check=False, supress_output=True)
             return proc.returncode == 0
 
         if self.app.sys.id == 'ubuntu':
-            if exists(f"/etc/apt/sources.list.d/ondrej-ubuntu-php-{self.app.sys.codename}"):
+            if os.path.exists(f"/etc/apt/sources.list.d/ondrej-ubuntu-php-{self.app.sys.codename}"):
                 return True
             proc = self.app.sys.exec(cmd % 'ondrej', check=False, supress_output=True)
             return proc.returncode == 0
