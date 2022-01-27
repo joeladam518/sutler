@@ -82,7 +82,6 @@ class LempProvisioner(Provisioner):
             os.path.join(project_files_path, 'public', 'info.php'),
             root=True
         )
-
         # Set the ownership
         self.app.sys.exec(f"chown -R www-data:www-data {project_files_path}", root=True)
 
