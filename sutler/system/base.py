@@ -171,12 +171,12 @@ class System(ABC):
             return output.decode(sys.getdefaultencoding())
 
     @abstractmethod
-    def cp(self, fp: str, tp: str, root: bool = False):
+    def cp(self, src: str, dst: str, root: bool = False):
         """
         Copy a file
 
-        :param str fp: From Path
-        :param str tp: To Path
+        :param str src: From Path
+        :param str dst: To Path
         :param bool root: Run as root
         :return: CompletedProcess
         :rtype: CompletedProcess
@@ -278,12 +278,12 @@ class System(ABC):
         pass
 
     @abstractmethod
-    def mv(self, fp: str, tp: str, root: bool = False):
+    def mv(self, src: str, dst: str, root: bool = False):
         """
         Move a file
 
-        :param str fp: From Path
-        :param str tp: To Path
+        :param str src: From Path
+        :param str dst: To Path
         :param bool root: Run as root
         :return: The completed process
         :rtype: CompletedProcess

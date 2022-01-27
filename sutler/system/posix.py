@@ -12,8 +12,11 @@ class PosixSystem(System):
         self.user.gid = os.getgid(),
         self.user.gids = tuple(os.getgroups())
 
-    def cp(self, fp: str, tp: str, root: bool = False) -> CompletedProcess:
-        return self.exec(f'cp "{fp}" "{tp}"', root=root)
+    def cp(self, src: str, dst: str, root: bool = False):
+        if root:
+            self.exec(f'cp "{src}" "{dst}"', root=True)
+        else:
+            shutil.copyfile(src, dst, follow_symlinks=True)
 
     def drop_privileges(self) -> None:
         if not self.is_root():
@@ -33,11 +36,14 @@ class PosixSystem(System):
     def is_root(self) -> bool:
         return os.getuid() == 0
 
-    def mv(self, fp: str, tp: str, root: bool = False) -> CompletedProcess:
-        return self.exec(f'mv "{fp}" "{tp}"', root=root)
+    def mv(self, src: str, dst: str, root: bool = False):
+        if root:
+            self.exec(f'mv "{src}" "{dst}"', root=True)
+        else:
+            shutil.move(src, dst)
 
-    def rename(self, old: str, new: str, root: bool = False) -> CompletedProcess:
-        return self.mv(old, new, root=root)
+    def rename(self, old: str, new: str, root: bool = False):
+        self.mv(old, new, root=root)
 
     def rm(self, path: str, root: bool = False) -> None:
         if not os.path.exists(path):
