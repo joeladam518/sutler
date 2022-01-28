@@ -1,6 +1,7 @@
 import click
 import os
 from jinja2 import Environment, FileSystemLoader
+from typing import Any
 from .context import Context
 from .debian import DebianSystem
 from .os import Sys
@@ -50,6 +51,33 @@ class App(metaclass=SingletonMeta):
         click.secho(f"templates_path: ", nl=False, fg='bright_black')
         click.secho(f"{self.templates_path()}", fg='bright_white')
         click.echo()
+
+    def render(self, tp: str, dst: str, root: bool = False, **variables: Any) -> None:
+        """
+        Render a jina template
+
+        :param str tp: Template path
+        :param str dst: Destination file path
+        :param bool root: copy file as root
+        :param Any variables: The variables for the template
+        :return: None
+        """
+        template = self.jinja.get_template(tp)
+        stream = template.stream(variables)
+
+        if not root:
+            stream.dump(dst, 'utf-8')
+        else:
+            tmp_dir = self.sys_path('tmp', 'sutler-templates')
+
+            if not os.path.exists(tmp_dir):
+                os.makedirs(tmp_dir)
+
+            tmp_path = os.path.join(tmp_dir, os.path.basename(dst))
+            stream.dump(tmp_path, 'utf-8')
+
+            self.os.mv(tmp_path, dst, root=True)
+            self.os.exec(f'chown root:root "{dst}"', root=True)
 
     def scripts_path(self, *paths: str) -> str:
         scripts_path = os.path.join(self.base_path, 'scripts')

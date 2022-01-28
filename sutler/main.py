@@ -9,10 +9,8 @@ from .commands import test
 @click.pass_context
 def cli(ctx: ClickContext):
     if 'debian' not in Sys.id_like():
-        ctx.fail("Sorry, currently sutler only supports Debian based systems")
-
+        ctx.fail("Sorry, sutler only supports Debian based systems")
     app = ctx.ensure_object(App)
-
     if app.is_root():
         ctx.fail("You're not allowed to run sutler as root")
     if ctx.invoked_subcommand is None:

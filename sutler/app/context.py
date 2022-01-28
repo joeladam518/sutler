@@ -1,4 +1,5 @@
 import click
+from typing import Any
 
 
 class Context:
@@ -12,6 +13,14 @@ class Context:
     def __repr__(self):
         args = ['{}={}'.format(k, repr(v)) for k, v in vars(self).items()]
         return 'Context({})'.format(', '.join(args))
+
+    def get(self, key: str, default: Any = None) -> Any:
+        if not hasattr(self, key):
+            return default
+
+        attr = getattr(self, key, None)
+
+        return default if callable(attr) else attr
 
     def print(self) -> None:
         items = vars(self).items()
@@ -27,3 +36,6 @@ class Context:
                 value = ', '.join(list(map(lambda val: str(val), value)))
             click.secho(f"{key}: ", nl=False, fg='bright_black')
             click.secho(f"{value}", fg='bright_white')
+
+    def set(self, key: str, value: Any) -> None:
+        setattr(self, key, value)
