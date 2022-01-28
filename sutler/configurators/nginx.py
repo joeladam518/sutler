@@ -36,7 +36,7 @@ class NginxConfigurator:
             self.app.os.mv(tmp_fp, fp, root=True)
             self.app.os.exec(f"chown root:root {fp}", root=True)
 
-    def lemp(self, domain: str, project: str, php_version: str):
+    def lemp(self, domain: str, project: str, php_version: str) -> None:
         """
         Configure nginx for php and http (not https)
 

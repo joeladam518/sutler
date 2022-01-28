@@ -10,7 +10,7 @@ class UfwConfigurator:
     def __init__(self, app: 'App'):
         self.app: 'App' = app
 
-    def http(self):
+    def http(self) -> None:
         if not installed('ufw'):
             self.app.os.install('ufw')
 
