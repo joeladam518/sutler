@@ -53,7 +53,7 @@ class PhpInstaller(Installer):
         print(*packages, sep='\n')
 
         click.echo()
-        if click.confirm('Proceed?', default=None):
+        if click.confirm('Proceed?', default=True):
             if not self._sources_are_installed():
                 self._install_sources()
             self.app.os.update()
