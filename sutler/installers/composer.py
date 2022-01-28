@@ -3,8 +3,8 @@ import hashlib
 import shutil
 from subprocess import CalledProcessError
 from urllib import request
-from ..helpers import installed
 from .installer import Installer
+from ..support import installed
 
 
 class ComposerInstaller(Installer):

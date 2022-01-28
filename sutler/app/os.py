@@ -6,7 +6,7 @@ import sys
 from abc import ABC, abstractmethod
 from typing import Optional, Union
 from getpass import getuser
-from .user import User
+from sutler.app.user import User
 
 # Types
 CompletedProcess = subprocess.CompletedProcess

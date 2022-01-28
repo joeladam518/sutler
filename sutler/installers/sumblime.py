@@ -1,5 +1,5 @@
-from ..helpers import installed
 from .installer import Installer
+from ..support import installed
 
 
 class SublimeInstaller(Installer):

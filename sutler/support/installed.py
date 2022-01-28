@@ -1,5 +1,5 @@
 import shutil
-from ..app import App
+from sutler.app import App
 
 
 def installed(program: str) -> bool:

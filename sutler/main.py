@@ -1,9 +1,8 @@
 import click
 from click.core import Context as ClickContext
-from .app import App
+from .app import App, Sys
 from .commands import install, setup, uninstall
 from .commands import test
-from .system import Sys
 
 
 @click.group(invoke_without_command=True, context_settings={"help_option_names": ['-h', '--help']})
