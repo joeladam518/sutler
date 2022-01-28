@@ -52,7 +52,7 @@ class DesktopProvisioner(Provisioner):
 
         # Install some useful applications
         self.app.os.install('curl', 'git', 'gnome-tweak-tool', 'htop', 'mosquitto-clients', 'mariadb-client',
-                                'python3-pip', 'ripit', 'tmux', 'tree', 'vim-gtk3', 'virtualenv')
+                            'python3-pip', 'ripit', 'tmux', 'tree', 'vim-gtk3', 'virtualenv')
 
         # Install bash git prompt
         os.chdir(self.app.user.home)
@@ -77,7 +77,7 @@ class DesktopProvisioner(Provisioner):
         self.app.os.exec('update-alternatives --config editor', root=True)
 
         # Clone my public repos
-        if click.confirm('Install repos?'):
+        if click.confirm('Install repos?', default=False):
             os.chdir(repos_path)
             Repo.clone_from('git@github.com:joeladam518/arduino-mqtt-led.git', 'arduino-mqtt-led')
             Repo.clone_from('git@github.com:joeladam518/BackupScripts.git', 'BackupScripts')
