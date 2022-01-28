@@ -35,7 +35,7 @@ class PhpInstaller(Installer):
         if env not in ['desktop', 'development', 'server']:
             self.ctx.fail('Environment not supported')
 
-        # combine the extensions to be installed
+        os.chdir(self.app.user.home)
         extensions = [*self.extensions['common'], *self.extensions[env], *add]
 
         if Version(version) < Version('8.0'):
@@ -67,6 +67,7 @@ class PhpInstaller(Installer):
         if version not in self.versions['uninstall']:
             self.ctx.fail('Invalid php version')
 
+        os.chdir(self.app.user.home)
         packages = self.get_installed_packages(version)
 
         if len(packages) == 0:

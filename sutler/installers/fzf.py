@@ -5,6 +5,7 @@ from .installer import Installer
 
 class FzfInstaller(Installer):
     def install(self) -> None:
+        os.chdir(self.app.user.home)
         fzf_dir = os.path.join(self.app.user.home, '.fzf')
         install_script_path = os.path.join(fzf_dir, 'install')
 
@@ -17,6 +18,7 @@ class FzfInstaller(Installer):
         self.app.os.exec_script(install_script_path)
 
     def uninstall(self) -> None:
+        os.chdir(self.app.user.home)
         fzf_dir = os.path.join(self.app.user.home, '.fzf')
         uninstall_script_path = os.path.join(fzf_dir, 'uninstall')
 

@@ -5,11 +5,10 @@ from .installer import Installer
 
 class DotfilesInstaller(Installer):
     def install(self, system: str) -> None:
-        home_dir = self.app.user.home
-        repos_dir = os.path.join(home_dir, 'repos')
+        os.chdir(self.app.user.home)
+        repos_dir = os.path.join(self.app.user.home, 'repos')
         dotfiles_dir = os.path.join(repos_dir, 'dotfiles')
         install_script_path = os.path.join(dotfiles_dir, 'install.sh')
-        os.chdir(home_dir)
 
         if not os.path.isdir(repos_dir):
             os.mkdir(repos_dir, 0o755)
@@ -26,11 +25,10 @@ class DotfilesInstaller(Installer):
         self.app.os.exec_script(install_script_path, system)
 
     def uninstall(self, system: str) -> None:
-        home_dir = self.app.user.home
-        repos_dir = os.path.join(home_dir, 'repos')
+        os.chdir(self.app.user.home)
+        repos_dir = os.path.join(self.app.user.home, 'repos')
         dotfiles_dir = os.path.join(repos_dir, 'dotfiles')
         uninstall_script_path = os.path.join(dotfiles_dir, 'uninstall.sh')
-        os.chdir(home_dir)
 
         if not os.path.exists(uninstall_script_path):
             self.ctx.fail('Failed to uninstall dotfiles. Could not find the uninstall script')

@@ -12,9 +12,9 @@ class ComposerInstaller(Installer):
         if not installed('php'):
             self.ctx.fail('You must install php before you can install composer')
 
-        home_dir = self.app.user.home
-        composer_setup_path = os.path.join(home_dir, 'composer-setup.php')
-        composer_path = os.path.join(home_dir, 'composer.phar')
+        os.chdir(self.app.user.home)
+        composer_setup_path = os.path.join(self.app.user.home, 'composer-setup.php')
+        composer_path = os.path.join(self.app.user.home, 'composer.phar')
 
         with request.urlopen('https://composer.github.io/installer.sig') as response:
             expected_signature = response.read().decode('utf-8')

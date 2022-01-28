@@ -46,26 +46,18 @@ class DesktopProvisioner(Provisioner):
         # Base stuff
         self.app.os.install('apt-transport-https', 'build-essential', 'ca-certificates', 'software-properties-common')
 
-        # Install restricted extras
-        if self.app.os.id == 'ubuntu':
-            self.app.os.install('ubuntu-restricted-extras', 'ubuntu-restricted-addons')
-
         # Install some useful applications
-        self.app.os.install('curl', 'git', 'gnome-tweak-tool', 'htop', 'mosquitto-clients', 'mariadb-client',
-                            'python3-pip', 'ripit', 'tmux', 'tree', 'vim-gtk3', 'virtualenv')
+        self.app.os.install('curl', 'exfat-utils', 'exfat-fuse', 'git', 'gnome-tweaks', 'htop', 'mosquitto-clients',
+                            'mariadb-client', 'python3-pip', 'ripit', 'tmux', 'tree', 'vim-gtk3', 'virtualenv')
 
-        # Install bash git prompt
-        os.chdir(self.app.user.home)
-        Repo.clone_from("https://github.com/magicmonty/bash-git-prompt.git", ".bash-git-prompt", depth=1)
+        if self.app.os.id == 'ubuntu':
+            # Install restricted extras
+            self.app.os.install('ubuntu-restricted-extras', 'ubuntu-restricted-addons')
+            # Install some snaps
+            self.app.os.exec('snap refresh')
+            self.app.os.exec('snap install audacity gimp vlc')
 
-        # Install the ability to work with exfat drives
-        self.app.os.install('exfat-utils', 'exfat-fuse')
-
-        # Install some snaps
-        self.app.os.exec('snap refresh')
-        self.app.os.exec('snap install audacity gimp vlc')
-
-        # Install even more stuff
+        # Install even more
         DotfilesInstaller(self.ctx).install('desktop')
         FzfInstaller(self.ctx).install()
         PhpInstaller(self.ctx).install('8.1', env='desktop')
@@ -73,8 +65,14 @@ class DesktopProvisioner(Provisioner):
         NodeInstaller(self.ctx).install('16')
         SublimeInstaller(self.ctx).install('merge')
 
+        # Install bash git prompt
+        os.chdir(self.app.user.home)
+        Repo.clone_from("https://github.com/magicmonty/bash-git-prompt.git", ".bash-git-prompt", depth=1)
+
+        # TODO: install docker
+
         # Update the command line editor to vim (Has to be done manually)
-        self.app.os.exec('update-alternatives --config editor', root=True)
+        # self.app.os.exec('update-alternatives --config editor', root=True)
 
         # Clone my public repos
         if click.confirm('Install repos?', default=False):
@@ -88,7 +86,7 @@ class DesktopProvisioner(Provisioner):
             Repo.clone_from('git@github.com:joeladam518/sutler.git', 'sutler')
 
         click.echo()
-        click.echo("Reminder of the other programs you like, but unfortunately their installation can't be automated")
+        click.echo("Reminder of some other programs you like, but unfortunately their installation can't be automated")
         click.echo("yet...")
         click.echo()
         click.echo("* Arduino - https://www.arduino.cc/en/software")
