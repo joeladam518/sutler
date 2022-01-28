@@ -6,7 +6,7 @@ import sys
 from abc import ABC, abstractmethod
 from typing import Optional, Union
 from getpass import getuser
-from sutler.app.user import User
+from .user import User
 
 # Types
 CompletedProcess = subprocess.CompletedProcess
@@ -23,8 +23,8 @@ class Sys:
         Get the freedesktop release info. Mainly for linux operating systems.
         https://www.freedesktop.org/software/systemd/man/os-release.html
 
-        In python 3.10 they introduced the 'freedesktop_os_release' function, but for older versions
-        I've included a polyfill here.
+        In python 3.10 they introduced the 'freedesktop_os_release' function so if
+        we have it we use it. But for older versions I've included a polyfill.
 
         :return: A dict of release information
         :rtype: dict

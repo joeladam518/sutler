@@ -1,7 +1,7 @@
 import click
 import os
 import shutil
-from .base import System
+from .os import System
 
 
 class PosixSystem(System):

@@ -1,6 +1,6 @@
 import os
-from .base import Sys
-from sutler.app.posix import PosixSystem
+from .posix import PosixSystem
+from .os import Sys
 
 
 class DebianSystem(PosixSystem):

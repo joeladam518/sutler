@@ -2,8 +2,10 @@ import click
 import os
 from jinja2 import Environment, FileSystemLoader
 from .context import Context
-from ..system import DebianSystem, Sys, User
+from .debian import DebianSystem
+from .os import Sys
 from .singleton import SingletonMeta
+from .user import User
 
 
 class App(metaclass=SingletonMeta):
