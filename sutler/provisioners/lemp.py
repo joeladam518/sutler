@@ -129,7 +129,6 @@ class LempProvisioner(Provisioner):
         self.app.os.exec("ufw allow 'Nginx HTTP'", root=True)
         self.app.os.exec("ufw allow 'Nginx HTTPS'", root=True)
         click.echo()
-        click.echo('Checking ufw status:')
         self.app.os.exec("ufw status", root=True)
         click.echo()
         # TODO: maybe ask if we should enable the firewall?
