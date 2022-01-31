@@ -1,0 +1,41 @@
+name: 'sutler-release'
+on:
+  push:
+    tags:
+      - "v*.*.*"
+
+jobs:
+  build:
+    # There are no github hosted runners for Debian or Raspberry pi
+    runs-on: 'ubuntu-18.04'
+
+    steps:
+    - name: 'Checkout'
+      uses: actions/checkout@v2
+
+    - name: 'Setup python'
+      uses: actions/setup-python@v2
+      with:
+        python-version: 3.8
+
+    - name: 'Install requirements'
+      run: |
+        pip install -r requirements.txt pyinstaller
+
+    - name: 'Run Pyinstaller'
+      run: |
+        pyinstaller \
+          --noconfirm \
+          --log-level=WARN \
+          --clean \
+          --onefile \
+          --nowindow
+          --name="sutler" \
+          sutler.spec
+
+    # Optionally verify that it works (provided that it does not need user interaction)
+    # - ./dist/your-code/your-code
+
+    - uses: actions/upload-artifact@v2
+      with:
+        path: dist/*
