@@ -1,9 +1,11 @@
 #!/usr/bin/env bash
 
+set -Eeo pipefail
+
 SCRIPTS_DIR="$(cd "$(dirname "$0")" > /dev/null 2>&1 && pwd -P)"
 PROJECT_DIR="$(dirname "$SCRIPTS_DIR")"
 
-cd "${PROJECT_DIR}" && exit 1
+cd "${PROJECT_DIR}" || exit 1
 
 if [ -n "${SETUP_VIRTUALENV:-""}" ]; then
     if command -v "virtualenv" >/dev/null 2>&1; then
