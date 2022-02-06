@@ -3,6 +3,8 @@
 SCRIPTS_DIR="$(cd "$(dirname "$0")" > /dev/null 2>&1 && pwd -P)"
 PROJECT_DIR="$(dirname "$SCRIPTS_DIR")"
 
+cd "${PROJECT_DIR}" && exit 1
+
 if [ -n "${SETUP_VIRTUALENV:-""}" ]; then
     if command -v "virtualenv" >/dev/null 2>&1; then
         virtualenv venv
@@ -16,16 +18,15 @@ if [ -n "${SETUP_VIRTUALENV:-""}" ]; then
     source venv/bin/activate
 fi
 
-cd "${PROJECT_DIR}" && pip install -r requirements.txt pyinstaller
-
+pip install -r requirements.txt pyinstaller
 pyinstaller \
-  --noconfirm \
-  --log-level=WARN \
-  --clean \
-  --onefile \
-  --nowindow \
-  --name=sutler \
-  "${PROJECT_DIR}/sutler.spec"
+    --noconfirm \
+    --log-level=WARN \
+    --clean \
+    --onefile \
+    --nowindow \
+    --name=sutler \
+    "${PROJECT_DIR}/sutler.spec"
 
 if [ -n "${SETUP_VIRTUALENV:-""}" ]; then
     deactivate
