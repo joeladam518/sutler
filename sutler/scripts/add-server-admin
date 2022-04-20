@@ -1,79 +1,130 @@
 #!/usr/bin/env bash
 
-# Add a new admin user on a Digital Ocean droplet.
-# This will create a temporary password for them.
-# Once set, the user will be forced to reset the password on their fist login.
-# They will need the temporary password to do that.
+if [ "$EUID" -ne 0 ]; then
+    echo "Please run as root"
+    exit 1
+fi
 
-abort_adding_user() {
-    deluser --remove-home "$1" #--remove-all-files
+set -Eeo pipefail
+
+usage() {
+    cat << EOF
+Usage: $(basename "${0}") [-h]
+
+Add a new admin user on a Digital Ocean droplet and create a temporary
+password for them. Once set the user will be forced to reset the
+password on their fist login. They will need the temporary password to
+do that.
+
+Options:
+-h, --help            Print this help and exit
+EOF
+    return 0
 }
 
-########################################################################################################################
+create_user() {
+    local user="${1:-""}"
 
-user_name="$1"
-user_home_dir="/home/${user_name}"
+    if [ -z "$user" ]; then
+        return 1
+    fi
 
-# Validate input
+    # Add a new user
+    if ! adduser --disabled-password --debug --gecos "Server Admin" "$user"; then
+        return 1
+    fi
+
+    # Add the new user to the sudo group
+    usermod -aG sudo "$user"
+
+    return "$?"
+}
+
+update_user_password() {
+    local user="${1:-""}"
+    local pwd="${2:-""}"
+
+    if [ -z "$user" ] || [ -z "$pwd" ]; then
+        return 1
+    fi
+
+    echo -e "${pwd}\n${pwd}" | passwd "$user"
+
+    return "$?"
+}
+
+parse_long_options() {
+    case "$1" in
+        help) usage; exit ;;
+        *) invalid_option "-${OPTARG}" ;;
+    esac
+
+    return 0
+}
+
+parse_options() {
+    while getopts ":h-:" opt; do
+        case "$opt" in
+            h) usage; exit ;;
+            :) invalid_argument "$OPTARG" ;;
+            -) parse_long_options "$OPTARG" ;;
+            \?) invalid_option "$OPTARG" ;;
+        esac
+    done
+
+    shift $((OPTIND-1))
+
+    return 0
+}
+
+# Input
+parse_options "$@"
+
+user_name="${1:-""}"
+user_home="${2:-"/home/${user_name}"}"
+tmp_pwd="$(tr -dc 'a-zA-Z0-9' < /dev/urandom | fold -w 32 | head -n 1)"
+
 if [ -z "$user_name" ]; then
-    echo "You must enter a user name to create" 1>&2
+    echo "You must enter a user name" 1>&2
     exit 1
 fi
 
-########################################################################################################################
-echo "Start"
-
-temp_pwd="$(cat "/dev/urandom" | tr -dc 'a-zA-Z0-9' | fold -w 32 | head -n 1)"
-temp_pwd_length="${#temp_pwd}"
-
-# Validate temp password
-if [ -z "$temp_pwd" ] || [ "$temp_pwd_length" != "32" ]; then
-    echo "Failed to create tmp password." 1>&2
+if [ -z "$tmp_pwd" ] || [ "${#tmp_pwd}" != "32" ]; then
+    echo "Failed to create tmp password" 1>&2
     exit 1
 fi
 
-# Create the user
-if ! adduser --disabled-password --debug --gecos "Server Admin" "${user_name}"; then
-    echo "Failed to create user." 1>&2
-    exit 1
-fi
-
-# Make sure we have authorized_keys in the root dir. If we don't, we will effectively lockout all users.
+# Make sure we have authorized_keys in the root dir. If we don't we will effectively lockout all users.
 if [ ! -f "${HOME}/.ssh/authorized_keys" ]; then
     echo "Could not find the root user's authorized_keys file" 1>&2
-    abort_adding_user "$user_name"
     exit 1
 fi
 
-# Create the ssh keys for new user
-if ! su -c "cd ${user_home_dir} && ssh-keygen -q -b 2048 -t rsa -f ~/.ssh/id_rsa -N ''" - "$user_name"; then
-    echo "Failed to create ssh keys." 1>&2
-    abort_adding_user "$user_name"
+if ! create_user "$user_name"; then
+    echo "Failed to create user" 1>&2
+    exit 1
+fi
+
+if ! update_user_password "$user_name" "$tmp_pwd"; then
+    echo "Failed to set the user's temp password" 1>&2
+    exit 1
+fi
+
+# Create the new user ssh keys
+if ! su -c "cd ${user_home} && ssh-keygen -q -b 2048 -t rsa -f ~/.ssh/id_rsa -N ''" - "${user_name}"; then
+    echo "Failed to create user ssh keys." 1>&2
     exit 1
 fi
 
 # Copy root's authorized keys to the new user
-cat "${HOME}/.ssh/authorized_keys" > "/home/${user_name}/.ssh/authorized_keys"
+cat "${HOME}/.ssh/authorized_keys" > "${user_home}/.ssh/authorized_keys"
 
 # Secure authorized keys
-chown "${user_name}:${user_name}" "/home/${user_name}/.ssh/authorized_keys"
-chmod 0600 "/home/${user_name}/.ssh/authorized_keys"
+chown "${user_name}:${user_name}" "${user_home}/.ssh/authorized_keys"
+chmod 0600 "${user_home}/.ssh/authorized_keys"
 
-# Add them to the sudo group
-usermod -aG sudo "$user_name"
-
-# Set the new users password to the temp_pwd
-echo -e "${temp_pwd}\n${temp_pwd}" | passwd "$user_name"
-
-# Did it work?
-if [ "$?" != "0" ]; then
-    echo "Failed to set the users password." 1>&2
-    abort_adding_user
-    exit 1
-fi
-
-# Force the new user to change their password on first login
-chage -d 0 "$user_name"
+# Truncate root's authorized keys file
+echo > "${HOME}/.ssh/authorized_keys"
 
 # Change some values in sshd_config
 sed -i "s/#\?\s*PermitRootLogin.*/PermitRootLogin no/" /etc/ssh/sshd_config
@@ -82,23 +133,15 @@ sed -i "s/#\?\s*PubkeyAuthentication.*/PubkeyAuthentication yes/" /etc/ssh/sshd_
 sed -i "s/#\?\s*ChallengeResponseAuthentication.*/ChallengeResponseAuthentication no/" /etc/ssh/sshd_config
 systemctl reload sshd
 
-# Clean up! Truncate root's authorized keys file
-echo > "${HOME}/.ssh/authorized_keys"
+# Force password change on next login
+chage -d 0 "$user_name"
 
-# Let the root user know the temp password fot the new user
 echo
 echo "*******************  Warning  *******************"
 echo "The new user will be forced to set a new password upon logging in for the first time."
 echo "They will need the following temp password to do that:"
 echo
-echo "$temp_pwd"
+echo "$tmp_pwd"
 echo
 echo "*************************************************"
 echo
-
-# Start the firewall!
-ufw allow OpenSSH
-ufw enable
-
-echo -c "Done!"
-########################################################################################################################
