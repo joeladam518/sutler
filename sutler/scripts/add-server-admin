@@ -13,44 +13,12 @@ Usage: $(basename "${0}") [-h]
 
 Add a new admin user on a Digital Ocean droplet and create a temporary
 password for them. Once set the user will be forced to reset the
-password on their fist login. They will need the temporary password to
-do that.
+password on their fist login.
 
 Options:
 -h, --help            Print this help and exit
 EOF
     return 0
-}
-
-create_user() {
-    local user="${1:-""}"
-
-    if [ -z "$user" ]; then
-        return 1
-    fi
-
-    # Add a new user
-    if ! adduser --disabled-password --debug --gecos "Server Admin" "$user"; then
-        return 1
-    fi
-
-    # Add the new user to the sudo group
-    usermod -aG sudo "$user"
-
-    return "$?"
-}
-
-update_user_password() {
-    local user="${1:-""}"
-    local pwd="${2:-""}"
-
-    if [ -z "$user" ] || [ -z "$pwd" ]; then
-        return 1
-    fi
-
-    echo -e "${pwd}\n${pwd}" | passwd "$user"
-
-    return "$?"
 }
 
 parse_long_options() {
@@ -100,19 +68,27 @@ if [ ! -f "${HOME}/.ssh/authorized_keys" ]; then
     exit 1
 fi
 
-if ! create_user "$user_name"; then
+# Create the new user
+if ! adduser --disabled-password --debug --gecos "Server Admin" "$user_name"; then
     echo "Failed to create user" 1>&2
-    exit 1
+    return 1
 fi
 
-if ! update_user_password "$user_name" "$tmp_pwd"; then
+# Update the new user's password to the temp password
+if ! echo -e "${tmp_pwd}\n${tmp_pwd}" | passwd "$user_name"; then
     echo "Failed to set the user's temp password" 1>&2
     exit 1
 fi
 
-# Create the new user ssh keys
+# Grant the new user sudo
+if ! usermod -aG sudo "$user_name"; then
+    echo "Failed to add the new user to the sudo group" 1>&2
+    exit 1
+fi
+
+# Create the user's ssh keys
 if ! su -c "cd ${user_home} && ssh-keygen -q -b 2048 -t rsa -f ~/.ssh/id_rsa -N ''" - "${user_name}"; then
-    echo "Failed to create user ssh keys." 1>&2
+    echo "Failed to create user ssh keys" 1>&2
     exit 1
 fi
 
@@ -138,7 +114,7 @@ chage -d 0 "$user_name"
 
 echo
 echo "*******************  Warning  *******************"
-echo "The new user will be forced to set a new password upon logging in for the first time."
+echo "The new user will be forced to set a new password upon logging in for the first time"
 echo "They will need the following temp password to do that:"
 echo
 echo "$tmp_pwd"
