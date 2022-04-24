@@ -50,14 +50,14 @@ parse_options "$@"
 
 user_name="${1:-""}"
 user_home="${2:-"/home/${user_name}"}"
-tmp_pwd="$(tr -dc 'a-zA-Z0-9' < /dev/urandom | fold -w 32 | head -n 1)"
+user_tmp_pwd="$(tr -dc 'a-zA-Z0-9' < /dev/urandom | fold -w 32 | head -n 1)"
 
 if [ -z "$user_name" ]; then
     echo "You must enter a user name" 1>&2
     exit 1
 fi
 
-if [ -z "$tmp_pwd" ] || [ "${#tmp_pwd}" != "32" ]; then
+if [ -z "$user_tmp_pwd" ] || [ "${#user_tmp_pwd}" != "32" ]; then
     echo "Failed to create tmp password" 1>&2
     exit 1
 fi
@@ -75,7 +75,7 @@ if ! adduser --disabled-password --debug --gecos "Server Admin" "$user_name"; th
 fi
 
 # Update the new user's password to the temp password
-if ! echo -e "${tmp_pwd}\n${tmp_pwd}" | passwd "$user_name"; then
+if ! echo -e "${user_tmp_pwd}\n${user_tmp_pwd}" | passwd "$user_name"; then
     echo "Failed to set the user's temp password" 1>&2
     exit 1
 fi
@@ -117,7 +117,7 @@ echo "*******************  Warning  *******************"
 echo "The new user will be forced to set a new password upon logging in for the first time"
 echo "They will need the following temp password to do that:"
 echo
-echo "$tmp_pwd"
+echo "$user_tmp_pwd"
 echo
 echo "*************************************************"
 echo
