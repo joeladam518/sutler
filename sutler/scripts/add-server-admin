@@ -9,14 +9,17 @@ set -o pipefail
 
 usage() {
     cat << EOF
-Usage: $(basename "${0}") [-h]
+Usage: $(basename "${0}") [-h] {user_name}
 
 Add a new admin user on a Digital Ocean droplet and create a temporary
 password for them. Once set the user will be forced to reset the
 password on their fist login.
 
+arguments:
+user_name           The user to create.
+
 Options:
--h, --help            Print this help and exit
+-h, --help          Print this help and exit
 EOF
     return 0
 }
